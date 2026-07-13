@@ -28,10 +28,10 @@ public class Category {
 
     @NotBlank
     @Size(max = 100)
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = 100)
     private String name;
 
     @Size(max = 500)
-    @Nullable
+    @Column(length = 500)
     private String description;
 }
