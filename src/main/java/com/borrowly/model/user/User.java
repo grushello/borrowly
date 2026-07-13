@@ -26,6 +26,7 @@ public class User {
 
     @jakarta.persistence.Id
     @UuidGenerator
+    @EqualsAndHashCode.Include
     private UUID id;
 
     @NotBlank
