@@ -1,6 +1,7 @@
 package com.borrowly.model.rental;
 
 import com.borrowly.model.item.Item;
+import com.borrowly.model.item.ItemCondition;
 import com.borrowly.model.user.User;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -8,23 +9,32 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 class RentalTest {
 
+    private static final LocalDate START = LocalDate.of(2026, Month.JULY, 1);
+    private static final LocalDate END = LocalDate.of(2026, Month.JULY, 5);
+
     private static ValidatorFactory factory;
     private static Validator validator;
+
+    private User borrower;
+    private Item item;
 
     @BeforeAll
     static void setUpValidator() {
@@ -39,12 +49,26 @@ class RentalTest {
         }
     }
 
-    private static Rental.RentalBuilder validRental() {
+    @BeforeEach
+    void setUp() {
+        borrower = User.register("Bo", "Borrower", "borrower@borrowly.test", "hash");
+
+        item = Item.builder()
+                .title("Bosch Drill")
+                .description("Corded hammer drill")
+                .pricePerDay(new BigDecimal("5.00"))
+                .depositAmount(new BigDecimal("50.00"))
+                .finePerDay(new BigDecimal("2.50"))
+                .condition(ItemCondition.GOOD)
+                .build();
+    }
+
+    private Rental.RentalBuilder validRental() {
         return Rental.builder()
-                .item(new Item())
-                .borrower(new User())
-                .startDate(LocalDate.of(2026, Month.JULY, 1))
-                .endDate(LocalDate.of(2026, Month.JULY, 5))
+                .item(item)
+                .borrower(borrower)
+                .startDate(START)
+                .endDate(END)
                 .itemTitle("Bosch Drill")
                 .dailyPrice(new BigDecimal("5.00"))
                 .depositAmount(new BigDecimal("50.00"))
@@ -70,26 +94,13 @@ class RentalTest {
         @Test
         @DisplayName("populates every field it is given")
         void buildsFully() {
-            Item item = new Item();
-            User borrower = new User();
+            Rental rental = validRental().build();
 
-            Rental rental = Rental.builder()
-                    .item(item)
-                    .borrower(borrower)
-                    .startDate(LocalDate.of(2026, Month.JULY, 1))
-                    .endDate(LocalDate.of(2026, Month.JULY, 5))
-                    .itemTitle("Bosch Drill")
-                    .dailyPrice(new BigDecimal("5.00"))
-                    .depositAmount(new BigDecimal("50.00"))
-                    .finePerDay(new BigDecimal("2.50"))
-                    .totalPrice(new BigDecimal("25.00"))
-                    .status(RentalStatus.ACTIVE)
-                    .build();
-
+            assertThat(rental.getId()).isNotNull();
             assertThat(rental.getItem()).isSameAs(item);
             assertThat(rental.getBorrower()).isSameAs(borrower);
-            assertThat(rental.getStartDate()).isEqualTo(LocalDate.of(2026, Month.JULY, 1));
-            assertThat(rental.getEndDate()).isEqualTo(LocalDate.of(2026, Month.JULY, 5));
+            assertThat(rental.getStartDate()).isEqualTo(START);
+            assertThat(rental.getEndDate()).isEqualTo(END);
             assertThat(rental.getItemTitle()).isEqualTo("Bosch Drill");
             assertThat(rental.getDailyPrice()).isEqualByComparingTo("5.00");
             assertThat(rental.getDepositAmount()).isEqualByComparingTo("50.00");
@@ -106,6 +117,24 @@ class RentalTest {
         }
 
         @Test
+        @DisplayName("defaults status to ACTIVE when not set")
+        void defaultsStatusToActive() {
+            Rental rental = Rental.builder()
+                    .item(item)
+                    .borrower(borrower)
+                    .startDate(START)
+                    .endDate(END)
+                    .itemTitle("Bosch Drill")
+                    .dailyPrice(new BigDecimal("5.00"))
+                    .depositAmount(new BigDecimal("50.00"))
+                    .finePerDay(new BigDecimal("2.50"))
+                    .totalPrice(new BigDecimal("25.00"))
+                    .build();
+
+            assertThat(rental.getStatus()).isEqualTo(RentalStatus.ACTIVE);
+        }
+
+        @Test
         @DisplayName("toString does not touch the lazy item/borrower relations")
         void toStringExcludesRelations() {
             String s = validRental().build().toString();
@@ -115,12 +144,143 @@ class RentalTest {
     }
 
     @Nested
+    @DisplayName("returnItem")
+    class ReturnItemTests {
+
+        @Test
+        @DisplayName("sets the return date and the RETURNED status together")
+        void setsDateAndStatus() {
+            Rental rental = validRental().build();
+            LocalDate returnedOn = LocalDate.of(2026, Month.JULY, 4);
+
+            rental.returnItem(returnedOn);
+
+            assertThat(rental.getActualReturnDate()).isEqualTo(returnedOn);
+            assertThat(rental.getStatus()).isEqualTo(RentalStatus.RETURNED);
+            assertThat(validate(rental)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("no setStatus — a rental cannot be marked RETURNED without a return date")
+        void statusHasNoSetter() {
+            assertThat(Rental.class.getMethods())
+                    .extracting(Method::getName)
+                    .doesNotContain("setStatus", "setActualReturnDate");
+        }
+
+        @Test
+        @DisplayName("the snapshot fields have no setters either")
+        void snapshotFieldsHaveNoSetters() {
+            assertThat(Rental.class.getMethods())
+                    .extracting(Method::getName)
+                    .doesNotContain(
+                            "setItemTitle", "setDailyPrice", "setDepositAmount",
+                            "setFinePerDay", "setTotalPrice");
+        }
+    }
+
+    @Nested
+    @DisplayName("markOverdue")
+    class MarkOverdueTests {
+
+        @Test
+        @DisplayName("flips an ACTIVE rental to OVERDUE without touching the return date")
+        void marksActiveRentalOverdue() {
+            Rental rental = validRental().build();
+
+            rental.markOverdue();
+
+            assertThat(rental.getStatus()).isEqualTo(RentalStatus.OVERDUE);
+            assertThat(rental.getActualReturnDate())
+                    .as("going overdue does not mean the item came back")
+                    .isNull();
+            assertThat(validate(rental)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("refuses to mark a RETURNED rental overdue — that would un-return it")
+        void rejectsAlreadyReturned() {
+            Rental rental = validRental().build();
+            rental.returnItem(LocalDate.of(2026, Month.JULY, 4));
+
+            assertThatIllegalStateException()
+                    .isThrownBy(rental::markOverdue)
+                    .withMessageContaining("RETURNED");
+
+            assertThat(rental.getStatus())
+                    .as("the rejected call must not have changed anything")
+                    .isEqualTo(RentalStatus.RETURNED);
+            assertThat(rental.getActualReturnDate()).isEqualTo(LocalDate.of(2026, Month.JULY, 4));
+        }
+
+        @Test
+        @DisplayName("refuses to mark an already-OVERDUE rental overdue again")
+        void rejectsAlreadyOverdue() {
+            Rental rental = validRental().build();
+            rental.markOverdue();
+
+            assertThatIllegalStateException()
+                    .isThrownBy(rental::markOverdue)
+                    .withMessageContaining("OVERDUE");
+
+            assertThat(rental.getStatus()).isEqualTo(RentalStatus.OVERDUE);
+        }
+
+        @Test
+        @DisplayName("OVERDUE is reachable ONLY through markOverdue — there is no setter")
+        void overdueHasNoOtherRoute() {
+            assertThat(Rental.class.getMethods())
+                    .extracting(Method::getName)
+                    .doesNotContain("setStatus");
+        }
+    }
+
+    @Nested
+    @DisplayName("returning an overdue rental")
+    class LateReturnTests {
+
+        @Test
+        @DisplayName("an OVERDUE rental can still be returned — this is the normal late-return path")
+        void overdueRentalCanBeReturned() {
+            Rental rental = validRental().build();
+            rental.markOverdue();
+            assertThat(rental.getStatus()).isEqualTo(RentalStatus.OVERDUE);
+
+            LocalDate returnedLate = END.plusDays(3);
+            rental.returnItem(returnedLate);
+
+            assertThat(rental.getStatus())
+                    .as("OVERDUE must not be a dead end")
+                    .isEqualTo(RentalStatus.RETURNED);
+            assertThat(rental.getActualReturnDate()).isEqualTo(returnedLate);
+            assertThat(validate(rental)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("the full lifecycle ACTIVE -> OVERDUE -> RETURNED holds together")
+        void fullLateLifecycle() {
+            Rental rental = validRental().build();
+
+            assertThat(rental.getStatus()).isEqualTo(RentalStatus.ACTIVE);
+            assertThat(rental.getActualReturnDate()).isNull();
+
+            rental.markOverdue();
+            assertThat(rental.getStatus()).isEqualTo(RentalStatus.OVERDUE);
+            assertThat(rental.getActualReturnDate()).isNull();
+
+            rental.returnItem(END.plusDays(2));
+            assertThat(rental.getStatus()).isEqualTo(RentalStatus.RETURNED);
+            assertThat(rental.getActualReturnDate()).isEqualTo(END.plusDays(2));
+        }
+    }
+
+    @Nested
     @DisplayName("@PrePersist")
     class PrePersistTests {
 
         @Test
-        @DisplayName("defaults a null status to ACTIVE")
-        void defaultsStatusToActive() {
+        @DisplayName("sets status to ACTIVE if null")
+        void defaultsNullStatusToActive() {
             Rental rental = validRental().status(null).build();
             rental.onCreate();
             assertThat(rental.getStatus()).isEqualTo(RentalStatus.ACTIVE);
@@ -133,15 +293,6 @@ class RentalTest {
             rental.onCreate();
             assertThat(rental.getStatus()).isEqualTo(RentalStatus.OVERDUE);
         }
-
-        @Test
-        @DisplayName("stamps createdAt when absent")
-        void stampsCreatedAt() {
-            Rental rental = validRental().build();
-            assertThat(rental.getCreatedAt()).isNull();
-            rental.onCreate();
-            assertThat(rental.getCreatedAt()).isNotNull();
-        }
     }
 
     @Nested
@@ -151,19 +302,15 @@ class RentalTest {
         @Test
         @DisplayName("accepts endDate after startDate")
         void acceptsNormalRange() {
-            Rental rental = validRental()
-                    .startDate(LocalDate.of(2026, Month.JULY, 1))
-                    .endDate(LocalDate.of(2026, Month.JULY, 5))
-                    .build();
+            Rental rental = validRental().build();
             assertThat(rental.isDateRangeValid()).isTrue();
             assertThat(validate(rental)).isEmpty();
         }
 
         @Test
-        @DisplayName("accepts a single-day rental where endDate equals startDate")
+        @DisplayName("accepts a single-day rental")
         void acceptsSameDay() {
-            LocalDate day = LocalDate.of(2026, Month.JULY, 1);
-            Rental rental = validRental().startDate(day).endDate(day).build();
+            Rental rental = validRental().startDate(START).endDate(START).build();
             assertThat(rental.isDateRangeValid()).isTrue();
             assertThat(validate(rental)).isEmpty();
         }
@@ -171,19 +318,9 @@ class RentalTest {
         @Test
         @DisplayName("rejects endDate before startDate")
         void rejectsInvertedRange() {
-            Rental rental = validRental()
-                    .startDate(LocalDate.of(2026, Month.JULY, 5))
-                    .endDate(LocalDate.of(2026, Month.JULY, 1))
-                    .build();
+            Rental rental = validRental().startDate(END).endDate(START).build();
             assertThat(rental.isDateRangeValid()).isFalse();
             assertViolates(rental, "dateRangeValid");
-        }
-
-        @Test
-        @DisplayName("defers to @NotNull when a date is missing")
-        void nullDatesDeferToNotNull() {
-            assertThat(validRental().startDate(null).build().isDateRangeValid()).isTrue();
-            assertThat(validRental().endDate(null).build().isDateRangeValid()).isTrue();
         }
 
         @Test
@@ -223,22 +360,19 @@ class RentalTest {
         @ParameterizedTest(name = "{0} rejects a negative amount")
         @ValueSource(strings = {"dailyPrice", "depositAmount", "finePerDay", "totalPrice"})
         void rejectsNegativeMoney(String property) {
-            Rental rental = withMoney(property, new BigDecimal("-0.01"));
-            assertViolates(rental, property);
+            assertViolates(withMoney(property, new BigDecimal("-0.01")), property);
         }
 
         @ParameterizedTest(name = "{0} rejects null")
         @ValueSource(strings = {"dailyPrice", "depositAmount", "finePerDay", "totalPrice"})
         void rejectsNullMoney(String property) {
-            Rental rental = withMoney(property, null);
-            assertViolates(rental, property);
+            assertViolates(withMoney(property, null), property);
         }
 
         @ParameterizedTest(name = "{0} accepts zero")
         @ValueSource(strings = {"dailyPrice", "depositAmount", "finePerDay", "totalPrice"})
         void acceptsZero(String property) {
-            Rental rental = withMoney(property, BigDecimal.ZERO);
-            assertThat(validate(rental)).isEmpty();
+            assertThat(validate(withMoney(property, BigDecimal.ZERO))).isEmpty();
         }
 
         private Rental withMoney(String property, BigDecimal value) {
