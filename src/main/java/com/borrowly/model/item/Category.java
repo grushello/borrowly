@@ -23,8 +23,8 @@ import java.util.UUID;
 public class Category {
     @Id
     @EqualsAndHashCode.Include
-    @UuidGenerator
-    private UUID id;
+    @Builder.Default
+    private UUID id = UUID.randomUUID();
 
     @NotBlank
     @Size(max = 100)
