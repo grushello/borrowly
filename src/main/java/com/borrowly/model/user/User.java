@@ -43,7 +43,6 @@ public class User {
     @Column(unique=true, nullable = false)
     private String email;
 
-    @Setter
     @NotBlank
     private String passwordHash;
 
@@ -74,4 +73,13 @@ public class User {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    public static User register(String firstName, String lastName,
+                                String email, String passwordHash) {
+        return User.builder()
+                .firstName(firstName)
+                .lastName(lastName)
+                .email(email)
+                .passwordHash(passwordHash)
+                .build();
+    }
 }
