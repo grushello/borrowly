@@ -1,4 +1,4 @@
-package com.borrowly.model.wallet;
+package com.borrowly.model.transaction;
 
 public enum TransactionType {
     TOP_UP,
