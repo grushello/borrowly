@@ -2,87 +2,90 @@ package com.borrowly.model.rental;
 
 import com.borrowly.model.item.Item;
 import com.borrowly.model.user.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "rental_requests",
-        indexes = {
-                @Index(name = "idx_rental_request_borrower", columnList = "borrower_id"),
-                @Index(name = "idx_rental_request_item", columnList = "item_id"),
-                @Index(name = "idx_rental_request_status", columnList = "status")
-        }
-)
-@Getter
-@Setter
+@Table(name = "rental_requests")
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 @ToString(exclude = {"item", "borrower"})
-@EqualsAndHashCode(of = "id")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class RentalRequest {
 
     @Id
-    @GeneratedValue
-    @Column(name = "id", nullable = false, updatable = false)
-    private UUID id;
+    @EqualsAndHashCode.Include
+    @Builder.Default
+    private UUID id = UUID.randomUUID();
 
-    @NotNull(message = "Item is required")
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
 
-    @NotNull(message = "Borrower is required")
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "borrower_id", nullable = false)
     private User borrower;
 
-    @NotNull(message = "Start date is required")
-    @Column(name = "start_date", nullable = false)
+    @NotNull
+    @Column(nullable = false)
     private LocalDate startDate;
 
-    @NotNull(message = "End date is required")
-    @Column(name = "end_date", nullable = false)
+    @NotNull
+    @Column(nullable = false)
     private LocalDate endDate;
 
-    @NotNull(message = "Status is required")
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
-    private RentalRequestStatus status;
+    @Builder.Default
+    private RentalRequestStatus status = RentalRequestStatus.PENDING;
 
     @CreationTimestamp
-    @Column(name = "requested_at", nullable = false, updatable = false)
     private LocalDateTime requestedAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 
     @PrePersist
     void onCreate() {
         if (status == null) {
             status = RentalRequestStatus.PENDING;
+        }
+    }
+
+    public void approve() {
+        requirePending("approved");
+        this.status = RentalRequestStatus.APPROVED;
+    }
+
+    public void reject() {
+        requirePending("rejected");
+        this.status = RentalRequestStatus.REJECTED;
+    }
+
+    public void cancel() {
+        requirePending("canceled");
+        this.status = RentalRequestStatus.CANCELED;
+    }
+
+    public boolean isPending() {
+        return status == RentalRequestStatus.PENDING;
+    }
+
+    private void requirePending(String action) {
+        if (status != RentalRequestStatus.PENDING) {
+            throw new IllegalStateException(
+                    "Only pending requests can be " + action + ", was " + status);
         }
     }
 
