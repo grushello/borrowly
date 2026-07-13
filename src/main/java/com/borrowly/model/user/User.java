@@ -27,7 +27,7 @@ public class User {
     @jakarta.persistence.Id
     @UuidGenerator
     @EqualsAndHashCode.Include
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @NotBlank
     @Size(max = 100)
