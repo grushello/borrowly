@@ -151,4 +151,61 @@ class UserTest {
                 .currentBalance(BigDecimal.ZERO)
                 .enabled(true);
     }
+
+    @Test
+    void register_CreatesUserWithProvidedFieldsAndSecureDefaults() {
+        String firstName = "Alice";
+        String lastName = "Smith";
+        String email = "alice@example.com";
+        String passwordHash = "secure_hash_123";
+
+        User user = User.register(firstName, lastName, email, passwordHash);
+
+        assertEquals(firstName, user.getFirstName());
+        assertEquals(lastName, user.getLastName());
+        assertEquals(email, user.getEmail());
+        assertEquals(passwordHash, user.getPasswordHash());
+
+        assertNotNull(user.getId(), "ID must be generated automatically");
+        assertEquals(UserRole.USER, user.getRole(), "New registrations must default to the standard USER role");
+        assertEquals(BigDecimal.ZERO, user.getCurrentBalance(), "New registrations must start with a 0.00 balance");
+        assertTrue(user.getEnabled(), "New users should be enabled by default");
+
+        assertNull(user.getPhone(), "Phone should be unassigned during initial registration");
+    }
+
+    @Test
+    void register_ProducesObjectThatPassesValidation() {
+        User user = User.register("Valid", "User", "valid.user@example.com", "hash123");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertTrue(violations.isEmpty(), "A user created via the register method should pass all validations");
+    }
+
+    @Test
+    void register_WithBlankOrNullFields_FailsValidation() {
+        User user = User.register("", "   ", "valid@example.com", null);
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertEquals(3, violations.size(), "Should flag all blank/null required fields");
+
+        boolean hasFirstNameViolation = violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("firstName"));
+        boolean hasLastNameViolation = violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("lastName"));
+        boolean hasPasswordViolation = violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("passwordHash"));
+
+        assertTrue(hasFirstNameViolation, "Should trigger firstName violation");
+        assertTrue(hasLastNameViolation, "Should trigger lastName violation");
+        assertTrue(hasPasswordViolation, "Should trigger passwordHash violation");
+    }
+
+    @Test
+    void register_WithInvalidEmail_FailsValidation() {
+        User user = User.register("Jane", "Doe", "not-an-email", "secure_hash");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertEquals(1, violations.size(), "Should trigger exactly one violation");
+        assertEquals("email", violations.iterator().next().getPropertyPath().toString(), "Violation must be on the email property");
+    }
 }
