@@ -1,6 +1,5 @@
 package com.borrowly.model.item;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -8,21 +7,18 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
 @Table(name = "categories")
 @Entity
 @Getter
-@Builder(access = AccessLevel.PACKAGE)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class Category {
     @Id
     @EqualsAndHashCode.Include
-    @Builder.Default
     private UUID id = UUID.randomUUID();
 
     @Setter
@@ -35,4 +31,13 @@ public class Category {
     @Size(max = 500)
     @Column(length = 500)
     private String description;
+
+    /**
+     * Custom Constructor for the Builder.
+     */
+    @Builder(access = AccessLevel.PACKAGE)
+    public Category(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
 }
