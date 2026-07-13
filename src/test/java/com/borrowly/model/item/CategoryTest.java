@@ -1,4 +1,4 @@
 package com.borrowly.model.item;
 
-public class ItemCategoryTest {
+public class CategoryTest {
 }
