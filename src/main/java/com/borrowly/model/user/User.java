@@ -25,8 +25,8 @@ import static jakarta.persistence.EnumType.STRING;
 public class User {
 
     @jakarta.persistence.Id
-    @UuidGenerator
     @EqualsAndHashCode.Include
+    @Builder.Default
     private UUID id = UUID.randomUUID();
 
     @NotBlank
