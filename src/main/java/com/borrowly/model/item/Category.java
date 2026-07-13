@@ -15,7 +15,7 @@ import java.util.UUID;
 @Table(name = "categories")
 @Entity
 @Getter
-@Builder
+@Builder(access = AccessLevel.PACKAGE)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
