@@ -177,6 +177,27 @@ docker compose up -d db
 ./mvnw test
 ```
 
+### Development workflow: rebuilds vs. hot reload
+
+`docker compose up --build` is a one-shot: it rebuilds the image from the current
+source and then starts it. It is **not** hot reload. Once the container is
+running it holds a fixed jar, and editing a source file on your machine does not
+change it — the source was compiled into the jar at build time and nothing on the
+host is mounted into the container. To pick up a code change you run `--build`
+again.
+
+For day-to-day development, don't run the app in Docker. Run only the database in
+Docker and the app on your host, so the IDE compiles on save:
+
+```bash
+docker compose up -d db      # Postgres in a container
+./mvnw spring-boot:run       # app on your machine (dev profile -> localhost:5432)
+```
+
+
+Use the full `docker compose up --build` to verify the production-like container
+setup — for example before opening a pull request — not as your editing loop.
+
 ## Deployment (production)
 
 Deployment runs on a **self-hosted GitHub Actions runner** installed on the
