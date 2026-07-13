@@ -14,23 +14,24 @@ import java.util.UUID;
 
 @Table(name = "categories")
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
-@Setter
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class Category {
     @Id
     @EqualsAndHashCode.Include
     @Builder.Default
     private UUID id = UUID.randomUUID();
 
+    @Setter
     @NotBlank
     @Size(max = 100)
     @Column(unique = true, nullable = false, length = 100)
     private String name;
 
+    @Setter
     @Size(max = 500)
     @Column(length = 500)
     private String description;
