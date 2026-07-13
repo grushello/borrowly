@@ -82,22 +82,16 @@ class UserTest {
     }
 
     @Test
-    void prePersist_PopulatesDefaultsWhenNull() {
-        // Build user with null values for role, balance, and enabled
+    void builder_PopulatesDefaultsAutomatically() {
+        // Build user without specifying role, balance, or enabled status
         User user = User.builder()
                 .firstName("John")
                 .build();
 
-        assertNull(user.getRole());
-        assertNull(user.getCurrentBalance());
-        assertNull(user.getEnabled());
-
-        // Manually trigger the @PrePersist lifecycle method
-        user.onCreate();
-
-        assertEquals(UserRole.USER, user.getRole());
-        assertEquals(BigDecimal.ZERO, user.getCurrentBalance());
-        assertTrue(user.getEnabled());
+        // Verify the @Builder.Default annotations populated the fields immediately
+        assertEquals(UserRole.USER, user.getRole(), "Role should default to USER");
+        assertEquals(BigDecimal.ZERO, user.getCurrentBalance(), "Balance should default to ZERO");
+        assertTrue(user.getEnabled(), "Enabled should default to true");
     }
 
     @Test

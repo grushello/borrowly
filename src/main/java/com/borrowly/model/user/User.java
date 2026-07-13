@@ -15,10 +15,9 @@ import static jakarta.persistence.EnumType.STRING;
 
 @Entity
 @Table(name = "users")
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Getter
-@Setter
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(exclude = {"passwordHash"})
@@ -29,37 +28,46 @@ public class User {
     @Builder.Default
     private UUID id = UUID.randomUUID();
 
+    @Setter
     @NotBlank
     @Size(max = 100)
     private String firstName;
 
+    @Setter
     @NotBlank
     @Size(max = 100)
     private String lastName;
 
+    @Setter
     @NotBlank
     @Email
     @Column(unique=true, nullable = false)
     private String email;
 
+    @Setter
     @NotBlank
     private String passwordHash;
 
+    @Setter
     @Size(max = 30)
     @Pattern(regexp = "^\\+?[0-9\\-\\s()]{7,20}$")
     private String phone;
 
     @NotNull
     @Enumerated(STRING)
-    private UserRole role;
+    @Builder.Default
+    private UserRole role = UserRole.USER;
 
     @NotNull
     @DecimalMin("0.00")
     @Column(precision=14, scale=2)
-    private BigDecimal currentBalance;
+    @Builder.Default
+    private BigDecimal currentBalance = BigDecimal.ZERO;
 
+    @Setter
     @NotNull
-    private Boolean enabled;
+    @Builder.Default
+    private Boolean enabled = true;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -67,16 +75,4 @@ public class User {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @PrePersist
-    protected void onCreate() {
-        if (this.role == null) {
-            this.role = UserRole.USER;
-        }
-        if (this.currentBalance == null) {
-            this.currentBalance = BigDecimal.ZERO;
-        }
-        if (this.enabled == null) {
-            this.enabled = true;
-        }
-    }
 }
