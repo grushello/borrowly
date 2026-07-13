@@ -37,11 +37,13 @@ public class User {
     @Size(max = 100)
     private String lastName;
 
-    @Setter
     @NotBlank
     @Email
     @Column(unique=true, nullable = false)
     private String email;
+    public void setEmail(String email) {
+        this.email = normalizeEmail(email);
+    }
 
     @NotBlank
     private String passwordHash;
@@ -78,8 +80,12 @@ public class User {
         return User.builder()
                 .firstName(firstName)
                 .lastName(lastName)
-                .email(email)
+                .email(normalizeEmail(email))
                 .passwordHash(passwordHash)
                 .build();
+    }
+
+    private static String normalizeEmail(String email) {
+        return email == null ? null : email.trim().toLowerCase();
     }
 }
