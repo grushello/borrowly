@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Builder
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Table(name = "item_images")
@@ -41,6 +41,7 @@ public class ItemImage {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     private Item item;
 }
