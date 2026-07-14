@@ -19,7 +19,7 @@ import java.util.UUID;
 public class Category {
     @Id
     @EqualsAndHashCode.Include
-    private UUID id = UUID.randomUUID();
+    private UUID id;
 
     @Setter
     @NotBlank
@@ -37,6 +37,7 @@ public class Category {
      */
     @Builder(access = AccessLevel.PACKAGE)
     public Category(String name, String description) {
+        this.id = UUID.randomUUID();
         this.name = name;
         this.description = description;
     }

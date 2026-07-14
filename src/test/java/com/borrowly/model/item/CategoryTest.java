@@ -73,6 +73,21 @@ class CategoryTest {
     }
 
     @Test
+    void validation_RejectsNullName() {
+        Category category = Category.builder()
+                .name(null)
+                .description("Valid description")
+                .build();
+
+        Set<ConstraintViolation<Category>> violations = validator.validate(category);
+
+        assertEquals(1, violations.size(), "Should trigger exactly one violation");
+
+        ConstraintViolation<Category> violation = violations.iterator().next();
+        assertEquals("name", violation.getPropertyPath().toString(), "Violation must be on the name property");
+    }
+
+    @Test
     void validation_RejectsOverlyLongName() {
         String overlyLongName = "a".repeat(101); // Exceeds @Size(max = 100)
 
