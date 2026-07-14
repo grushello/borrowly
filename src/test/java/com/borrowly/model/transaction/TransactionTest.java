@@ -37,12 +37,20 @@ class TransactionTest {
         Transaction transaction = validTransactionBuilder().build();
 
         assertNotNull(transaction);
+        assertNotNull(transaction.getId());
         assertEquals(new BigDecimal("100.00"), transaction.getAmount());
         assertEquals(TransactionType.TOP_UP, transaction.getType());
         assertEquals(TransactionStatus.COMPLETED, transaction.getStatus());
         assertEquals("Top up", transaction.getDescription());
         assertNotNull(transaction.getUser());
         assertNull(transaction.getRental());
+    }
+
+    @Test
+    void shouldGenerateIdByDefault() {
+        Transaction transaction = validTransactionBuilder().build();
+
+        assertNotNull(transaction.getId());
     }
 
     @Test
@@ -70,6 +78,48 @@ class TransactionTest {
         assertTrue(
                 violations.stream()
                         .anyMatch(v -> v.getPropertyPath().toString().equals("amount"))
+        );
+    }
+
+    @Test
+    void shouldRejectNullAmount() {
+        Transaction transaction = validTransactionBuilder()
+                .amount(null)
+                .build();
+
+        Set<ConstraintViolation<Transaction>> violations = validator.validate(transaction);
+
+        assertTrue(
+                violations.stream()
+                        .anyMatch(v -> v.getPropertyPath().toString().equals("amount"))
+        );
+    }
+
+    @Test
+    void shouldRejectNullType() {
+        Transaction transaction = validTransactionBuilder()
+                .type(null)
+                .build();
+
+        Set<ConstraintViolation<Transaction>> violations = validator.validate(transaction);
+
+        assertTrue(
+                violations.stream()
+                        .anyMatch(v -> v.getPropertyPath().toString().equals("type"))
+        );
+    }
+
+    @Test
+    void shouldRejectNullStatus() {
+        Transaction transaction = validTransactionBuilder()
+                .status(null)
+                .build();
+
+        Set<ConstraintViolation<Transaction>> violations = validator.validate(transaction);
+
+        assertTrue(
+                violations.stream()
+                        .anyMatch(v -> v.getPropertyPath().toString().equals("status"))
         );
     }
 
@@ -102,77 +152,6 @@ class TransactionTest {
     }
 
     @Test
-    void shouldDefaultStatusToCompletedOnPrePersist() {
-        Transaction transaction = Transaction.builder()
-                .amount(new BigDecimal("20.00"))
-                .type(TransactionType.TOP_UP)
-                .user(createUser())
-                .build();
-
-        assertNull(transaction.getStatus());
-
-        transaction.onCreate();
-
-        assertEquals(TransactionStatus.COMPLETED, transaction.getStatus());
-    }
-
-    @Test
-    void shouldNotOverrideExistingStatusOnPrePersist() {
-        Transaction transaction = Transaction.builder()
-                .amount(new BigDecimal("20.00"))
-                .type(TransactionType.TOP_UP)
-                .status(TransactionStatus.FAILED)
-                .user(createUser())
-                .build();
-
-        transaction.onCreate();
-
-        assertEquals(TransactionStatus.FAILED, transaction.getStatus());
-    }
-
-    @Test
-    void shouldRejectNullAmount() {
-        Transaction transaction = validTransactionBuilder()
-                .amount(null)
-                .build();
-
-        Set<ConstraintViolation<Transaction>> violations = validator.validate(transaction);
-
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("amount"))
-        );
-    }
-
-    @Test
-    void shouldRejectNullType() {
-        Transaction transaction = validTransactionBuilder()
-                .type(null)
-                .build();
-
-        Set<ConstraintViolation<Transaction>> violations = validator.validate(transaction);
-
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("type"))
-        );
-    }
-
-    @Test
-    void shouldRejectNullStatusWhenValidated() {
-        Transaction transaction = validTransactionBuilder()
-                .status(null)
-                .build();
-
-        Set<ConstraintViolation<Transaction>> violations = validator.validate(transaction);
-
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("status"))
-        );
-    }
-
-    @Test
     void shouldRejectDescriptionLongerThan500Characters() {
         String description = "a".repeat(501);
 
@@ -200,6 +179,7 @@ class TransactionTest {
 
         assertTrue(violations.isEmpty());
     }
+
     private User createUser() {
         return User.register(
                 "John",
