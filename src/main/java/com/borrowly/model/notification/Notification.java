@@ -32,6 +32,7 @@ public class Notification {
 
     @NotBlank
     @Size(max = 500)
+    @Column(length = 500, nullable = false)
     private String message;
 
     @NotNull
