@@ -65,10 +65,7 @@ class UserMapperTest {
         UpdateUserRequest request = new UpdateUserRequest("Luigi", null, "+39 999999999");
 
         mapper.updateEntity(user, request);
-
-        // Regression guard: UpdateUserRequest has no way to reach these fields today,
-        // but if one is ever added without a matching @Mapping(..., ignore = true),
-        // this test should catch it.
+        
         assertEquals(originalId, user.getId());
         assertEquals("TOP_SECRET_HASH", user.getPasswordHash());
         assertEquals(UserRole.USER, user.getRole());
