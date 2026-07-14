@@ -26,6 +26,7 @@ public class ItemImage {
 
     @NotNull
     @Column(columnDefinition = "BYTEA", nullable = false)
+    @Size(min = 1)
     private byte[] imageData;
 
     @NotBlank
