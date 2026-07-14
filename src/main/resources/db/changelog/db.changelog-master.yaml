@@ -17,3 +17,5 @@ databaseChangeLog:
       file: db/changelog/changes/004-create-rental-requests.yaml
   - include:
       file: db/changelog/changes/005-create-rentals.yaml
+  - include:
+      file: db/changelog/changes/006-create-transactions.yaml
