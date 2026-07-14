@@ -30,7 +30,7 @@ class NotificationTest {
         UUID id = UUID.randomUUID();
         User recipient = createRecipient();
         Rental rental = Rental.builder().build();
-        Transaction transaction = new Transaction();
+        Transaction transaction = Transaction.builder().build();
 
         Notification notification = Notification.builder()
                 .id(id)
@@ -117,7 +117,7 @@ class NotificationTest {
     void validation_AllowsTransactionOnlySet() {
         Notification notification = createValidNotificationBuilder()
                 .rental(null)
-                .transaction(new Transaction())
+                .transaction(Transaction.builder().build())
                 .build();
 
         Set<ConstraintViolation<Notification>> violations = validator.validate(notification);
