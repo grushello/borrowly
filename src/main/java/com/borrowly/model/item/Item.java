@@ -17,7 +17,7 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@ToString
+@ToString (exclude = {"category", "owner"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Item {
 
@@ -25,11 +25,6 @@ public class Item {
     @EqualsAndHashCode.Include
     @Builder.Default
     private UUID id = UUID.randomUUID();
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
 
     @Setter
     @NotBlank
@@ -82,4 +77,14 @@ public class Item {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
 }

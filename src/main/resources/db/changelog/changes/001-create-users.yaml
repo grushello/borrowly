@@ -1,0 +1,76 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-users
+      author: edgaras
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_users
+              - column:
+                  name: first_name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_users_email
+              - column:
+                  name: password_hash
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone
+                  type: varchar(30)
+              - column:
+                  name: role
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: current_balance
+                  type: numeric(14, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: >-
+              ALTER TABLE users
+                ADD CONSTRAINT ck_users_role CHECK (role IN ('USER', 'ADMIN')),
+                ADD CONSTRAINT ck_users_current_balance_non_negative CHECK (current_balance >= 0),
+                ADD CONSTRAINT ck_users_first_name_not_blank CHECK (btrim(first_name) <> ''),
+                ADD CONSTRAINT ck_users_last_name_not_blank CHECK (btrim(last_name) <> ''),
+                ADD CONSTRAINT ck_users_email_not_blank CHECK (btrim(email) <> ''),
+                ADD CONSTRAINT ck_users_password_hash_not_blank CHECK (btrim(password_hash) <> '')
+      rollback:
+        - dropTable:
+            tableName: users

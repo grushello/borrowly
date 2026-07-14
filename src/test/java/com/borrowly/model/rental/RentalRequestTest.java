@@ -312,11 +312,11 @@ class RentalRequestTest {
         }
 
         @Test
-        @DisplayName("rejects endDate equal to startDate — a request must span at least one night")
-        void rejectsSameDay() {
+        @DisplayName("accepts endDate equal to startDate — an item can be rented for a single day")
+        void acceptsSameDay() {
             RentalRequest request = validRequest().startDate(START).endDate(START).build();
-            assertThat(request.isDateRangeValid()).isFalse();
-            assertViolates(request, "dateRangeValid");
+            assertThat(request.isDateRangeValid()).isTrue();
+            assertThat(validate(request)).isEmpty();
         }
 
         @Test
