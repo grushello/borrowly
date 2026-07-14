@@ -25,7 +25,6 @@ import java.util.UUID;
 public class Transaction {
 
     @Id
-    @GeneratedValue
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private UUID id = UUID.randomUUID();
