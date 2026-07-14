@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class UserMapperTest {
@@ -30,8 +31,7 @@ class UserMapperTest {
         assertEquals("Mario", response.firstName());
         assertEquals("Rossi", response.lastName());
         assertEquals("mario@example.com", response.email());
-        assertEquals(new BigDecimal("0"), response.currentBalance());
-    }
+        assertThat(response.currentBalance()).isEqualByComparingTo(BigDecimal.ZERO);    }
 
     @Test
     void toSummary_StripsExtraFields(){
@@ -69,7 +69,7 @@ class UserMapperTest {
         assertEquals(originalId, user.getId());
         assertEquals("TOP_SECRET_HASH", user.getPasswordHash());
         assertEquals(UserRole.USER, user.getRole());
-        assertEquals(new BigDecimal("0"), user.getCurrentBalance());
+        assertThat(user.getCurrentBalance()).isEqualByComparingTo(BigDecimal.ZERO);
         assertEquals(Boolean.TRUE, user.getEnabled());
         assertEquals("mario@example.com", user.getEmail());
     }
