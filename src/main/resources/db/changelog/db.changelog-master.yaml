@@ -21,3 +21,7 @@ databaseChangeLog:
       file: db/changelog/changes/006-create-transactions.yaml
   - include:
       file: db/changelog/changes/007-create-item-images.yaml
+  - include:
+      file: db/changelog/changes/008-create-favorites.yaml
+  - include:
+      file: db/changelog/changes/009-create-reviews.yaml
