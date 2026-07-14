@@ -19,3 +19,5 @@ databaseChangeLog:
       file: db/changelog/changes/005-create-rentals.yaml
   - include:
       file: db/changelog/changes/006-create-transactions.yaml
+  - include:
+      file: db/changelog/changes/007-create-item-images.yaml
