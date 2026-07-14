@@ -89,8 +89,8 @@ public class RentalRequest {
         }
     }
 
-    @AssertTrue(message = "End date must be after start date")
+    @AssertTrue(message = "End date must be on or after start date")
     public boolean isDateRangeValid() {
-        return startDate != null && endDate != null && endDate.isAfter(startDate);
+        return startDate != null && endDate != null && !endDate.isBefore(startDate);
     }
 }
