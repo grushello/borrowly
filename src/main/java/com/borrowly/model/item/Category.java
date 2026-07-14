@@ -35,7 +35,7 @@ public class Category {
     /**
      * Custom Constructor for the Builder.
      */
-    @Builder(access = AccessLevel.PACKAGE)
+    @Builder
     public Category(String name, String description) {
         this.id = UUID.randomUUID();
         this.name = name;
