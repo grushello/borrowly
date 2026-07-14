@@ -20,7 +20,7 @@ import static jakarta.persistence.EnumType.STRING;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Getter
-@Builder(access = AccessLevel.PACKAGE)
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(exclude = {"recipient", "rental", "transaction"})
 public class Notification {
