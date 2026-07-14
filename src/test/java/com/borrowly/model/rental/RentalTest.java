@@ -337,6 +337,52 @@ class RentalTest {
     }
 
     @Nested
+    @DisplayName("actual return date")
+    class ActualReturnDateTests {
+
+        @Test
+        @DisplayName("accepts a null actualReturnDate — the item is still out")
+        void acceptsNotYetReturned() {
+            Rental rental = validRental().build();
+            assertThat(rental.getActualReturnDate()).isNull();
+            assertThat(rental.isActualReturnDateValid()).isTrue();
+            assertThat(validate(rental)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("accepts a return on the start date")
+        void acceptsReturnOnStartDate() {
+            Rental rental = validRental().actualReturnDate(START).build();
+            assertThat(rental.isActualReturnDateValid()).isTrue();
+            assertThat(validate(rental)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("accepts an early return — before the agreed end date")
+        void acceptsEarlyReturn() {
+            Rental rental = validRental().actualReturnDate(START.plusDays(1)).build();
+            assertThat(rental.isActualReturnDateValid()).isTrue();
+            assertThat(validate(rental)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("accepts a late return — that is what finePerDay is for")
+        void acceptsLateReturn() {
+            Rental rental = validRental().actualReturnDate(END.plusDays(3)).build();
+            assertThat(rental.isActualReturnDateValid()).isTrue();
+            assertThat(validate(rental)).isEmpty();
+        }
+
+        @Test
+        @DisplayName("rejects a return before the start date")
+        void rejectsReturnBeforeStartDate() {
+            Rental rental = validRental().actualReturnDate(START.minusDays(1)).build();
+            assertThat(rental.isActualReturnDateValid()).isFalse();
+            assertViolates(rental, "actualReturnDateValid");
+        }
+    }
+
+    @Nested
     @DisplayName("relations")
     class RelationTests {
 
