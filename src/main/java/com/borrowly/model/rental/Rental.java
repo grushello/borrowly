@@ -114,4 +114,12 @@ public class Rental {
         }
         return !endDate.isBefore(startDate);
     }
+
+    @AssertTrue(message = "Actual return date must be on or after start date")
+    public boolean isActualReturnDateValid() {
+        if (actualReturnDate == null || startDate == null) {
+            return true;
+        }
+        return !actualReturnDate.isBefore(startDate);
+    }
 }
