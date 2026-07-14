@@ -1,6 +1,7 @@
 package com.borrowly.repository.rental;
 
 import com.borrowly.model.item.Item;
+import com.borrowly.model.item.ItemCondition;
 import com.borrowly.model.rental.Rental;
 import com.borrowly.model.rental.RentalStatus;
 import com.borrowly.model.user.User;
@@ -23,7 +24,6 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,22 +59,20 @@ class RentalRepositoryTest {
     }
 
     private User persistUser(String email) {
-        User user = new User();
-        user.setEmail(email);
-        user.setPasswordHash("hash");
-        user.setFirstName("Test");
-        user.setLastName("User");
+        User user = User.register("Test", "User", email, "hash");
         entityManager.persist(user);
         return user;
     }
 
     private Item persistItem(User itemOwner, String title) {
-        Item created = new Item();
-        created.setOwner(itemOwner);
-        created.setTitle(title);
-        created.setPricePerDay(new BigDecimal("5.00"));
-        created.setDepositAmount(new BigDecimal("50.00"));
-        created.setFinePerDay(new BigDecimal("2.50"));
+        Item created = Item.builder()
+                .owner(itemOwner)
+                .title(title)
+                .pricePerDay(new BigDecimal("5.00"))
+                .depositAmount(new BigDecimal("50.00"))
+                .finePerDay(new BigDecimal("2.50"))
+                .condition(ItemCondition.GOOD)
+                .build();
         entityManager.persist(created);
         return created;
     }
