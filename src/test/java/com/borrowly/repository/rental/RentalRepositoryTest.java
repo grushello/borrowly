@@ -41,6 +41,14 @@ class RentalRepositoryTest {
     private static final LocalDate JUL_10 = LocalDate.of(2026, Month.JULY, 10);
     private static final LocalDate JUL_15 = LocalDate.of(2026, Month.JULY, 15);
 
+    // Two more windows that do not overlap JUL_10-JUL_15. An item can only be out on one
+    // live rental at a time (ex_rentals_no_overlap), so a second rental of the same item
+    // has to sit in its own window.
+    private static final LocalDate JUL_01 = LocalDate.of(2026, Month.JULY, 1);
+    private static final LocalDate JUL_05 = LocalDate.of(2026, Month.JULY, 5);
+    private static final LocalDate JUL_20 = LocalDate.of(2026, Month.JULY, 20);
+    private static final LocalDate JUL_25 = LocalDate.of(2026, Month.JULY, 25);
+
     @Autowired
     private RentalRepository rentalRepository;
 
@@ -133,7 +141,7 @@ class RentalRepositoryTest {
         @DisplayName("returns only this borrower's rentals")
         void filtersByBorrower() {
             persistRental(item, borrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
-            persistRental(item, otherBorrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
+            persistRental(item, otherBorrower, JUL_20, JUL_25, RentalStatus.ACTIVE);
             flushAndClear();
 
             Page<Rental> page = rentalRepository.findByBorrower_Id(borrower.getId(), firstPage);
@@ -161,7 +169,8 @@ class RentalRepositoryTest {
         @DisplayName("keeps only rentals whose status is in the given set")
         void filtersByStatus() {
             persistRental(item, borrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
-            persistRental(item, borrower, JUL_10, JUL_15, RentalStatus.OVERDUE);
+            persistRental(item, borrower, JUL_20, JUL_25, RentalStatus.OVERDUE);
+            // RETURNED may share the ACTIVE window - a finished rental frees the item.
             persistRental(item, borrower, JUL_10, JUL_15, RentalStatus.RETURNED);
             flushAndClear();
 
@@ -277,7 +286,8 @@ class RentalRepositoryTest {
         @DisplayName("returns a List so the scheduled job can walk the full result set")
         void returnsList() {
             persistRental(item, borrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
-            persistRental(item, otherBorrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
+            // Earlier window, not the later one: both rentals must end before the cutoff.
+            persistRental(item, otherBorrower, JUL_01, JUL_05, RentalStatus.ACTIVE);
             flushAndClear();
 
             List<Rental> due = rentalRepository.findByEndDateBeforeAndStatus(
@@ -402,7 +412,7 @@ class RentalRepositoryTest {
             Item second = persistItem(owner, "Circular Saw");
 
             persistRental(item, borrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
-            persistRental(item, otherBorrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
+            persistRental(item, otherBorrower, JUL_20, JUL_25, RentalStatus.ACTIVE);
             persistRental(second, borrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
             flushAndClear();
 
@@ -430,7 +440,7 @@ class RentalRepositoryTest {
         void queryCountIsIndependentOfRowCount() {
             Item second = persistItem(owner, "Circular Saw");
             persistRental(item, borrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
-            persistRental(item, otherBorrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
+            persistRental(item, otherBorrower, JUL_20, JUL_25, RentalStatus.ACTIVE);
             persistRental(second, borrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
             flushAndClear();
 
@@ -438,8 +448,8 @@ class RentalRepositoryTest {
 
             Item third = persistItem(owner, "Extra Item");
             persistRental(third, borrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
-            persistRental(third, otherBorrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
-            persistRental(third, borrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
+            persistRental(third, otherBorrower, JUL_20, JUL_25, RentalStatus.ACTIVE);
+            persistRental(third, borrower, JUL_01, JUL_05, RentalStatus.ACTIVE);
             flushAndClear();
 
             long grown = countQueriesForOwnerFetch();
