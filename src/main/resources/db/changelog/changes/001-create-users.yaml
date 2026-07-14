@@ -66,7 +66,11 @@ databaseChangeLog:
             sql: >-
               ALTER TABLE users
                 ADD CONSTRAINT ck_users_role CHECK (role IN ('USER', 'ADMIN')),
-                ADD CONSTRAINT ck_users_current_balance_non_negative CHECK (current_balance >= 0)
+                ADD CONSTRAINT ck_users_current_balance_non_negative CHECK (current_balance >= 0),
+                ADD CONSTRAINT ck_users_first_name_not_blank CHECK (btrim(first_name) <> ''),
+                ADD CONSTRAINT ck_users_last_name_not_blank CHECK (btrim(last_name) <> ''),
+                ADD CONSTRAINT ck_users_email_not_blank CHECK (btrim(email) <> ''),
+                ADD CONSTRAINT ck_users_password_hash_not_blank CHECK (btrim(password_hash) <> '')
       rollback:
         - dropTable:
             tableName: users
