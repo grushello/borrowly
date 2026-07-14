@@ -1,4 +1,10 @@
 package com.borrowly.model.rental;
 
-public class RentalStatus {
+public enum RentalStatus {
+
+    ACTIVE,
+
+    RETURNED,
+
+    OVERDUE
 }

@@ -5,7 +5,7 @@ public enum TransactionType {
     WITHDRAWAL,
     RENT_PAYMENT,
     RENT_PAYOUT,
-    DEPOSIT_HOLD,
+    DEPOSIT_HELD,
     DEPOSIT_RETURN,
     REFUND,
     FINE
