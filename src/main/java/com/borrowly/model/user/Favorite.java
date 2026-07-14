@@ -10,8 +10,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "favorites",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "item_id"}))
+@Table(name = "favorites")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Getter
