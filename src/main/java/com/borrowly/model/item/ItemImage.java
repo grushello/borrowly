@@ -42,9 +42,4 @@ public class ItemImage {
     @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime createdAt;
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id", nullable = false)
-    private Item item;
 }

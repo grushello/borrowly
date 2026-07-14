@@ -40,13 +40,11 @@ class ItemImageTest {
                 .imageData(mockImageData)
                 .fileName("power-drill.jpg")
                 .contentType("image/jpeg")
-                .item(mockItem)
                 .build();
 
         assertArrayEquals(mockImageData, image.getImageData());
         assertEquals("power-drill.jpg", image.getFileName());
         assertEquals("image/jpeg", image.getContentType());
-        assertEquals(mockItem, image.getItem());
 
         Set<ConstraintViolation<ItemImage>> violations = validator.validate(image);
         assertTrue(violations.isEmpty(), "A fully populated ItemImage should pass validation");
@@ -74,18 +72,6 @@ class ItemImageTest {
 
         assertEquals(1, violations.size(), "Should trigger exactly one violation");
         assertEquals("contentType", violations.iterator().next().getPropertyPath().toString());
-    }
-
-    @Test
-    void validation_RejectsNullItem() {
-        ItemImage image = createValidItemImageBuilder()
-                .item(null) // Invalid: @NotNull (Requires the annotation added to the entity)
-                .build();
-
-        Set<ConstraintViolation<ItemImage>> violations = validator.validate(image);
-
-        assertEquals(1, violations.size(), "Should trigger exactly one violation");
-        assertEquals("item", violations.iterator().next().getPropertyPath().toString());
     }
 
     @Test
@@ -143,7 +129,6 @@ class ItemImageTest {
         return ItemImage.builder()
                 .imageData(new byte[]{1, 2, 3})
                 .fileName("valid-image.png")
-                .contentType("image/png")
-                .item(new Item()); // Assuming a no-args Item constructor exists
+                .contentType("image/png");
     }
 }
