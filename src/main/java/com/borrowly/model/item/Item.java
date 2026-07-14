@@ -95,10 +95,6 @@ public class Item {
     @Builder.Default
     private List<ItemImage> images = new ArrayList<>();
 
-    /**
-     * Keeps both sides of the relation in sync. Setting the back-reference by hand is
-     * what makes the FK land on item_images; forgetting it leaves the image orphaned.
-     */
     public void addImage(ItemImage image) {
         images.add(image);
         image.setItem(this);
