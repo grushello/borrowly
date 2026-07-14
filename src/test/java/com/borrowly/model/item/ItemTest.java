@@ -1,5 +1,6 @@
 package com.borrowly.model.item;
 
+import com.borrowly.model.user.User;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -17,6 +18,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class ItemTest {
 
     private Validator validator;
+    private Category category;
+    private User owner;
 
     @BeforeEach
     void setUp() {
@@ -24,6 +27,9 @@ class ItemTest {
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             validator = factory.getValidator();
         }
+
+        category = Category.builder().name("Power tools").build();
+        owner = User.register("Ola", "Owner", "owner@borrowly.test", "hash");
     }
 
     @Test
@@ -71,9 +77,10 @@ class ItemTest {
                 .title("Cordless drill")
                 .build();
 
-        // @NotNull fires on all four; status is missing from the set because its default already ran
+        // @NotNull fires on every required field, relations included; status is missing
+        // from the set because its default already ran
         assertEquals(
-                Set.of("pricePerDay", "depositAmount", "finePerDay", "condition"),
+                Set.of("pricePerDay", "depositAmount", "finePerDay", "condition", "category", "owner"),
                 violatedFields(item));
     }
 
@@ -152,7 +159,9 @@ class ItemTest {
                 .pricePerDay(new BigDecimal("5.00"))
                 .depositAmount(new BigDecimal("50.00"))
                 .finePerDay(new BigDecimal("2.50"))
-                .condition(ItemCondition.GOOD);
+                .condition(ItemCondition.GOOD)
+                .category(category)
+                .owner(owner);
     }
 
     private Set<String> violatedFields(Item item) {
