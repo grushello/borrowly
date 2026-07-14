@@ -9,6 +9,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Entity
@@ -17,7 +20,7 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@ToString (exclude = {"category", "owner"})
+@ToString (exclude = {"category", "owner", "images"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Item {
 
@@ -87,4 +90,21 @@ public class Item {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ItemImage> images = new ArrayList<>();
+
+    /**
+     * Keeps both sides of the relation in sync. Setting the back-reference by hand is
+     * what makes the FK land on item_images; forgetting it leaves the image orphaned.
+     */
+    public void addImage(ItemImage image) {
+        images.add(image);
+        image.setItem(this);
+    }
+
+    public Optional<ItemImage> getPrimaryImage() {
+        return images.stream().filter(ItemImage::isPrimary).findFirst();
+    }
 }

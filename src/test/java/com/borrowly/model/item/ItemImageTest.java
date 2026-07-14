@@ -1,5 +1,6 @@
 package com.borrowly.model.item;
 
+import com.borrowly.model.user.User;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,21 +35,68 @@ class ItemImageTest {
 
     @Test
     void builder_HappyPath_CreatesValidItemImage() {
-        Item mockItem = new Item(); // Assuming Item has a no-args constructor
+        Item item = validItem();
         byte[] mockImageData = new byte[]{1, 2, 3, 4};
 
         ItemImage image = ItemImage.builder()
                 .imageData(mockImageData)
                 .fileName("power-drill.jpg")
                 .contentType("image/jpeg")
+                .item(item)
                 .build();
 
+        assertNotNull(image.getId(), "The builder should generate an id");
         assertArrayEquals(mockImageData, image.getImageData());
         assertEquals("power-drill.jpg", image.getFileName());
         assertEquals("image/jpeg", image.getContentType());
+        assertEquals(item, image.getItem());
+        assertFalse(image.isPrimary(), "An image is not primary unless it is said to be");
 
         Set<ConstraintViolation<ItemImage>> violations = validator.validate(image);
         assertTrue(violations.isEmpty(), "A fully populated ItemImage should pass validation");
+    }
+
+    @Test
+    void validation_RejectsMissingItem() {
+        ItemImage image = createValidItemImageBuilder()
+                .item(null)
+                .build();
+
+        Set<ConstraintViolation<ItemImage>> violations = validator.validate(image);
+
+        assertEquals(1, violations.size(), "Should trigger exactly one violation");
+        assertEquals("item", violations.iterator().next().getPropertyPath().toString());
+    }
+
+    @Test
+    void addImage_LinksBothSidesOfTheRelation() {
+        Item item = validItem();
+        ItemImage image = createValidItemImageBuilder().item(null).build();
+
+        item.addImage(image);
+
+        assertEquals(item, image.getItem(), "addImage must set the back-reference, or the FK is never written");
+        assertTrue(item.getImages().contains(image));
+    }
+
+    @Test
+    void getPrimaryImage_FindsTheFlaggedImage() {
+        Item item = validItem();
+        ItemImage plain = createValidItemImageBuilder().fileName("side.jpg").item(null).build();
+        ItemImage primary = createValidItemImageBuilder().fileName("front.jpg").primary(true).item(null).build();
+
+        item.addImage(plain);
+        item.addImage(primary);
+
+        assertEquals(primary, item.getPrimaryImage().orElseThrow());
+    }
+
+    @Test
+    void getPrimaryImage_IsEmptyWhenNothingIsFlagged() {
+        Item item = validItem();
+        item.addImage(createValidItemImageBuilder().item(null).build());
+
+        assertTrue(item.getPrimaryImage().isEmpty());
     }
 
     @Test
@@ -129,6 +178,19 @@ class ItemImageTest {
         return ItemImage.builder()
                 .imageData(new byte[]{1, 2, 3})
                 .fileName("valid-image.png")
-                .contentType("image/png");
+                .contentType("image/png")
+                .item(validItem());
+    }
+
+    private Item validItem() {
+        return Item.builder()
+                .title("Cordless drill")
+                .pricePerDay(new BigDecimal("5.00"))
+                .depositAmount(new BigDecimal("50.00"))
+                .finePerDay(new BigDecimal("2.50"))
+                .condition(ItemCondition.GOOD)
+                .category(Category.builder().name("Power tools").build())
+                .owner(User.register("Ola", "Owner", "owner@borrowly.test", "hash"))
+                .build();
     }
 }
