@@ -10,16 +10,16 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "item_images")
 @Entity
 @ToString(exclude = {"imageData"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class ItemImage {
     @Id
-    @Builder.Default
+    @Column(nullable = false)
+    @EqualsAndHashCode.Include
     private UUID id = UUID.randomUUID();
 
     @NotNull
@@ -28,14 +28,15 @@ public class ItemImage {
 
     @NotBlank
     @Size(max = 255)
+    @Column(length = 255)
     private String fileName;
 
     @NotBlank
     @Size(max = 100)
+    @Column(length = 100)
     private String contentType;
 
     @NotNull
-    @Builder.Default
     private Boolean primaryImage = false;
 
     @CreationTimestamp
@@ -43,5 +44,15 @@ public class ItemImage {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id", nullable = false)
     private Item item;
+
+    @Builder(access = AccessLevel.PACKAGE)
+    public ItemImage(byte[] imageData, String fileName, String contentType, Boolean primaryImage, Item item) {
+        this.imageData = imageData;
+        this.fileName = fileName;
+        this.contentType = contentType;
+        this.primaryImage = (primaryImage != null) && primaryImage;
+        this.item = item;
+    }
 }
