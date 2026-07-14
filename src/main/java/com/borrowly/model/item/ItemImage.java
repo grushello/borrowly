@@ -22,6 +22,7 @@ public class ItemImage {
     @Id
     @Column(nullable = false)
     @EqualsAndHashCode.Include
+    @Builder.Default
     private UUID id = UUID.randomUUID();
 
     @NotNull
