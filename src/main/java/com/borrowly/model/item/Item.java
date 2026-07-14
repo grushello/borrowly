@@ -1,5 +1,6 @@
 package com.borrowly.model.item;
 
+import com.borrowly.model.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -24,6 +25,11 @@ public class Item {
     @EqualsAndHashCode.Include
     @Builder.Default
     private UUID id = UUID.randomUUID();
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
 
     @Setter
     @NotBlank
