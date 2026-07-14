@@ -328,21 +328,25 @@ class RentalRequestTest {
         }
 
         @Test
-        @DisplayName("a null startDate fails both @NotNull and @AssertTrue")
+        @DisplayName("a null startDate is reported by @NotNull alone — the range check stays quiet")
         void rejectsNullStartDate() {
             RentalRequest request = validRequest().startDate(null).build();
-            assertThat(request.isDateRangeValid()).isFalse();
-            assertViolates(request, "startDate");
-            assertViolates(request, "dateRangeValid");
+
+            assertThat(request.isDateRangeValid()).isTrue();
+            assertThat(validate(request))
+                    .extracting(v -> v.getPropertyPath().toString())
+                    .containsExactly("startDate");
         }
 
         @Test
-        @DisplayName("a null endDate fails both @NotNull and @AssertTrue")
+        @DisplayName("a null endDate is reported by @NotNull alone — the range check stays quiet")
         void rejectsNullEndDate() {
             RentalRequest request = validRequest().endDate(null).build();
-            assertThat(request.isDateRangeValid()).isFalse();
-            assertViolates(request, "endDate");
-            assertViolates(request, "dateRangeValid");
+
+            assertThat(request.isDateRangeValid()).isTrue();
+            assertThat(validate(request))
+                    .extracting(v -> v.getPropertyPath().toString())
+                    .containsExactly("endDate");
         }
     }
 
