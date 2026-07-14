@@ -15,20 +15,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "transactions",
-        indexes = {
-                @Index(name = "idx_transaction_user", columnList = "user_id"),
-                @Index(name = "idx_transaction_rental", columnList = "rental_id"),
-                @Index(name = "idx_transaction_type", columnList = "type"),
-                @Index(name = "idx_transaction_status", columnList = "status"),
-                @Index(name = "idx_transaction_created_at", columnList = "created_at")
-        }
-)
+@Table(name = "transactions")
 @Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 @ToString(exclude = {"user", "rental"})
 @EqualsAndHashCode(of = "id")
 public class Transaction {
@@ -36,7 +27,8 @@ public class Transaction {
     @Id
     @GeneratedValue
     @Column(nullable = false, updatable = false)
-    private UUID id;
+    @Builder.Default
+    private UUID id = UUID.randomUUID();
 
     // Amount is always stored as a positive value; credit/debit is determined by TransactionType.
     @NotNull(message = "Amount is required")
@@ -70,11 +62,4 @@ public class Transaction {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rental_id")
     private Rental rental;
-
-    @PrePersist
-    void onCreate() {
-        if (status == null) {
-            status = TransactionStatus.COMPLETED;
-        }
-    }
 }
