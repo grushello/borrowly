@@ -1,5 +1,6 @@
 package com.borrowly.repository.rental;
 
+import com.borrowly.model.item.Category;
 import com.borrowly.model.item.Item;
 import com.borrowly.model.item.ItemCondition;
 import com.borrowly.model.rental.Rental;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +29,10 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// Liquibase owns the schema and the changesets are Postgres-specific, so there is no
+// embedded database to swap in; these run against the same Postgres the app uses.
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestPropertySource(properties = {
         "spring.jpa.properties.hibernate.generate_statistics=true"
 })
@@ -45,6 +50,7 @@ class RentalRepositoryTest {
     private User owner;
     private User borrower;
     private User otherBorrower;
+    private Category category;
     private Item item;
 
     private final Pageable firstPage = PageRequest.of(0, 10);
@@ -54,6 +60,7 @@ class RentalRepositoryTest {
         owner = persistUser("owner@borrowly.test");
         borrower = persistUser("borrower@borrowly.test");
         otherBorrower = persistUser("other@borrowly.test");
+        category = persistCategory("Power tools");
         item = persistItem(owner, "Bosch Drill");
         flushAndClear();
     }
@@ -64,9 +71,18 @@ class RentalRepositoryTest {
         return user;
     }
 
+    private Category persistCategory(String name) {
+        Category created = Category.builder()
+                .name(name)
+                .build();
+        entityManager.persist(created);
+        return created;
+    }
+
     private Item persistItem(User itemOwner, String title) {
         Item created = Item.builder()
                 .owner(itemOwner)
+                .category(category)
                 .title(title)
                 .pricePerDay(new BigDecimal("5.00"))
                 .depositAmount(new BigDecimal("50.00"))
