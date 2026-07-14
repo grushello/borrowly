@@ -1,0 +1,31 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-categories
+      author: edgaras
+      changes:
+        - createTable:
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_categories
+              - column:
+                  name: name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_categories_name
+              - column:
+                  name: description
+                  type: varchar(500)
+        - sql:
+            sql: >-
+              ALTER TABLE categories
+                ADD CONSTRAINT ck_categories_name_not_blank CHECK (btrim(name) <> '')
+      rollback:
+        - dropTable:
+            tableName: categories
