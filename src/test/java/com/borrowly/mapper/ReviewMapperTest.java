@@ -8,37 +8,53 @@ import com.borrowly.model.item.ItemStatus;
 import com.borrowly.model.rental.Rental;
 import com.borrowly.model.user.Review;
 import com.borrowly.model.user.User;
-import com.borrowly.support.AbstractPostgresTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-class ReviewMapperTest extends AbstractPostgresTest {
+class ReviewMapperTest {
 
-    @Autowired
     private ReviewMapper mapper;
 
-    @Test
-    void toResponse_MapsReviewWithNestedObjects() {
-        Category category = Category.builder()
-                .name("Electronics")
-                .description("Electronic devices")
-                .build();
+    private User reviewer;
+    private Item item;
+    private Rental rental;
 
-        User reviewer = User.register(
+    @BeforeEach
+    void setUp() {
+        UserMapper userMapper = new UserMapperImpl();
+        CategoryMapper categoryMapper = new CategoryMapperImpl();
+        ItemImageMapper itemImageMapper = new ItemImageMapperImpl();
+
+        ItemMapper itemMapper = new ItemMapperImpl();
+
+        ReflectionTestUtils.setField(itemMapper, "userMapper", userMapper);
+        ReflectionTestUtils.setField(itemMapper, "categoryMapper", categoryMapper);
+        ReflectionTestUtils.setField(itemMapper, "itemImageMapper", itemImageMapper);
+
+        mapper = new ReviewMapperImpl();
+
+        ReflectionTestUtils.setField(mapper, "itemMapper", itemMapper);
+        ReflectionTestUtils.setField(mapper, "userMapper", userMapper);
+
+        reviewer = User.register(dd
                 "Mario",
                 "Rossi",
                 "mario@example.com",
                 "HASH"
         );
 
-        Item item = Item.builder()
+        Category category = Category.builder()
+                .name("Electronics")
+                .description("Devices")
+                .build();
+
+        item = Item.builder()
                 .title("Camera")
                 .description("Mirrorless camera")
                 .pricePerDay(BigDecimal.valueOf(15))
@@ -50,7 +66,7 @@ class ReviewMapperTest extends AbstractPostgresTest {
                 .category(category)
                 .build();
 
-        Rental rental = Rental.builder()
+        rental = Rental.builder()
                 .item(item)
                 .borrower(reviewer)
                 .startDate(LocalDate.now())
@@ -61,7 +77,10 @@ class ReviewMapperTest extends AbstractPostgresTest {
                 .finePerDay(item.getFinePerDay())
                 .totalPrice(BigDecimal.valueOf(45))
                 .build();
+    }
 
+    @Test
+    void toResponse_MapsNestedObjects() {
         Review review = Review.builder()
                 .rating(5)
                 .comment("Great item!")
@@ -106,42 +125,9 @@ class ReviewMapperTest extends AbstractPostgresTest {
         assertThat(response.reviewer().lastName())
                 .isEqualTo("Rossi");
     }
+
     @Test
     void toResponse_AllowsNullComment() {
-        User reviewer = User.register(
-                "Mario",
-                "Rossi",
-                "mario@example.com",
-                "HASH"
-        );
-
-        Item item = Item.builder()
-                .title("Camera")
-                .description("Camera")
-                .pricePerDay(BigDecimal.TEN)
-                .depositAmount(BigDecimal.valueOf(100))
-                .finePerDay(BigDecimal.valueOf(10))
-                .condition(ItemCondition.GOOD)
-                .status(ItemStatus.ACTIVE)
-                .owner(reviewer)
-                .category(Category.builder()
-                        .name("Electronics")
-                        .description("Devices")
-                        .build())
-                .build();
-
-        Rental rental = Rental.builder()
-                .item(item)
-                .borrower(reviewer)
-                .startDate(LocalDate.now())
-                .endDate(LocalDate.now().plusDays(1))
-                .itemTitle(item.getTitle())
-                .dailyPrice(item.getPricePerDay())
-                .depositAmount(item.getDepositAmount())
-                .finePerDay(item.getFinePerDay())
-                .totalPrice(BigDecimal.TEN)
-                .build();
-
         Review review = Review.builder()
                 .rating(4)
                 .comment(null)
@@ -153,5 +139,11 @@ class ReviewMapperTest extends AbstractPostgresTest {
 
         assertThat(response.comment()).isNull();
         assertThat(response.rating()).isEqualTo(4);
+    }
+
+    @Test
+    void toResponse_NullEntityReturnsNull() {
+        assertThat(mapper.toResponse(null))
+                .isNull();
     }
 }
