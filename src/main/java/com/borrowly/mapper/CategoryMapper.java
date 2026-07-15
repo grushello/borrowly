@@ -11,7 +11,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
     CategoryResponse toResponse(Category category);
-    Category toCategory(CategoryRequest categoryRequest);
+    Category toEntity(CategoryRequest categoryRequest);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(@MappingTarget Category target, CategoryRequest source);

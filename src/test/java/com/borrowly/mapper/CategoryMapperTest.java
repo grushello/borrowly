@@ -28,10 +28,10 @@ class CategoryMapperTest {
     }
 
     @Test
-    void toCategory_CreatesEntityFromRequest() {
+    void toEntity_CreatesEntityFromRequest() {
         CategoryRequest request = new CategoryRequest("fishing",  "All things fishing");
 
-        Category category = mapper.toCategory(request);
+        Category category = mapper.toEntity(request);
 
         assertNotNull(category.getId());
         assertEquals("fishing", category.getName());
