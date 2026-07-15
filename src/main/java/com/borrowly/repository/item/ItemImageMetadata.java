@@ -11,7 +11,7 @@ public interface ItemImageMetadata {
 
     String getContentType();
 
-    Boolean getPrimaryImage();
+    Boolean getPrimary();
 
     LocalDateTime getCreatedAt();
 }

@@ -1,5 +1,6 @@
 package com.borrowly.repository.user;
 
+import com.borrowly.model.item.Category;
 import com.borrowly.model.item.Item;
 import com.borrowly.model.item.ItemCondition;
 import com.borrowly.model.rental.Rental;
@@ -7,14 +8,15 @@ import com.borrowly.model.rental.RentalStatus;
 import com.borrowly.model.user.Review;
 import com.borrowly.model.user.User;
 import jakarta.persistence.EntityManager;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import com.borrowly.support.AbstractPostgresTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class ReviewRepositoryTest {
+class ReviewRepositoryTest extends AbstractPostgresTest {
 
     private static final LocalDate JUL_10 = LocalDate.of(2026, Month.JULY, 10);
     private static final LocalDate JUL_15 = LocalDate.of(2026, Month.JULY, 15);
@@ -46,6 +48,7 @@ class ReviewRepositoryTest {
     private User otherBorrower;
     private Item item;
     private Item otherItem;
+    private Category category;
 
     private final Pageable firstPage = PageRequest.of(0, 10);
 
@@ -54,9 +57,18 @@ class ReviewRepositoryTest {
         owner = persistUser("owner@borrowly.test");
         borrower = persistUser("borrower@borrowly.test");
         otherBorrower = persistUser("other@borrowly.test");
+        category = persistCategory("Power tools");
         item = persistItem(owner, "Bosch Drill");
         otherItem = persistItem(owner, "Circular Saw");
         flushAndClear();
+    }
+
+    private Category persistCategory(String name) {
+        Category created = Category.builder()
+                .name(name)
+                .build();
+        entityManager.persist(created);
+        return created;
     }
 
     private User persistUser(String email) {
@@ -68,6 +80,7 @@ class ReviewRepositoryTest {
     private Item persistItem(User itemOwner, String title) {
         Item created = Item.builder()
                 .owner(itemOwner)
+                .category(category)
                 .title(title)
                 .pricePerDay(new BigDecimal("5.00"))
                 .depositAmount(new BigDecimal("50.00"))
@@ -340,7 +353,7 @@ class ReviewRepositoryTest {
                     .comment("second review of the same rental")
                     .build());
 
-            assertThatExceptionOfType(DataIntegrityViolationException.class)
+            assertThatExceptionOfType(ConstraintViolationException.class)
                     .as("one review per rental is enforced by the DB as the last line of defence")
                     .isThrownBy(() -> entityManager.flush());
         }

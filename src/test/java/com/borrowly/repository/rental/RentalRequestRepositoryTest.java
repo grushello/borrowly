@@ -1,5 +1,6 @@
 package com.borrowly.repository.rental;
 
+import com.borrowly.model.item.Category;
 import com.borrowly.model.item.Item;
 import com.borrowly.model.item.ItemCondition;
 import com.borrowly.model.rental.RentalRequest;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import com.borrowly.support.AbstractPostgresTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -27,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class RentalRequestRepositoryTest {
+class RentalRequestRepositoryTest extends AbstractPostgresTest {
 
     private static final LocalDate JUL_10 = LocalDate.of(2026, Month.JULY, 10);
     private static final LocalDate JUL_15 = LocalDate.of(2026, Month.JULY, 15);
@@ -45,6 +47,7 @@ class RentalRequestRepositoryTest {
     private Item item;
     private Item otherItem;
     private Item foreignItem;
+    private Category category;
 
     private final Pageable firstPage = PageRequest.of(0, 10);
 
@@ -54,12 +57,21 @@ class RentalRequestRepositoryTest {
         otherOwner = persistUser("other-owner@borrowly.test");
         borrower = persistUser("borrower@borrowly.test");
         otherBorrower = persistUser("other-borrower@borrowly.test");
+        category = persistCategory("Power tools");
 
         item = persistItem(owner, "Bosch Drill");
         otherItem = persistItem(owner, "Circular Saw");
         foreignItem = persistItem(otherOwner, "Pressure Washer");
 
         flushAndClear();
+    }
+
+    private Category persistCategory(String name) {
+        Category created = Category.builder()
+                .name(name)
+                .build();
+        entityManager.persist(created);
+        return created;
     }
 
     private User persistUser(String email) {
@@ -71,6 +83,7 @@ class RentalRequestRepositoryTest {
     private Item persistItem(User itemOwner, String title) {
         Item created = Item.builder()
                 .owner(itemOwner)
+                .category(category)
                 .title(title)
                 .pricePerDay(new BigDecimal("5.00"))
                 .depositAmount(new BigDecimal("50.00"))
