@@ -6,6 +6,7 @@ import com.borrowly.model.item.ItemCondition;
 import com.borrowly.model.rental.Rental;
 import com.borrowly.model.rental.RentalStatus;
 import com.borrowly.model.user.User;
+import com.borrowly.support.AbstractPostgresTest;
 import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.stat.Statistics;
@@ -30,13 +31,13 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // Liquibase owns the schema and the changesets are Postgres-specific, so there is no
-// embedded database to swap in; these run against the same Postgres the app uses.
+// embedded database to swap in; AbstractPostgresTest starts a throwaway Postgres to run against.
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestPropertySource(properties = {
         "spring.jpa.properties.hibernate.generate_statistics=true"
 })
-class RentalRepositoryTest {
+class RentalRepositoryTest extends AbstractPostgresTest {
 
     private static final LocalDate JUL_10 = LocalDate.of(2026, Month.JULY, 10);
     private static final LocalDate JUL_15 = LocalDate.of(2026, Month.JULY, 15);
