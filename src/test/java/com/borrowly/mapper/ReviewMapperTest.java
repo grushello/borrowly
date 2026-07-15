@@ -8,6 +8,7 @@ import com.borrowly.model.item.ItemStatus;
 import com.borrowly.model.rental.Rental;
 import com.borrowly.model.user.Review;
 import com.borrowly.model.user.User;
+import com.borrowly.support.AbstractPostgresTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,7 +19,7 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-class ReviewMapperTest {
+class ReviewMapperTest extends AbstractPostgresTest {
 
     @Autowired
     private ReviewMapper mapper;
