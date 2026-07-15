@@ -174,7 +174,11 @@ class NotificationRepositoryTest {
 
 
         assertThat(page.getContent())
-                .containsExactly(second, first);
+                .extracting(Notification::getId)
+                .containsExactly(
+                        second.getId(),
+                        first.getId()
+                );
     }
 
 
