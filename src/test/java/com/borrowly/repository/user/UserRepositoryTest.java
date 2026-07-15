@@ -1,6 +1,7 @@
 package com.borrowly.repository.user;
 
 import com.borrowly.model.user.User;
+import com.borrowly.support.AbstractPostgresTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -11,10 +12,10 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Liquibase owns the schema and the changesets are Postgres-specific, so there is no
-// embedded database to swap in; these run against the same Postgres the app uses.
+// embedded database to swap in; AbstractPostgresTest starts a throwaway Postgres to run against.
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class UserRepositoryTest {
+class UserRepositoryTest extends AbstractPostgresTest {
 
     @Autowired
     private UserRepository userRepository;

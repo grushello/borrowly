@@ -19,3 +19,13 @@ databaseChangeLog:
       file: db/changelog/changes/005-create-rentals.yaml
   - include:
       file: db/changelog/changes/006-create-transactions.yaml
+  - include:
+      file: db/changelog/changes/007-create-item-images.yaml
+  - include:
+      file: db/changelog/changes/008-create-favorites.yaml
+  - include:
+      file: db/changelog/changes/009-create-reviews.yaml
+  - include:
+      file: db/changelog/changes/010-create-notifications.yaml
+  - include:
+      file: db/changelog/changes/011-prevent-overlapping-rentals.yaml

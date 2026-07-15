@@ -13,7 +13,7 @@ import java.util.UUID;
 @Getter
 @Table(name = "item_images")
 @Entity
-@ToString(exclude = {"imageData"})
+@ToString(exclude = {"imageData", "item"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Builder
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -43,4 +43,14 @@ public class ItemImage {
     @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @Builder.Default
+    @Column(name = "is_primary", nullable = false)
+    private boolean primary = false;
+
+    @NotNull
+    @Setter(AccessLevel.PACKAGE)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "item_id", nullable = false)
+    private Item item;
 }
