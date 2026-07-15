@@ -6,7 +6,9 @@ import com.borrowly.model.item.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class CategoryMapperTest {
     CategoryMapper mapper;
@@ -26,10 +28,26 @@ class CategoryMapperTest {
     }
 
     @Test
-    void toResponse_RequestToEntity() {
-        Category category = Category.builder().name("fishing").description("All things fishing.").build();
-        CategoryRequest request = new CategoryRequest(category.getName(),  category.getDescription());
+    void toCategory_CreatesEntityFromRequest() {
+        CategoryRequest request = new CategoryRequest("fishing",  "All things fishing");
 
-        // TODO
+        Category category = mapper.toCategory(request);
+
+        assertNotNull(category.getId());
+        assertEquals("fishing", category.getName());
+        assertEquals("All things fishing", category.getDescription());
+    }
+
+    @Test
+    void updateEntity_PartialUpdate_LeavesNonProvidedFieldsUnchanged(){
+        Category existingCategory =  Category.builder().name("fishing").description("All things fishing.").build();
+        UUID originalId = existingCategory.getId();
+
+        CategoryRequest request = new CategoryRequest(null,  "Everything fishing.");
+        mapper.updateEntity(existingCategory, request);
+
+        assertEquals(originalId, existingCategory.getId());
+        assertEquals("fishing", existingCategory.getName());
+        assertEquals("Everything fishing.", existingCategory.getDescription());
     }
 }
