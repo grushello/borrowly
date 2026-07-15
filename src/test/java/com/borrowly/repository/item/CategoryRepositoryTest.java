@@ -2,6 +2,7 @@ package com.borrowly.repository.item;
 
 import com.borrowly.model.item.Category;
 import org.junit.jupiter.api.Test;
+import com.borrowly.support.AbstractPostgresTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -13,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class CategoryRepositoryTest {
+class CategoryRepositoryTest extends AbstractPostgresTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
