@@ -5,6 +5,7 @@ import com.borrowly.model.item.Item;
 import com.borrowly.model.item.ItemCondition;
 import com.borrowly.model.item.ItemStatus;
 import com.borrowly.model.user.User;
+import com.borrowly.support.AbstractPostgresTest;
 import jakarta.persistence.EntityManager;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class ItemRepositoryTest {
+class ItemRepositoryTest extends AbstractPostgresTest {
 
     @Autowired
     private ItemRepository itemRepository;
