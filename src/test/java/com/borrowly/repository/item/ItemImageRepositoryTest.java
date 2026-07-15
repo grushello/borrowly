@@ -129,7 +129,7 @@ class ItemImageRepositoryTest {
 
 
         List<ItemImageMetadata> result =
-                itemImageRepository.findMetadataByItem_IdOrderByCreatedAtAsc(
+                itemImageRepository.findByItem_IdOrderByCreatedAtAsc(
                         item.getId()
                 );
 

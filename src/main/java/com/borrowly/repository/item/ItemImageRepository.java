@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface ItemImageRepository extends JpaRepository<ItemImage, UUID> {
 
 
-    List<ItemImageMetadata> findMetadataByItem_IdOrderByCreatedAtAsc(UUID itemId);
+    List<ItemImageMetadata> findByItem_IdOrderByCreatedAtAsc(UUID itemId);
 
 
     Optional<ItemImage> findByIdAndItem_Id(UUID id, UUID itemId);
