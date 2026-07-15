@@ -34,8 +34,9 @@ The image is built in two stages so the final image stays small.
    creates a non-root user, copies the jar from the build stage, and runs it.
 
 Tests are skipped **in the image build** on purpose: the build's job is to
-produce a runnable jar, and the tests need a running database. Tests run locally
-and in CI instead (see [Running locally](#running-locally)).
+produce a runnable jar, and the tests spin up their own database through Docker
+(not available mid-build). They run locally and in CI instead (see
+[Tests](#tests)).
 
 The final image carries only the JRE + the jar (no Maven, no source), and runs
 as a non-root user.
@@ -50,7 +51,8 @@ Keeps the build context small and avoids copying junk or secrets into the image:
 Database settings live in Spring profiles:
 
 - `application.properties` — shared settings, plus `spring.profiles.active=dev`
-  as the default for runs outside Docker (IDE, tests).
+  as the default for runs outside Docker (IDE, tests). Tests keep this profile
+  but override the datasource to a throwaway container (see [Tests](#tests)).
 - `application-dev.properties` — local defaults pointing at `localhost:5432`
   with local credentials. Safe to commit (a dev-only database).
 - `application-prod.properties` — every datasource value comes from an
@@ -168,13 +170,29 @@ docker compose up --build
 Builds the app image, starts PostgreSQL, waits until it is healthy, then starts
 the app on http://localhost:8080.
 
-### Database only (for running the app or tests from your IDE)
+### Tests
 
-The tests and a locally run app expect a database on `localhost:5432`:
+Tests need no database started by hand. Any test that boots a Spring context
+(the `@SpringBootTest` and `@DataJpaTest` classes) spins up its own disposable
+`postgres:16-alpine` container via Testcontainers, runs the Liquibase changesets
+into it, and discards it when the run ends:
+
+```bash
+./mvnw test
+```
+
+The only requirement is a running Docker daemon — Testcontainers manages the
+container. It matches the production Postgres version, so the same
+Postgres-specific changesets run in tests as in prod. Pure unit tests (models,
+DTOs, mappers) don't touch a database at all.
+
+### Database only (for running the app from your IDE)
+
+A locally run app expects a database on `localhost:5432`:
 
 ```bash
 docker compose up -d db
-./mvnw test
+./mvnw spring-boot:run
 ```
 
 ### Development workflow: rebuilds vs. hot reload
@@ -247,7 +265,5 @@ on the server and is never committed.
 - The `deploy.yml` above is a reference, not a committed workflow. The real one
   needs the lecturers' server details (working directory, port/reverse proxy).
 - `docker-compose.prod.yml` override (no published DB port, resource limits).
-- Testcontainers so `./mvnw test` provisions its own database (no manual "start
-  the db first" step).
 - Silence the `spring.jpa.open-in-view` warning by setting it to `false`.
 - `mvnw` is missing its executable bit (`git update-index --chmod=+x mvnw`).
