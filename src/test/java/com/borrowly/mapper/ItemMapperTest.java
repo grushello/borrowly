@@ -8,20 +8,15 @@ import com.borrowly.model.item.*;
 import com.borrowly.model.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class ItemMapperTest {
 
-    @Autowired
     ItemMapper mapper;
 
     private User owner;
@@ -32,6 +27,12 @@ class ItemMapperTest {
 
     @BeforeEach
     void setUp() {
+        ItemMapperImpl impl = new ItemMapperImpl();
+        ReflectionTestUtils.setField(impl, "userMapper", new UserMapperImpl());
+        ReflectionTestUtils.setField(impl, "categoryMapper", new CategoryMapperImpl());
+        ReflectionTestUtils.setField(impl, "itemImageMapper", new ItemImageMapperImpl());
+        mapper = impl;
+
         owner = User.register("Alice", "Smith", "alice@example.com", "hashed");
 
         category = Category.builder()

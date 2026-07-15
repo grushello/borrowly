@@ -6,13 +6,11 @@ import com.borrowly.model.notification.NotificationType;
 import com.borrowly.model.rental.Rental;
 import com.borrowly.model.transaction.Transaction;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class NotificationMapperTest {
 
     private final NotificationMapper mapper = new NotificationMapperImpl();
