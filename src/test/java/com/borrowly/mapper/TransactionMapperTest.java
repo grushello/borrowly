@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class TransactionMapperTest {
 
-    private final TransactionMapper mapper = Mappers.getMapper(TransactionMapper.class);
+    private final TransactionMapper mapper = new TransactionMapperImpl();
 
     private User user;
     private Rental rental;
