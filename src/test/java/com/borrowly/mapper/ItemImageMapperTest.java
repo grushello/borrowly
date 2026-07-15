@@ -5,12 +5,15 @@ import com.borrowly.model.item.ItemImage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.lang.reflect.RecordComponent;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ItemImageMapperTest {
+    static final LocalDateTime FIXED_TIME = LocalDateTime.of(2026, Month.JULY, 15, 12, 0);
     ItemImageMapper mapper;
 
     @BeforeEach
@@ -25,6 +28,7 @@ class ItemImageMapperTest {
                 .contentType("image/png")
                 .imageData(new byte[]{1, 2, 3})
                 .primary(true)
+                .createdAt(FIXED_TIME)
                 .build();
 
         ItemImageResponse response = mapper.toResponse(entity);
@@ -53,12 +57,14 @@ class ItemImageMapperTest {
                 .contentType("image/png")
                 .imageData(new byte[]{1})
                 .primary(true)
+                .createdAt(FIXED_TIME)
                 .build();
         ItemImage second = ItemImage.builder()
                 .fileName("b.jpg")
                 .contentType("image/jpeg")
                 .imageData(new byte[]{2})
                 .primary(false)
+                .createdAt(FIXED_TIME)
                 .build();
 
         List<ItemImageResponse> responses = mapper.toResponseList(List.of(first, second));
