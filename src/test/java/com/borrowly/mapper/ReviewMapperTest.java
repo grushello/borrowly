@@ -42,7 +42,7 @@ class ReviewMapperTest {
         ReflectionTestUtils.setField(mapper, "itemMapper", itemMapper);
         ReflectionTestUtils.setField(mapper, "userMapper", userMapper);
 
-        reviewer = User.register(dd
+        reviewer = User.register(
                 "Mario",
                 "Rossi",
                 "mario@example.com",
