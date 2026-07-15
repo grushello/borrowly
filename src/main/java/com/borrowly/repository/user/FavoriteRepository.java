@@ -16,6 +16,5 @@ public interface FavoriteRepository extends JpaRepository<Favorite, UUID> {
     boolean existsByUser_IdAndItem_Id(UUID userId, UUID itemId);
 
     @Modifying
-    @Transactional
     int deleteByUser_IdAndItem_Id(UUID userId, UUID itemId);
 }

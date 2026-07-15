@@ -140,7 +140,11 @@ class FavoriteRepositoryTest {
 
 
         assertThat(result.getContent())
-                .containsExactly(second, first);
+                .extracting(Favorite::getId)
+                .containsExactly(
+                        second.getId(),
+                        first.getId()
+                );
     }
 
 
