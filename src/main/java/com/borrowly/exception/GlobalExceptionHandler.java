@@ -105,8 +105,8 @@ public class GlobalExceptionHandler {
             InsufficientBalanceException ex) {
         return ResponseEntity.badRequest()
                 .body(baseBody(HttpStatus.BAD_REQUEST, ex.getMessage()));
-   
 
+    }
     private Map<String, Object> baseBody(HttpStatus status, String message) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now().toString());
