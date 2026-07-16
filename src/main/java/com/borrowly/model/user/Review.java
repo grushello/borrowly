@@ -1,10 +1,10 @@
 package com.borrowly.model.user;
 
+import com.borrowly.model.BaseEntity;
 import com.borrowly.model.rental.Rental;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -16,8 +16,8 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @ToString(exclude = {"reviewer", "rental"})
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Review {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+public class Review extends BaseEntity {
 
     @Id
     @EqualsAndHashCode.Include
@@ -44,6 +44,11 @@ public class Review {
     @JoinColumn(name = "reviewer_id", nullable = false)
     private User reviewer;
 
-    @CreationTimestamp
+    // @PrePersist, not @CreationTimestamp: the latter is only generated once the INSERT runs.
     private LocalDateTime createdAt;
+
+    @PrePersist
+    void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }
