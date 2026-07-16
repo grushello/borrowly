@@ -44,7 +44,6 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
 
         notificationRepository.save(notification);
-        log.debug("Sent {} notification to '{}'", type, recipient.getEmail());
     }
 
     @Override
