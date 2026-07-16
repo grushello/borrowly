@@ -1,21 +1,20 @@
-package com.borrowly.service;
+package com.borrowly.service.transaction;
 
 import com.borrowly.dto.request.TopUpRequest;
 import com.borrowly.dto.request.WithdrawRequest;
 import com.borrowly.dto.response.TransactionResponse;
 import com.borrowly.exception.InsufficientBalanceException;
 import com.borrowly.mapper.TransactionMapper;
-import com.borrowly.model.notification.Notification;
 import com.borrowly.model.notification.NotificationType;
 import com.borrowly.model.rental.Rental;
 import com.borrowly.model.transaction.Transaction;
 import com.borrowly.model.transaction.TransactionStatus;
 import com.borrowly.model.transaction.TransactionType;
 import com.borrowly.model.user.User;
-import com.borrowly.repository.notification.NotificationRepository;
 import com.borrowly.repository.transaction.TransactionRepository;
 import com.borrowly.repository.user.UserRepository;
 import com.borrowly.security.CurrentUserProvider;
+import com.borrowly.service.notification.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -38,10 +37,12 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class TransactionServiceTest {
+class TransactionServiceImplTest {
 
     @Mock
     private TransactionRepository transactionRepository;
@@ -50,7 +51,7 @@ class TransactionServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private NotificationRepository notificationRepository;
+    private NotificationService notificationService;
 
     @Mock
     private TransactionMapper transactionMapper;
@@ -59,13 +60,10 @@ class TransactionServiceTest {
     private CurrentUserProvider currentUserProvider;
 
     @InjectMocks
-    private TransactionService transactionService;
+    private TransactionServiceImpl transactionService;
 
     @Captor
     private ArgumentCaptor<Transaction> txCaptor;
-
-    @Captor
-    private ArgumentCaptor<Notification> notifCaptor;
 
     private User testUser;
 
@@ -98,9 +96,9 @@ class TransactionServiceTest {
             assertThat(saved.getAmount()).isEqualByComparingTo("50.00");
             assertThat(saved.getUser()).isEqualTo(testUser);
 
-            verify(notificationRepository).save(notifCaptor.capture());
-            assertThat(notifCaptor.getValue().getType()).isEqualTo(NotificationType.PAYMENT_RECEIVED);
-            assertThat(notifCaptor.getValue().getRecipient()).isEqualTo(testUser);
+            verify(notificationService).send(
+                    eq(testUser), eq(NotificationType.PAYMENT_RECEIVED),
+                    any(String.class), isNull(), any(Transaction.class));
 
             assertThat(response).isNotNull();
         }
@@ -125,8 +123,9 @@ class TransactionServiceTest {
             verify(transactionRepository).save(txCaptor.capture());
             assertThat(txCaptor.getValue().getType()).isEqualTo(TransactionType.WITHDRAWAL);
 
-            verify(notificationRepository).save(notifCaptor.capture());
-            assertThat(notifCaptor.getValue().getType()).isEqualTo(NotificationType.WITHDRAWAL_COMPLETED);
+            verify(notificationService).send(
+                    eq(testUser), eq(NotificationType.WITHDRAWAL_COMPLETED),
+                    any(String.class), isNull(), any(Transaction.class));
         }
 
         @Test
@@ -140,6 +139,7 @@ class TransactionServiceTest {
 
             verify(transactionRepository, never()).save(any());
             verify(userRepository, never()).save(any());
+            verify(notificationService, never()).send(any(), any(), any(), any(), any());
             assertThat(testUser.getCurrentBalance()).isEqualByComparingTo("100.00");
         }
     }
@@ -215,7 +215,7 @@ class TransactionServiceTest {
         @ValueSource(strings = {"holdDeposit", "chargeRent", "payoutRent", "returnDeposit", "chargeFine"})
         @DisplayName("internal methods are annotated with MANDATORY propagation")
         void mandatoryPropagation(String methodName) throws Exception {
-            Method method = TransactionService.class.getDeclaredMethod(
+            Method method = TransactionServiceImpl.class.getDeclaredMethod(
                     methodName, User.class, BigDecimal.class, Rental.class);
             Transactional txAnnotation = method.getAnnotation(Transactional.class);
 

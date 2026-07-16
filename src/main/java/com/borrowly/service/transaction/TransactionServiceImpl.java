@@ -1,21 +1,20 @@
-package com.borrowly.service;
+package com.borrowly.service.transaction;
 
 import com.borrowly.dto.request.TopUpRequest;
 import com.borrowly.dto.request.WithdrawRequest;
 import com.borrowly.dto.response.TransactionResponse;
 import com.borrowly.exception.InsufficientBalanceException;
 import com.borrowly.mapper.TransactionMapper;
-import com.borrowly.model.notification.Notification;
 import com.borrowly.model.notification.NotificationType;
 import com.borrowly.model.rental.Rental;
 import com.borrowly.model.transaction.Transaction;
 import com.borrowly.model.transaction.TransactionStatus;
 import com.borrowly.model.transaction.TransactionType;
 import com.borrowly.model.user.User;
-import com.borrowly.repository.notification.NotificationRepository;
 import com.borrowly.repository.transaction.TransactionRepository;
 import com.borrowly.repository.user.UserRepository;
 import com.borrowly.security.CurrentUserProvider;
+import com.borrowly.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,14 +28,15 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class TransactionService {
+public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
-    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
     private final TransactionMapper transactionMapper;
     private final CurrentUserProvider currentUserProvider;
 
+    @Override
     @Transactional
     public TransactionResponse topUp(TopUpRequest request) {
         User user = currentUserProvider.getCurrentUser();
@@ -52,12 +52,13 @@ public class TransactionService {
 
         userRepository.save(user);
         transactionRepository.save(tx);
-        sendNotification(user, tx, NotificationType.PAYMENT_RECEIVED,
-                "Top-up of " + request.amount() + " completed");
+        notificationService.send(user, NotificationType.PAYMENT_RECEIVED,
+                "Top-up of " + request.amount() + " completed", null, tx);
 
         return transactionMapper.toResponse(tx);
     }
 
+    @Override
     @Transactional
     public TransactionResponse withdraw(WithdrawRequest request) {
         User user = currentUserProvider.getCurrentUser();
@@ -80,12 +81,13 @@ public class TransactionService {
 
         userRepository.save(user);
         transactionRepository.save(tx);
-        sendNotification(user, tx, NotificationType.WITHDRAWAL_COMPLETED,
-                "Withdrawal of " + request.amount() + " completed");
+        notificationService.send(user, NotificationType.WITHDRAWAL_COMPLETED,
+                "Withdrawal of " + request.amount() + " completed", null, tx);
 
         return transactionMapper.toResponse(tx);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Page<TransactionResponse> getHistory(List<TransactionType> types, int page, int size) {
         User user = currentUserProvider.getCurrentUser();
@@ -98,6 +100,7 @@ public class TransactionService {
         return transactions.map(transactionMapper::toResponse);
     }
 
+    @Override
     @Transactional(propagation = Propagation.MANDATORY)
     public Transaction holdDeposit(User borrower, BigDecimal amount, Rental rental) {
         borrower.subtractBalance(amount);
@@ -105,6 +108,7 @@ public class TransactionService {
         return saveRentalTransaction(borrower, amount, TransactionType.DEPOSIT_HELD, rental);
     }
 
+    @Override
     @Transactional(propagation = Propagation.MANDATORY)
     public Transaction chargeRent(User borrower, BigDecimal amount, Rental rental) {
         borrower.subtractBalance(amount);
@@ -112,6 +116,7 @@ public class TransactionService {
         return saveRentalTransaction(borrower, amount, TransactionType.RENT_PAYMENT, rental);
     }
 
+    @Override
     @Transactional(propagation = Propagation.MANDATORY)
     public Transaction payoutRent(User owner, BigDecimal amount, Rental rental) {
         owner.addBalance(amount);
@@ -119,6 +124,7 @@ public class TransactionService {
         return saveRentalTransaction(owner, amount, TransactionType.RENT_PAYOUT, rental);
     }
 
+    @Override
     @Transactional(propagation = Propagation.MANDATORY)
     public Transaction returnDeposit(User borrower, BigDecimal amount, Rental rental) {
         borrower.addBalance(amount);
@@ -126,6 +132,7 @@ public class TransactionService {
         return saveRentalTransaction(borrower, amount, TransactionType.DEPOSIT_RETURN, rental);
     }
 
+    @Override
     @Transactional(propagation = Propagation.MANDATORY)
     public Transaction chargeFine(User borrower, BigDecimal amount, Rental rental) {
         borrower.subtractBalance(amount);
@@ -143,16 +150,5 @@ public class TransactionService {
                 .rental(rental)
                 .build();
         return transactionRepository.save(tx);
-    }
-
-    private void sendNotification(User recipient, Transaction tx,
-                                  NotificationType type, String message) {
-        Notification notification = Notification.builder()
-                .recipient(recipient)
-                .transaction(tx)
-                .type(type)
-                .message(message)
-                .build();
-        notificationRepository.save(notification);
     }
 }

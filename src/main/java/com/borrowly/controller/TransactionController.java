@@ -4,7 +4,7 @@ import com.borrowly.dto.request.TopUpRequest;
 import com.borrowly.dto.request.WithdrawRequest;
 import com.borrowly.dto.response.TransactionResponse;
 import com.borrowly.model.transaction.TransactionType;
-import com.borrowly.service.TransactionService;
+import com.borrowly.service.transaction.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

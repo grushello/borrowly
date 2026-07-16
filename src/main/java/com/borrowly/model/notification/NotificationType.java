@@ -9,6 +9,5 @@ public enum NotificationType {
     PAYMENT_RECEIVED,
     WITHDRAWAL_COMPLETED,
     FINE,
-    GENERAL,
-    WITHDRAWAL_COMPLETED
+    GENERAL
 }

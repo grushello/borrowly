@@ -9,7 +9,7 @@ import com.borrowly.model.transaction.TransactionType;
 import com.borrowly.security.AuthEntryPointJwt;
 import com.borrowly.security.AuthTokenFilter;
 import com.borrowly.security.JwtUtil;
-import com.borrowly.service.TransactionService;
+import com.borrowly.service.transaction.TransactionService;
 import com.borrowly.service.UserDetailsServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
