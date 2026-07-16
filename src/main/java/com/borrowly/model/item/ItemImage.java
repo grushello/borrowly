@@ -1,11 +1,11 @@
 package com.borrowly.model.item;
 
+import com.borrowly.model.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,11 +14,11 @@ import java.util.UUID;
 @Table(name = "item_images")
 @Entity
 @ToString(exclude = {"imageData", "item"})
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Builder
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ItemImage {
+public class ItemImage extends BaseEntity {
     @Id
     @Column(nullable = false)
     @EqualsAndHashCode.Include
@@ -40,9 +40,14 @@ public class ItemImage {
     @Column(length = 100, nullable = false)
     private String contentType;
 
-    @CreationTimestamp
+    // @PrePersist, not @CreationTimestamp: the latter is only generated once the INSERT runs.
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
     @Builder.Default
     @Column(name = "is_primary", nullable = false)

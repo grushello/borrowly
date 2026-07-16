@@ -8,6 +8,7 @@ import com.borrowly.model.user.User;
 import com.borrowly.model.user.UserRole;
 import com.borrowly.repository.user.UserRepository;
 import com.borrowly.security.JwtUtil;
+import com.borrowly.service.auth.AuthServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

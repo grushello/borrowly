@@ -100,6 +100,12 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .body(baseBody(HttpStatus.CONFLICT, "Item was modified concurrently, please retry"));
     }
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<Map<String, Object>> handleInsufficientBalance(
+            InsufficientBalanceException ex) {
+        return ResponseEntity.badRequest()
+                .body(baseBody(HttpStatus.BAD_REQUEST, ex.getMessage()));
+   
 
     private Map<String, Object> baseBody(HttpStatus status, String message) {
         Map<String, Object> body = new HashMap<>();
@@ -108,5 +114,20 @@ public class GlobalExceptionHandler {
         body.put("error", status.getReasonPhrase());
         body.put("message", message);
         return body;
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
+        log.warn("User not found: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(CannotDisableSelfException.class)
+    public ResponseEntity<Map<String, Object>> handleCannotDisableSelf(CannotDisableSelfException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
     }
 }

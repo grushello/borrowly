@@ -3,7 +3,7 @@ package com.borrowly.controller;
 import com.borrowly.dto.request.LoginRequest;
 import com.borrowly.dto.request.RegisterRequest;
 import com.borrowly.dto.response.AuthResponse;
-import com.borrowly.service.AuthService;
+import com.borrowly.service.auth.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

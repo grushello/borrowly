@@ -1,5 +1,6 @@
 package com.borrowly.model.notification;
 
+import com.borrowly.model.BaseEntity;
 import com.borrowly.model.rental.Rental;
 import com.borrowly.model.transaction.Transaction;
 import com.borrowly.model.user.User;
@@ -8,7 +9,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -21,9 +21,9 @@ import static jakarta.persistence.EnumType.STRING;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Getter
 @Builder
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @ToString(exclude = {"recipient", "rental", "transaction"})
-public class Notification {
+public class Notification extends BaseEntity {
 
     @Id
     @EqualsAndHashCode.Include
@@ -39,8 +39,13 @@ public class Notification {
     @Enumerated(STRING)
     private NotificationType type;
 
-    @CreationTimestamp
+    // @PrePersist, not @CreationTimestamp: the latter is only generated once the INSERT runs.
     private LocalDateTime createdAt;
+
+    @PrePersist
+    void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
