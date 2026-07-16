@@ -90,4 +90,22 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
     }
+
+    @ExceptionHandler(ItemNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleItemNotFound(ItemNotFoundException ex) {
+        log.warn("Item not found: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(CannotFavoriteOwnItemException.class)
+    public ResponseEntity<Map<String, Object>> handleCannotFavoriteOwnItem(
+            CannotFavoriteOwnItemException ex) {
+        log.warn("Rejected self-favorite attempt");
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(baseBody(HttpStatus.FORBIDDEN, ex.getMessage()));
+    }
+
 }
