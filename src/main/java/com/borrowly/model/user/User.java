@@ -1,10 +1,9 @@
 package com.borrowly.model.user;
 
+import com.borrowly.model.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,9 +17,9 @@ import static jakarta.persistence.EnumType.STRING;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Getter
 @Builder(access = AccessLevel.PACKAGE)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @ToString(exclude = {"passwordHash"})
-public class User {
+public class User extends BaseEntity {
 
     @jakarta.persistence.Id
     @EqualsAndHashCode.Include
@@ -69,11 +68,23 @@ public class User {
     @Builder.Default
     private Boolean enabled = true;
 
-    @CreationTimestamp
+    // Timestamps are set in @PrePersist/@PreUpdate below: Hibernate's @CreationTimestamp and
+    // @UpdateTimestamp are only generated once the INSERT/UPDATE runs.
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public static User register(String firstName, String lastName,
                                 String email, String passwordHash) {

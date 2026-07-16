@@ -1,5 +1,6 @@
 package com.borrowly.model.item;
 
+import com.borrowly.model.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -13,10 +14,10 @@ import java.util.UUID;
 @Table(name = "categories")
 @Entity
 @Getter
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-public class Category {
+public class Category extends BaseEntity {
     @Id
     @EqualsAndHashCode.Include
     private UUID id;
