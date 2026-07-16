@@ -84,6 +84,13 @@ public class User {
                 .passwordHash(passwordHash)
                 .build();
     }
+    public void addBalance(BigDecimal amount) {
+        this.currentBalance = this.currentBalance.add(amount);
+    }
+
+    public void subtractBalance(BigDecimal amount) {
+        this.currentBalance = this.currentBalance.subtract(amount);
+    }
 
     private static String normalizeEmail(String email) {
         return email == null ? null : email.trim().toLowerCase();
