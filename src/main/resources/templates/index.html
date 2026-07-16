@@ -13,10 +13,9 @@
     </nav>
 
     <main>
-        <h1>Catalog</h1>
-        <div>
+            <h1>Catalog</h1>
             <ul class="catalog-card-container">
-                <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'Fishing rod', category = 'Fishing', index = 1, pricePerDay = 15)}"></li>
+                <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'E-Foil Fliteboard', category = 'Water Sports', index = 1, pricePerDay = 120)}"></li>
                 <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'Electric Screwdriver', category = 'Screwdriver', index = 2, pricePerDay = 12)}"></li>
                 <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'Electric grasscutter', category = 'Grasscutter', index = 3, pricePerDay = 25)}"></li>
                 <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'Screwdriver set', category = 'Screwdriver', index = 4, pricePerDay = 5)}"></li>
@@ -27,7 +26,6 @@
             </ul>
 <!--            <nav th:replace="~{fragments/paginationContainer :: paginationContainer}">-->
 <!--            </nav>-->
-        </div>
     </main>
 
     <footer th:replace="~{fragments/footer :: footer}">

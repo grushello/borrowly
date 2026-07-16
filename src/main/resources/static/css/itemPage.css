@@ -167,3 +167,13 @@
     color: #7f8c8d;
     text-transform: uppercase;
 }
+
+.back-to-catalog {
+    text-align: left;
+    width: 100%;
+    text-decoration: none;
+    color: #7f8c8d;
+    padding: 0;
+    margin: 0;
+}
+
