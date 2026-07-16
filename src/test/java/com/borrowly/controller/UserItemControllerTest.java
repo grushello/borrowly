@@ -1,11 +1,21 @@
 package com.borrowly.controller;
 
+import com.borrowly.config.SecurityConfig;
 import com.borrowly.dto.response.ItemSummaryResponse;
+import com.borrowly.exception.GlobalExceptionHandler;
+import com.borrowly.security.AuthEntryPointJwt;
+import com.borrowly.security.AuthTokenFilter;
+import com.borrowly.security.JwtUtil;
+import com.borrowly.service.UserDetailsServiceImpl;
+import com.borrowly.service.auth.AuthService;
 import com.borrowly.service.item.ItemService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -22,15 +32,28 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest(UserItemController.class)
+@Import({SecurityConfig.class, AuthTokenFilter.class, AuthEntryPointJwt.class,
+        GlobalExceptionHandler.class})
 class UserItemControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockitoBean
     private ItemService itemService;
+
+    @MockitoBean
+    private AuthService authService;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
+
+    @MockitoBean
+    private UserDetailsServiceImpl userDetailsService;
 
 
 
