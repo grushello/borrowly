@@ -4,13 +4,20 @@
     <meta charset="UTF-8">
     <title>Dashboard</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard/favoritesWidget.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard/financialSummaryWidget.css}">
 </head>
 <body>
-    <div th:insert="~{fragments/nav :: nav}">
-    </div>
+    <nav th:replace="~{fragments/nav :: nav}">
+    </nav>
 
-    <main>
-        <h2>Dashboard</h2>
+    <main class="dashboard-grid">
+        <div th:replace="~{fragments/activeRentalsWidget :: activeRentalsWidget}">...</div>
+
+        <div th:replace="~{fragments/financialSummaryWidget :: financialSummaryWidget}">...</div>
+
+        <div th:replace="~{fragments/favoritesWidget :: favoritesWidget}">...</div>
     </main>
 
     <div th:insert="~{fragments/footer :: footer}">

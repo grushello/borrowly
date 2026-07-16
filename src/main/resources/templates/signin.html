@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Login</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
     <nav th:replace="~{fragments/nav :: nav}">
     </nav>
 
-    <main class="signup">
-        <h2>Signup</h2>
+    <main class="signin">
+        <h2>Sign in with your credentials</h2>
         <form>
             <div class="input-container">
                 <label for="email-input">email</label>
@@ -24,10 +24,13 @@
 
             <button type="submit">Submit</button>
         </form>
+
+        <div>
+            <span>Do you need to create an account?</span>
+            <a href="/signup">Sign up</a>
+        </div>
     </main>
-
-
     <footer th:replace="~{fragments/footer :: footer}">
     </footer>
-    </body>
+</body>
 </html>

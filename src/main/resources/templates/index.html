@@ -5,28 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Borrowly — Home</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/catalogCard.css}">
 </head>
 <body>
 
-    <div th:insert="~{fragments/nav :: nav}">
-    </div>
+    <nav th:replace="~{fragments/nav :: nav}">
+    </nav>
 
     <main>
-        <h1>Welcome to Borrowly</h1>
+        <h1>Catalog</h1>
         <div>
-            <span>Catalog of available items</span>
-            <ul class="catalog">
-                <li>Item 1</li>
-                <li>Item 2</li>
-                <li>Item 3</li>
-                <li>Item 4</li>
-                <li>Item 5</li>
+            <ul class="catalog-card-container">
+                <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'Fishing rod', category = 'Fishing', index = 1, pricePerDay = 15)}"></li>
+                <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'Electric Screwdriver', category = 'Screwdriver', index = 2, pricePerDay = 12)}"></li>
+                <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'Electric grasscutter', category = 'Grasscutter', index = 3, pricePerDay = 25)}"></li>
+                <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'Screwdriver set', category = 'Screwdriver', index = 4, pricePerDay = 5)}"></li>
+                <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'Kärcher Water Cleaner', category = 'Watercleaner', index = 5, pricePerDay = 20)}"></li>
+                <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'Stand-up Paddle', category = 'Paddle', index = 6, pricePerDay = 30)}"></li>
+                <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'HD Portable Projector', category = 'Projector', index = 7, pricePerDay = 18)}"></li>
+                <li th:replace="~{fragments/catalogCard :: catalogCard(name = 'Mountain Bike', category = 'Bike', index = 8, pricePerDay = 22)}"></li>
             </ul>
+<!--            <nav th:replace="~{fragments/paginationContainer :: paginationContainer}">-->
+<!--            </nav>-->
         </div>
     </main>
 
-    <div th:insert="~{fragments/footer :: footer}">
-    </div>
+    <footer th:replace="~{fragments/footer :: footer}">
+    </footer>
 
 </body>
 </html>

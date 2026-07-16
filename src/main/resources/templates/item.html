@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Item details</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="stylesheet" th:href="@{/css/itemPage.css}">
+</head>
+<body>
+    <nav th:replace="~{fragments/nav :: nav}">
+    </nav>
+
+    <main class="item-page-container">
+
+      <div class="item-gallery">
+        <div class="main-image-wrapper">
+          <img src="https://caprihydro.com/wp-content/uploads/2023/03/eFoil-Fliteboard-lesson-in-Capri.jpg" alt="Tavola E-Foil Fliteboard" class="main-image">
+        </div>
+
+        <div class="thumbnail-list">
+          <img src="https://caprihydro.com/wp-content/uploads/2023/03/eFoil-Fliteboard-lesson-in-Capri.jpg" alt="Miniatura 1" class="thumbnail">
+          <img src="https://www.visitwales.com/sites/visit/files/styles/o_articleimage_medium__16_9_xl_min_2x/public/media-library/2025-05/683281-p5180064-web-optimised-1920px.jpg.webp?itok=f3lxIBbY" alt="Miniatura 2" class="thumbnail">
+        </div>
+      </div>
+
+      <div class="item-info">
+
+        <span class="category-badge">Water sports</span>
+        <h1 class="item-title">E-Foil Fliteboard</h1>
+
+        <div class="item-meta">
+            <span class="rating">
+                ⭐ <strong>4.8</strong>
+                <span class="review-count">(14 reviews)</span>
+            </span>
+          <span class="meta-divider">•</span>
+          <span class="condition">Condition: EXCELLENT</span>
+        </div>
+
+        <div class="item-description">
+          <h3>Description</h3>
+          <p>The perfect e-foil for cruising the gulf or lakes. Features an extended-range battery and a silent motor. Available for pickup in central Riga</p>
+        </div>
+
+        <div class="booking-card">
+          <div class="price-header">
+            <span class="daily-price">€ 120.00</span>
+            <span class="price-suffix">/ day</span>
+          </div>
+
+          <ul class="price-details">
+            <li>
+              <span>Deposit required:</span>
+              <strong>€ 500.00</strong>
+            </li>
+            <li>
+              <span>Penalty</span>
+              <span>€ 40.00 / day</span>
+            </li>
+          </ul>
+
+          <button class="btn-book">
+            Rent now
+          </button>
+        </div>
+
+        <div class="owner-profile">
+          <div class="owner-avatar">
+            <span>A</span>
+          </div>
+          <div class="owner-details">
+            <span class="owner-label">Owner</span>
+            <strong>Arturs</strong>
+          </div>
+        </div>
+
+      </div>
+  </main>
+
+  <footer th:replace="~{fragments/footer :: footer}">
+  </footer>
+
+</body>
+</html>

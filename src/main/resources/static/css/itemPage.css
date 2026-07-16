@@ -1,0 +1,169 @@
+
+.item-page-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+}
+
+.main-image-wrapper {
+    width: 100%;
+    aspect-ratio: 4/3;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    background-color: #f5f5f5;
+}
+
+.main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.thumbnail-list {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+}
+
+.thumbnail {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.thumbnail:hover {
+    border-color: #3498db;
+}
+
+.category-badge {
+    color: #3498db;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.item-title {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin: 8px 0 16px 0;
+}
+
+.item-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #7f8c8d;
+    margin-bottom: 24px;
+}
+
+.review-count {
+    font-size: 0.9rem;
+    margin-left: 4px;
+}
+
+.item-description {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 40px;
+}
+
+.booking-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+}
+
+.price-header {
+    border-bottom: 1px solid #eeeeee;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+}
+
+.daily-price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.price-suffix {
+    color: #7f8c8d;
+    font-size: 1rem;
+}
+
+.price-details {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+}
+
+.price-details li {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.btn-book {
+    width: 100%;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-book:hover {
+    background-color: #219653;
+}
+
+.btn-book.disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.owner-profile {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.owner-avatar {
+    width: 48px;
+    height: 48px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.owner-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.owner-label {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    text-transform: uppercase;
+}

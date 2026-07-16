@@ -8,7 +8,17 @@ body {
     gap: 1rem;
     background-color: whitesmoke;
     margin: 0;
-    padding: 0;
+    padding: 0 1rem 1rem;
+    padding-bottom: 1rem;
+    box-sizing: border-box;
+    font-family: Verdana,sans-serif;
+}
+
+.signup, .signin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 main {
@@ -16,6 +26,7 @@ main {
     flex-direction: column;
     align-items: start;
     flex-grow: 1;
+    width: 100%;
 }
 
 form {
@@ -29,6 +40,26 @@ form {
     flex-direction: column;
     text-align: start;
     gap: 0.3rem;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 1.2rem;
+    background-color: darkslategray;
+    color: whitesmoke;
+    padding: 1rem;
+}
+
+nav a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.nav-fragment {
+    display: flex;
+    gap: 1rem;
 }
 
 input {
@@ -45,4 +76,62 @@ button {
 button:hover{
     background-color: lightgreen;
     cursor: pointer;
+}
+
+footer {
+    padding-bottom: 1rem;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.pagination-list {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 8px;
+}
+
+.page-item {
+    display: flex;
+}
+
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    color: #2c3e50;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.page-link:hover {
+    background-color: #f8f9fa;
+    border-color: #dcdcdc;
+}
+
+.page-item.active .page-link {
+    background-color: #3498db;
+    border-color: #3498db;
+    color: #ffffff;
+    pointer-events: none;
+}
+
+.page-item.disabled .page-link {
+    color: #b2bec3;
+    background-color: #fdfdfd;
+    border-color: #eeeeee;
+    pointer-events: none;
 }

@@ -6,9 +6,14 @@
 </head>
 <body>
     <nav th:fragment="nav">
-        <a href="/">Homepage</a>
-        <a href="/signup">Signup</a>
-        <a href="/dashboard">Dashboard</a>
+        <div class="nav-fragment">
+            <a href="/">Homepage</a>
+            <a href="/dashboard">Dashboard</a>
+        </div>
+        <div class="nav-fragment">
+            <a href="/signin">Sign in</a>
+            <a href="/logout">Log out</a>
+        </div>
     </nav>
 
 </body>
