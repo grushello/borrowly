@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <div th:insert="~{fragments/nav :: nav}">
+    </div>
+
+    <main>
+        <h2>Signup</h2>
+        <form>
+            <div class="input-container">
+                <label for="email-input">email</label>
+                <input id="email-input" type="text" name="email" placeholder="john.doe@gmail.com">
+            </div>
+
+            <div class="input-container">
+                <label for="password-input">password</label>
+                <input id="password-input" type="password" name="password" placeholder="Valid password">
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+    </main>
+
+
+    <div th:insert="~{fragments/footer :: footer}">
+    </div>
+    </body>
+</html>

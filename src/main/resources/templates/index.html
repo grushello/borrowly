@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrowly — Home</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+    <div th:insert="~{fragments/nav :: nav}">
+    </div>
+
+    <main>
+        <h1>Welcome to Borrowly</h1>
+        <div>
+            <span>Catalog of available items</span>
+            <ul class="catalog">
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+                <li>Item 4</li>
+                <li>Item 5</li>
+            </ul>
+        </div>
+    </main>
+
+    <div th:insert="~{fragments/footer :: footer}">
+    </div>
+
+</body>
+</html>
