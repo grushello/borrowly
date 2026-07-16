@@ -49,8 +49,11 @@ class JwtUtilTest {
     @DisplayName("a tampered token is rejected, not thrown on")
     void tamperedTokenIsRejected() {
         String token = jwtUtil.generateToken("alice@example.com", "USER");
-        char last = token.charAt(token.length() - 1);
-        String tampered = token.substring(0, token.length() - 1) + (last == 'A' ? 'B' : 'A');
+
+        String[] parts = token.split("\\.");
+        char c = parts[1].charAt(0);
+        parts[1] = (c == 'A' ? 'B' : 'A') + parts[1].substring(1);
+        String tampered = parts[0] + "." + parts[1] + "." + parts[2];
 
         assertThat(jwtUtil.validateJwtToken(tampered)).isFalse();
     }
