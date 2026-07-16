@@ -7,5 +7,6 @@ public enum NotificationType {
     ITEM_RETURNED,
     PAYMENT_RECEIVED,
     FINE,
-    GENERAL
+    GENERAL,
+    WITHDRAWAL_COMPLETED
 }
