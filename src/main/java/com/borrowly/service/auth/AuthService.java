@@ -1,4 +1,4 @@
-package com.borrowly.service;
+package com.borrowly.service.auth;
 
 import com.borrowly.dto.request.LoginRequest;
 import com.borrowly.dto.request.RegisterRequest;

@@ -1,4 +1,4 @@
-package com.borrowly.service;
+package com.borrowly.service.user;
 
 import com.borrowly.dto.response.UserResponse;
 import org.springframework.data.domain.Page;

@@ -1,7 +1,7 @@
 package com.borrowly.controller;
 
 import com.borrowly.dto.response.UserResponse;
-import com.borrowly.service.UserService;
+import com.borrowly.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -7,6 +7,7 @@ import com.borrowly.mapper.UserMapper;
 import com.borrowly.model.user.User;
 import com.borrowly.repository.user.UserRepository;
 import com.borrowly.security.CurrentUserProvider;
+import com.borrowly.service.user.UserServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
