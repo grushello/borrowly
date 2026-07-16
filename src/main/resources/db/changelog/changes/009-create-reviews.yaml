@@ -1,0 +1,69 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-create-reviews
+      author: edgaras
+      changes:
+        - createTable:
+            tableName: reviews
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_reviews
+              - column:
+                  name: rental_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reviewer_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rating
+                  type: integer
+                  constraints:
+                    nullable: false
+              - column:
+                  name: comment
+                  type: varchar(2000)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_reviews_rental_id
+            baseTableName: reviews
+            baseColumnNames: rental_id
+            referencedTableName: rentals
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            constraintName: fk_reviews_reviewer_id
+            baseTableName: reviews
+            baseColumnNames: reviewer_id
+            referencedTableName: users
+            referencedColumnNames: id
+        # One review per person per rental. The owner and the borrower can each leave one.
+        # The entity does not declare this, so a duplicate surfaces as a raw constraint
+        # violation - ReviewService should check before inserting.
+        - addUniqueConstraint:
+            constraintName: uk_reviews_rental_id_reviewer_id
+            tableName: reviews
+            columnNames: rental_id, reviewer_id
+        - createIndex:
+            indexName: idx_reviews_reviewer_id
+            tableName: reviews
+            columns:
+              - column:
+                  name: reviewer_id
+        - sql:
+            sql: >-
+              ALTER TABLE reviews
+                ADD CONSTRAINT ck_reviews_rating CHECK (rating BETWEEN 1 AND 5)
+      rollback:
+        - dropTable:
+            tableName: reviews

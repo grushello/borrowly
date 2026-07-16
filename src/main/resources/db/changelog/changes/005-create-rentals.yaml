@@ -1,0 +1,115 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-create-rentals
+      author: edgaras
+      changes:
+        - createTable:
+            tableName: rentals
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_rentals
+              - column:
+                  name: item_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: borrower_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: actual_return_date
+                  type: date
+              - column:
+                  name: item_title
+                  type: varchar(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: daily_price
+                  type: numeric(12, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deposit_amount
+                  type: numeric(12, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: fine_per_day
+                  type: numeric(12, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: total_price
+                  type: numeric(12, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_rentals_item_id
+            baseTableName: rentals
+            baseColumnNames: item_id
+            referencedTableName: items
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            constraintName: fk_rentals_borrower_id
+            baseTableName: rentals
+            baseColumnNames: borrower_id
+            referencedTableName: users
+            referencedColumnNames: id
+        - createIndex:
+            indexName: idx_rentals_item_id
+            tableName: rentals
+            columns:
+              - column:
+                  name: item_id
+        - createIndex:
+            indexName: idx_rentals_borrower_id
+            tableName: rentals
+            columns:
+              - column:
+                  name: borrower_id
+        - sql:
+            sql: >-
+              ALTER TABLE rentals
+                ADD CONSTRAINT ck_rentals_status CHECK (status IN ('ACTIVE', 'RETURNED', 'OVERDUE')),
+                ADD CONSTRAINT ck_rentals_date_range CHECK (end_date >= start_date),
+                ADD CONSTRAINT ck_rentals_actual_return_date CHECK (actual_return_date IS NULL OR actual_return_date >= start_date),
+                ADD CONSTRAINT ck_rentals_item_title_not_blank CHECK (btrim(item_title) <> ''),
+                ADD CONSTRAINT ck_rentals_daily_price_non_negative CHECK (daily_price >= 0),
+                ADD CONSTRAINT ck_rentals_deposit_amount_non_negative CHECK (deposit_amount >= 0),
+                ADD CONSTRAINT ck_rentals_fine_per_day_non_negative CHECK (fine_per_day >= 0),
+                ADD CONSTRAINT ck_rentals_total_price_non_negative CHECK (total_price >= 0)
+      rollback:
+        - dropTable:
+            tableName: rentals

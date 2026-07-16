@@ -1,5 +1,6 @@
 package com.borrowly.security;
 
+import com.borrowly.exception.AuthUserNotFoundException;
 import com.borrowly.model.user.User;
 import com.borrowly.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +20,11 @@ public class SecurityContextCurrentUserProvider implements CurrentUserProvider {
         if (authentication == null
                 || !authentication.isAuthenticated()
                 || "anonymousUser".equals(authentication.getPrincipal())) {
-            throw new IllegalStateException("No authenticated user in the security context");
+            throw new AuthUserNotFoundException("No authenticated user in the security context");
         }
         String email = authentication.getName();
         return userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new IllegalStateException(
+                .orElseThrow(() -> new AuthUserNotFoundException(
                         "Authenticated user not found: " + email));
     }
 }

@@ -4,6 +4,7 @@ import com.borrowly.config.SecurityConfig;
 import com.borrowly.dto.request.LoginRequest;
 import com.borrowly.dto.request.RegisterRequest;
 import com.borrowly.dto.response.AuthResponse;
+import com.borrowly.exception.EmailAlreadyExistsException;
 import com.borrowly.exception.GlobalExceptionHandler;
 import com.borrowly.model.user.UserRole;
 import com.borrowly.security.AuthEntryPointJwt;
@@ -126,7 +127,7 @@ class AuthControllerTest {
     @DisplayName("register returns 409 when the email is already taken")
     void registerReturns409OnDuplicate() throws Exception {
         when(authService.register(any())).thenThrow(
-                new IllegalArgumentException("Email already registered: alice@example.com"));
+                new EmailAlreadyExistsException("alice@example.com"));
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

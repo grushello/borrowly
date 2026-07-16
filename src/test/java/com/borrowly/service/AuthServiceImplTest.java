@@ -3,6 +3,7 @@ package com.borrowly.service;
 import com.borrowly.dto.request.LoginRequest;
 import com.borrowly.dto.request.RegisterRequest;
 import com.borrowly.dto.response.AuthResponse;
+import com.borrowly.exception.EmailAlreadyExistsException;
 import com.borrowly.model.user.User;
 import com.borrowly.model.user.UserRole;
 import com.borrowly.repository.user.UserRepository;
@@ -111,7 +112,7 @@ class AuthServiceImplTest {
         when(userRepository.existsByEmailIgnoreCase("alice@example.com")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(registerRequest()))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(EmailAlreadyExistsException.class)
                 .hasMessageContaining("alice@example.com");
 
         verify(userRepository, never()).save(any());

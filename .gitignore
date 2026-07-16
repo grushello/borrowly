@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+CLAUDE.md
+### Local env ###
+.env
+
+.DS_Store

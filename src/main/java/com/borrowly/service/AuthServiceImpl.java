@@ -3,6 +3,7 @@ package com.borrowly.service;
 import com.borrowly.dto.request.LoginRequest;
 import com.borrowly.dto.request.RegisterRequest;
 import com.borrowly.dto.response.AuthResponse;
+import com.borrowly.exception.EmailAlreadyExistsException;
 import com.borrowly.model.user.User;
 import com.borrowly.repository.user.UserRepository;
 import com.borrowly.security.JwtUtil;
@@ -28,20 +29,19 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
-            throw new IllegalArgumentException(
-                    "Email already registered: " + request.getEmail());
+        if (userRepository.existsByEmailIgnoreCase(request.email())) {
+            throw new EmailAlreadyExistsException(request.email());
         }
 
         User user = User.register(
-                request.getFirstName(),
-                request.getLastName(),
-                request.getEmail(),
-                passwordEncoder.encode(request.getPassword())
+                request.firstName(),
+                request.lastName(),
+                request.email(),
+                passwordEncoder.encode(request.password())
         );
 
-        if (request.getPhone() != null && !request.getPhone().isBlank()) {
-            user.setPhone(request.getPhone());
+        if (request.phone() != null && !request.phone().isBlank()) {
+            user.setPhone(request.phone());
         }
 
         userRepository.save(user);
@@ -56,12 +56,12 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(), request.getPassword())
+                        request.email(), request.password())
         );
 
-        User user = userRepository.findByEmailIgnoreCase(request.getEmail())
+        User user = userRepository.findByEmailIgnoreCase(request.email())
                 .orElseThrow(() -> new UsernameNotFoundException(
-                        "User not found with email: " + request.getEmail()));
+                        "User not found with email: " + request.email()));
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
         return new AuthResponse(token, user.getEmail(), user.getRole());

@@ -1,0 +1,109 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-items
+      author: edgaras
+      changes:
+        - createTable:
+            tableName: items
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_items
+              - column:
+                  name: title
+                  type: varchar(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(4000)
+              - column:
+                  name: price_per_day
+                  type: numeric(12, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deposit_amount
+                  type: numeric(12, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: fine_per_day
+                  type: numeric(12, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: condition
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: owner_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_items_category_id
+            baseTableName: items
+            baseColumnNames: category_id
+            referencedTableName: categories
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            constraintName: fk_items_owner_id
+            baseTableName: items
+            baseColumnNames: owner_id
+            referencedTableName: users
+            referencedColumnNames: id
+        - createIndex:
+            indexName: idx_items_category_id
+            tableName: items
+            columns:
+              - column:
+                  name: category_id
+        - createIndex:
+            indexName: idx_items_owner_id
+            tableName: items
+            columns:
+              - column:
+                  name: owner_id
+        - sql:
+            sql: >-
+              ALTER TABLE items
+                ADD CONSTRAINT ck_items_condition CHECK (condition IN ('NEW', 'LIKE_NEW', 'GOOD', 'FAIR', 'POOR')),
+                ADD CONSTRAINT ck_items_status CHECK (status IN ('ACTIVE', 'RENTED', 'ARCHIVED')),
+                ADD CONSTRAINT ck_items_title_not_blank CHECK (btrim(title) <> ''),
+                ADD CONSTRAINT ck_items_title_min_length CHECK (length(title) >= 3),
+                ADD CONSTRAINT ck_items_price_per_day_non_negative CHECK (price_per_day >= 0),
+                ADD CONSTRAINT ck_items_deposit_amount_non_negative CHECK (deposit_amount >= 0),
+                ADD CONSTRAINT ck_items_fine_per_day_non_negative CHECK (fine_per_day >= 0)
+      rollback:
+        - dropTable:
+            tableName: items

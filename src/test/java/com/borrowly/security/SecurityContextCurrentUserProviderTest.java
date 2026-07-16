@@ -1,5 +1,6 @@
 package com.borrowly.security;
 
+import com.borrowly.exception.AuthUserNotFoundException;
 import com.borrowly.model.user.User;
 import com.borrowly.repository.user.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -49,9 +50,8 @@ class SecurityContextCurrentUserProviderTest {
     @DisplayName("throws when the security context holds no authentication")
     void throwsWhenNoAuthentication() {
         SecurityContextHolder.clearContext();
-
         assertThatThrownBy(() -> provider.getCurrentUser())
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(AuthUserNotFoundException.class)
                 .hasMessageContaining("No authenticated user");
     }
 
@@ -63,9 +63,8 @@ class SecurityContextCurrentUserProviderTest {
                         "key",
                         "anonymousUser",
                         List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS"))));
-
         assertThatThrownBy(() -> provider.getCurrentUser())
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(AuthUserNotFoundException.class)
                 .hasMessageContaining("No authenticated user");
     }
 
@@ -74,9 +73,8 @@ class SecurityContextCurrentUserProviderTest {
     void throwsWhenPrincipalHasNoPersistedUser() {
         authenticateAs("ghost@example.com");
         when(userRepository.findByEmailIgnoreCase("ghost@example.com")).thenReturn(Optional.empty());
-
         assertThatThrownBy(() -> provider.getCurrentUser())
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(AuthUserNotFoundException.class)
                 .hasMessageContaining("ghost@example.com");
     }
 

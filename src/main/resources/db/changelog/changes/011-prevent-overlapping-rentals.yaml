@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-prevent-overlapping-rentals
+      author: edgaras
+      changes:
+        - sql:
+            sql: CREATE EXTENSION IF NOT EXISTS btree_gist
+        - sql:
+            sql: >-
+              ALTER TABLE rentals
+                ADD CONSTRAINT ex_rentals_no_overlap
+                EXCLUDE USING gist (
+                  item_id WITH =,
+                  daterange(start_date, end_date, '[]') WITH &&
+                ) WHERE (status IN ('ACTIVE', 'OVERDUE'))
+      rollback:
+        - sql:
+            sql: ALTER TABLE rentals DROP CONSTRAINT ex_rentals_no_overlap

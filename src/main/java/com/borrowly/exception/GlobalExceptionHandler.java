@@ -45,19 +45,19 @@ public class GlobalExceptionHandler {
                 .body(baseBody(HttpStatus.FORBIDDEN, "You are not allowed to perform this action"));
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+    @ExceptionHandler(AuthUserNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthUserNotFound(AuthUserNotFoundException ex) {
+        log.warn("Authenticated user could not be resolved: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(baseBody(HttpStatus.UNAUTHORIZED, "Authentication required"));
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleEmailExists(EmailAlreadyExistsException ex) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
-    }
-
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
-        log.warn("Illegal state: {}", ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(baseBody(HttpStatus.UNAUTHORIZED, ex.getMessage()));
     }
 
     private Map<String, Object> baseBody(HttpStatus status, String message) {
