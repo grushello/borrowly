@@ -133,9 +133,9 @@ class TransactionServiceTest {
         @DisplayName("throws InsufficientBalanceException when amount exceeds balance")
         void withdrawExceedsBalance() {
             when(currentUserProvider.getCurrentUser()).thenReturn(testUser);
+            WithdrawRequest request = new WithdrawRequest(new BigDecimal("200.00"));
 
-            assertThatThrownBy(() ->
-                    transactionService.withdraw(new WithdrawRequest(new BigDecimal("200.00"))))
+            assertThatThrownBy(() -> transactionService.withdraw(request))
                     .isInstanceOf(InsufficientBalanceException.class);
 
             verify(transactionRepository, never()).save(any());
@@ -153,12 +153,12 @@ class TransactionServiceTest {
         @BeforeEach
         void setUp() {
             rental = mock(Rental.class);
-            when(transactionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         }
 
         @Test
         @DisplayName("holdDeposit creates DEPOSIT_HELD and decreases borrower balance")
         void holdDeposit() {
+            when(transactionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
             transactionService.holdDeposit(testUser, new BigDecimal("25.00"), rental);
 
             assertThat(testUser.getCurrentBalance()).isEqualByComparingTo("75.00");
@@ -170,6 +170,7 @@ class TransactionServiceTest {
         @Test
         @DisplayName("chargeRent creates RENT_PAYMENT and decreases borrower balance")
         void chargeRent() {
+            when(transactionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
             transactionService.chargeRent(testUser, new BigDecimal("40.00"), rental);
 
             assertThat(testUser.getCurrentBalance()).isEqualByComparingTo("60.00");
@@ -180,6 +181,7 @@ class TransactionServiceTest {
         @Test
         @DisplayName("payoutRent creates RENT_PAYOUT and increases owner balance")
         void payoutRent() {
+            when(transactionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
             transactionService.payoutRent(testUser, new BigDecimal("40.00"), rental);
 
             assertThat(testUser.getCurrentBalance()).isEqualByComparingTo("140.00");
@@ -190,6 +192,7 @@ class TransactionServiceTest {
         @Test
         @DisplayName("returnDeposit creates DEPOSIT_RETURN and increases borrower balance")
         void returnDeposit() {
+            when(transactionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
             transactionService.returnDeposit(testUser, new BigDecimal("25.00"), rental);
 
             assertThat(testUser.getCurrentBalance()).isEqualByComparingTo("125.00");
@@ -200,6 +203,7 @@ class TransactionServiceTest {
         @Test
         @DisplayName("chargeFine creates FINE and decreases borrower balance (can go negative)")
         void chargeFine() {
+            when(transactionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
             transactionService.chargeFine(testUser, new BigDecimal("150.00"), rental);
 
             assertThat(testUser.getCurrentBalance()).isEqualByComparingTo("-50.00");
@@ -211,8 +215,7 @@ class TransactionServiceTest {
         @ValueSource(strings = {"holdDeposit", "chargeRent", "payoutRent", "returnDeposit", "chargeFine"})
         @DisplayName("internal methods are annotated with MANDATORY propagation")
         void mandatoryPropagation(String methodName) throws Exception {
-            Method method = TransactionService.class.getDeclaredMethods()
-                    [0].getDeclaringClass().getDeclaredMethod(
+            Method method = TransactionService.class.getDeclaredMethod(
                     methodName, User.class, BigDecimal.class, Rental.class);
             Transactional txAnnotation = method.getAnnotation(Transactional.class);
 
