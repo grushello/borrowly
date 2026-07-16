@@ -33,4 +33,7 @@ public interface ItemRepository extends JpaRepository<Item, UUID>, JpaSpecificat
             UUID id,
             ItemStatus excluded
     );
+
+    @EntityGraph(attributePaths = {"owner", "category"})
+    Page<Item> findByOwner_Id(UUID ownerId, Pageable pageable);
 }
