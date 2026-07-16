@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         userRepository.save(user);
-        log.info("Registered new user '{}'", user.getEmail());
+        log.info("Registered new user id={}", user.getId());
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
         return new AuthResponse(token, user.getEmail(), user.getRole());
@@ -61,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userRepository.findByEmailIgnoreCase(request.email())
                 .orElseThrow(() -> new UsernameNotFoundException(
-                        "User not found with email: " + request.email()));
+                        "Authenticated user could not be resolved"));
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
         return new AuthResponse(token, user.getEmail(), user.getRole());
