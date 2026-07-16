@@ -75,4 +75,19 @@ public class GlobalExceptionHandler {
         body.put("message", message);
         return body;
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
+        log.warn("User not found: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(CannotDisableSelfException.class)
+    public ResponseEntity<Map<String, Object>> handleCannotDisableSelf(CannotDisableSelfException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
 }

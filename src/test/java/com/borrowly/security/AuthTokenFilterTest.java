@@ -66,6 +66,27 @@ class AuthTokenFilterTest {
     }
 
     @Test
+    @DisplayName("a valid token for a disabled account is rejected and sets no context")
+    void disabledAccountIsRejected() throws Exception {
+        MockHttpServletRequest request = requestWithHeader("Bearer valid-token");
+
+        UserDetails disabled = User.withUsername("alice@example.com")
+                .password("hashed")
+                .roles("USER")
+                .disabled(true)
+                .build();
+
+        when(jwtUtil.validateJwtToken("valid-token")).thenReturn(true);
+        when(jwtUtil.getEmailFromToken("valid-token")).thenReturn("alice@example.com");
+        when(userDetailsService.loadUserByUsername("alice@example.com")).thenReturn(disabled);
+
+        authTokenFilter.doFilterInternal(request, new MockHttpServletResponse(), filterChain);
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        verify(filterChain).doFilter(any(), any());
+    }
+
+    @Test
     @DisplayName("an invalid token leaves the context empty and never loads a user")
     void invalidTokenLeavesContextEmpty() throws Exception {
         MockHttpServletRequest request = requestWithHeader("Bearer forged-token");
