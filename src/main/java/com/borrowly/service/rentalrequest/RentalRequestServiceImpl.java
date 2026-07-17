@@ -208,7 +208,6 @@ public class RentalRequestServiceImpl implements RentalRequestService {
 
         transactionService.holdDeposit(borrower, depositAmount, rental);
         transactionService.chargeRent(borrower, totalPrice, rental);
-        transactionService.payoutRent(item.getOwner(), totalPrice, rental);
 
         rentalRepository.save(rental);
 

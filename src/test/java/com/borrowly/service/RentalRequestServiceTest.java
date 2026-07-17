@@ -279,7 +279,7 @@ class RentalRequestServiceTest {
             // three money movements with correct amounts
             verify(transactionService).holdDeposit(eq(borrower), eq(new BigDecimal("50.00")), any());
             verify(transactionService).chargeRent(eq(borrower), eq(new BigDecimal("30.00")), any());
-            verify(transactionService).payoutRent(eq(owner), eq(new BigDecimal("30.00")), any());
+            verify(transactionService, never()).payoutRent(any(), any(), any());(transactionService).payoutRent(eq(owner), eq(new BigDecimal("30.00")), any());
 
             // item flipped to RENTED
             assertThat(item.getStatus()).isEqualTo(ItemStatus.RENTED);
