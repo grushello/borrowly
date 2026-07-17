@@ -55,7 +55,11 @@
             if (response.ok) {
                 window.location.href = '/dashboard';
             } else {
-                document.getElementById('error-message').style.display = 'block';
+                const errorData = await response.json();
+
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.textContent = errorData.message || "Error during authentication";
+                errorDiv.style.display = 'block';
             }
         } catch (error) {
             console.error("Network error:", error);
