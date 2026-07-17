@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -65,10 +64,14 @@ public interface RentalRepository extends JpaRepository<Rental, UUID> {
                                                  @Param("endDate") LocalDate endDate,
                                                  @Param("excludeRentalId") UUID excludeRentalId,
                                                  @Param("statuses") Collection<RentalStatus> statuses);
-
-    @EntityGraph(attributePaths = {"item", "item.owner", "borrower"})
-    Optional<Rental> findByItem_IdAndBorrower_IdAndStartDateAndEndDate(UUID itemId,
-                                                                       UUID borrowerId,
-                                                                       LocalDate startDate,
-                                                                       LocalDate endDate);
+    @Query("""
+    select case when count(r) > 0 then true else false end
+    from Rental r
+    where r.item.id = :itemId
+      and r.status in :statuses
+""")
+    boolean existsByItemIdAndStatusIn(
+            @Param("itemId") UUID itemId,
+            @Param("statuses") Collection<RentalStatus> statuses
+    );
 }
