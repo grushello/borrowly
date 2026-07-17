@@ -11,6 +11,7 @@ import com.borrowly.service.auth.AuthService;
 import com.borrowly.service.item.ItemService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -114,11 +116,18 @@ class UserItemControllerTest {
 
     @Test
     @WithMockUser
-    void sizeOver50Returns400() throws Exception {
+    void sizeOver50IsCappedTo50() throws Exception {
 
+        when(itemService.getCurrentUserItems(any(Pageable.class)))
+                .thenReturn(Page.empty());
 
         mockMvc.perform(get("/api/users/me/items")
                         .param("size", "100"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+        verify(itemService).getCurrentUserItems(captor.capture());
+
+        assertEquals(50, captor.getValue().getPageSize());
     }
 }

@@ -7,12 +7,12 @@ import com.borrowly.dto.response.ItemSummaryResponse;
 import com.borrowly.model.item.ItemCondition;
 import com.borrowly.service.item.ItemService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,12 +25,11 @@ import java.util.UUID;
 @Validated
 public class ItemController {
 
-    private static final int MAX_PAGE_SIZE = 50;
-
     private final ItemService itemService;
 
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ItemResponse create(
             @Valid @RequestBody CreateItemRequest request
     ) {
@@ -56,26 +55,12 @@ public class ItemController {
             @RequestParam(required = false)
             String search,
 
-            @RequestParam(defaultValue = "0")
-            @Min(value = 0, message = "Page must be 0 or greater")
-            int page,
-
-            @RequestParam(defaultValue = "20")
-            @Min(value = 1, message = "Size must be greater than 0")
-            int size,
-
-            @RequestParam(defaultValue = "createdAt")
-            String sort,
-
-            @RequestParam(defaultValue = "DESC")
-            Sort.Direction direction
+            @PageableDefault(
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            )
+            Pageable pageable
     ) {
-
-        Pageable pageable = PageRequest.of(
-                page,
-                Math.min(size, MAX_PAGE_SIZE),
-                Sort.by(direction, sort)
-        );
 
         return itemService.browseItems(
                 categoryId,
