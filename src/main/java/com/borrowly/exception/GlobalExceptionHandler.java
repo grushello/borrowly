@@ -88,6 +88,22 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(RentalNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleRentalNotFound(RentalNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(RentalNotReturnableException.class)
+    public ResponseEntity<Map<String, Object>> handleRentalNotReturnable(
+            RentalNotReturnableException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
+
     @ExceptionHandler({
             OptimisticLockException.class,
             OptimisticLockingFailureException.class
@@ -130,4 +146,47 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
     }
+
+    @ExceptionHandler(CannotFavoriteOwnItemException.class)
+    public ResponseEntity<Map<String, Object>> handleCannotFavoriteOwnItem(
+            CannotFavoriteOwnItemException ex) {
+        log.warn("Rejected self-favorite attempt");
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(baseBody(HttpStatus.FORBIDDEN, ex.getMessage()));
+    }
+
+    @ExceptionHandler(RentalRequestNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleRentalRequestNotFound(
+            RentalRequestNotFoundException ex) {
+        log.warn("Rental request not found: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(SelfRentalException.class)
+    public ResponseEntity<Map<String, Object>> handleSelfRental(SelfRentalException ex) {
+        log.warn("Self-rental attempt: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(baseBody(HttpStatus.FORBIDDEN, ex.getMessage()));
+    }
+
+    @ExceptionHandler(ForbiddenActionException.class)
+    public ResponseEntity<Map<String, Object>> handleForbiddenAction(ForbiddenActionException ex) {
+        log.warn("Forbidden action: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(baseBody(HttpStatus.FORBIDDEN, ex.getMessage()));
+    }
+
+    @ExceptionHandler(RentalConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleRentalConflict(RentalConflictException ex) {
+        log.warn("Rental conflict: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
 }
