@@ -13,12 +13,12 @@
         <h2>Signup</h2>
         <form id="signup-form" th:action="@{/signup}" method="post">
             <div class="input-container">
-                <label for="first-name-input">email</label>
+                <label for="first-name-input">First name</label>
                 <input id="first-name-input" type="text" name="first-name" placeholder="John">
             </div>
 
             <div class="input-container">
-                <label for="last-name-input">email</label>
+                <label for="last-name-input">Last name</label>
                 <input id="last-name-input" type="text" name="last-name" placeholder="Doe">
             </div>
 
@@ -62,9 +62,25 @@
                 });
 
                 if (response.ok) {
+                    const errorDiv = document.getElementById('error-message');
+                    errorDiv.style.display = 'hide';
                     window.location.href = '/dashboard';
                 } else {
-                    document.getElementById('error-message').style.display = 'block';
+                    const errorData = await response.json();
+                    const errorDiv = document.getElementById('error-message');
+
+                    if (response.status === 400 && errorData.fields) {
+                        let validationErrors = "Attention:\n";
+                        for (const [field, errorMessage] of Object.entries(errorData.fields)) {
+                            validationErrors += `- ${field}: ${errorMessage}\n`;
+                        }
+                        errorDiv.innerText = validationErrors;
+
+                    } else {
+                        errorDiv.textContent = errorData.message || "Error during registration";
+                    }
+
+                    errorDiv.style.display = 'block';
                 }
             } catch (error) {
                 console.error("Network error:", error);
