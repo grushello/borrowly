@@ -29,4 +29,6 @@ public interface TransactionService {
     Transaction returnDeposit(User borrower, BigDecimal amount, Rental rental);
 
     Transaction chargeFine(User borrower, BigDecimal amount, Rental rental);
+
+    Transaction payoutFine(User owner, BigDecimal amount, Rental rental);
 }
