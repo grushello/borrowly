@@ -183,7 +183,6 @@ class ItemMapperTest {
                 new BigDecimal("15.00"),
                 null,
                 null,
-                null,
                 null
         );
 
@@ -201,7 +200,7 @@ class ItemMapperTest {
     void updateEntity_neverTouchesImmutableFields() {
         UUID originalId = item.getId();
         UpdateItemRequest request = new UpdateItemRequest(
-                "New Title", null, null, null, null, null, null
+                "New Title", null, null, null, null, null
         );
 
         mapper.updateEntity(item, request);
