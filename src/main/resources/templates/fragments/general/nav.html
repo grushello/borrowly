@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Navbar</title>
@@ -11,8 +12,10 @@
             <a href="/dashboard">My Dashboard</a>
         </div>
         <div class="nav-fragment">
-            <a href="/signin">Sign in</a>
-            <a href="/logout">Log out</a>
+            <a sec:authorize="isAnonymous()" href="/signin">Sign in</a>
+            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
+                <button type="submit" class="btn-logout">Logout</button>
+            </form>
         </div>
     </nav>
 
