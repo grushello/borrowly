@@ -244,6 +244,34 @@ class RentalRequestServiceTest {
     class Approve {
 
         @Test
+        @DisplayName("an item with no deposit and no daily price moves no money")
+        void zeroAmountsMoveNoMoney() {
+            item.setDepositAmount(BigDecimal.ZERO);
+            item.setPricePerDay(BigDecimal.ZERO);
+            RentalRequest request = pendingRequest();
+
+            when(currentUserProvider.getCurrentUser()).thenReturn(owner);
+            when(rentalRequestRepository.findById(request.getId())).thenReturn(Optional.of(request));
+            when(rentalRepository.existsOverlappingByStatusesExcluding(
+                    any(), any(), any(), any(), anyList())).thenReturn(false);
+            when(rentalRequestRepository
+                    .findByItem_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                            eq(item.getId()), eq(RentalRequestStatus.PENDING), any(), any()))
+                    .thenReturn(List.of(request));
+            when(rentalMapper.toResponse(any())).thenReturn(mock(RentalResponse.class));
+
+            service.approve(request.getId());
+
+            // transactions.amount has a CHECK (amount >= 0.01), so a zero-value rental must
+            // record no transaction at all rather than fail on commit.
+            verify(transactionService, never()).holdDeposit(any(), any(), any());
+            verify(transactionService, never()).chargeRent(any(), any(), any());
+
+            assertThat(request.getStatus()).isEqualTo(RentalRequestStatus.APPROVED);
+            assertThat(item.getStatus()).isEqualTo(ItemStatus.RENTED);
+        }
+
+        @Test
         @DisplayName("full flow: 3 transactions, rental snapshot, item RENTED, overlap-only auto-reject, notifications")
         void fullFlow() {
             RentalRequest request = pendingRequest();
