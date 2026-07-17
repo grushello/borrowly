@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 @RequiredArgsConstructor
-public class CatalogController {
+public class CatalogPageController {
 
     @GetMapping("/")
     public String index(@PageableDefault(size = 12, sort = "title") Pageable pageable,
