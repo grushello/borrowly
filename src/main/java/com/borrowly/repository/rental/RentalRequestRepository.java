@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -43,4 +44,16 @@ public interface RentalRequestRepository extends JpaRepository<RentalRequest, UU
     boolean existsOverlappingApproved(@Param("itemId") UUID itemId,
                                       @Param("startDate") LocalDate startDate,
                                       @Param("endDate") LocalDate endDate);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "borrower"})
+    Page<RentalRequest> findByBorrower_IdAndStatus(UUID borrowerId,
+                                                   RentalRequestStatus status,
+                                                   Pageable pageable);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "borrower"})
+    List<RentalRequest> findByItem_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            UUID itemId,
+            RentalRequestStatus status,
+            LocalDate endDate,
+            LocalDate startDate);
 }
