@@ -28,7 +28,6 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -147,12 +146,12 @@ class UserControllerTest {
 
     @Test
     @WithMockUser
-    @DisplayName("GET /api/users/{id} throws UserNotFoundException when user not found")
-    void getUserByIdNotFoundThrowsException() {
+    @DisplayName("GET /api/users/{id} returns 404 when user not found")
+    void getUserByIdNotFoundReturns404() throws Exception {
         UUID id = UUID.randomUUID();
         when(userService.getUserSummary(id)).thenThrow(new UserNotFoundException(id));
 
-        assertThatThrownBy(() -> mockMvc.perform(get("/api/users/{id}", id)))
-                .hasCauseInstanceOf(UserNotFoundException.class);
+        mockMvc.perform(get("/api/users/{id}", id))
+                .andExpect(status().isNotFound());
     }
 }
