@@ -60,6 +60,14 @@ public class GlobalExceptionHandler {
                 .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
     }
 
+    @ExceptionHandler(ItemNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleItemNotFound(ItemNotFoundException ex) {
+        log.warn("Item not found: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
     @ExceptionHandler(InsufficientBalanceException.class)
     public ResponseEntity<Map<String, Object>> handleInsufficientBalance(
             InsufficientBalanceException ex) {
@@ -89,14 +97,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
-    }
-
-    @ExceptionHandler(ItemNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleItemNotFound(ItemNotFoundException ex) {
-        log.warn("Item not found: {}", ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
     }
 
     @ExceptionHandler(CannotFavoriteOwnItemException.class)
