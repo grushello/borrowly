@@ -11,7 +11,7 @@
 
     <main class="signin">
         <h2>Sign in with your credentials</h2>
-        <form>
+        <form id="signinForm" th:action="@{/signin}" method="post">
             <div class="input-container">
                 <label for="email-input">email</label>
                 <input id="email-input" type="text" name="email" placeholder="john.doe@gmail.com">
@@ -31,8 +31,35 @@
             <span>Do you need to create an account?</span>
             <a href="/signup">Sign up</a>
         </div>
+        <div id="error-message">
+            <span>There was an error with the login</span>
+        </div>
     </main>
     <footer th:replace="~{fragments/general/footer :: footer}">
     </footer>
 </body>
+<script>
+    document.getElementById('signinForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const email = document.getElementById('email-input').value;
+        const password = document.getElementById('password-input').value;
+
+        try {
+            const response = await fetch('/api/auth/signin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password: password })
+            });
+
+            if (response.ok) {
+                window.location.href = '/dashboard';
+            } else {
+                document.getElementById('error-message').style.display = 'block';
+            }
+        } catch (error) {
+            console.error("Network error:", error);
+        }
+    });
+</script>
 </html>
