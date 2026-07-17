@@ -5,6 +5,7 @@ import com.borrowly.model.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -103,6 +104,7 @@ public class Item extends BaseEntity {
     private User owner;
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 50)
     @Builder.Default
     private List<ItemImage> images = new ArrayList<>();
 

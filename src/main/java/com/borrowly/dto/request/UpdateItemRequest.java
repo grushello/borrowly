@@ -23,8 +23,6 @@ public record UpdateItemRequest(
         @DecimalMin("0.00")
         BigDecimal finePerDay,
 
-        ItemCondition condition,
-
-        UUID categoryId
+        ItemCondition condition
 ) {
 }
