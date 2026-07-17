@@ -135,6 +135,16 @@
     cursor: not-allowed;
 }
 
+.btn-book-disabled {
+    background-color: #6a6d73;
+    color: whitesmoke;
+}
+
+.btn-book-disabled:hover {
+    background-color: #6a6d73;
+    cursor: not-allowed;
+}
+
 .owner-profile {
     display: flex;
     align-items: center;
