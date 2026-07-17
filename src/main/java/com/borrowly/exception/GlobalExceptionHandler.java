@@ -88,6 +88,22 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(RentalNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleRentalNotFound(RentalNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(RentalNotReturnableException.class)
+    public ResponseEntity<Map<String, Object>> handleRentalNotReturnable(
+            RentalNotReturnableException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
+
     @ExceptionHandler({
             OptimisticLockException.class,
             OptimisticLockingFailureException.class
