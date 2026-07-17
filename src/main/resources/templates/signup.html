@@ -11,7 +11,17 @@
 
     <main class="signup">
         <h2>Signup</h2>
-        <form>
+        <form id="signup-form" th:action="@{/signup}" method="post">
+            <div class="input-container">
+                <label for="first-name-input">email</label>
+                <input id="first-name-input" type="text" name="first-name" placeholder="John">
+            </div>
+
+            <div class="input-container">
+                <label for="last-name-input">email</label>
+                <input id="last-name-input" type="text" name="last-name" placeholder="Doe">
+            </div>
+
             <div class="input-container">
                 <label for="email-input">email</label>
                 <input id="email-input" type="text" name="email" placeholder="john.doe@gmail.com">
@@ -24,10 +34,41 @@
 
             <button type="submit">Submit</button>
         </form>
+        <div id="error-message">
+            <span>There was an error with the signup</span>
+        </div>
     </main>
 
 
     <footer th:replace="~{fragments/general/footer :: footer}">
     </footer>
     </body>
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const payload = {
+                firstName: document.getElementById('first-name-input').value,
+                lastName: document.getElementById('last-name-input').value,
+                email: document.getElementById('email-input').value,
+                password: document.getElementById('password-input').value,
+            }
+
+            try {
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    window.location.href = '/dashboard';
+                } else {
+                    document.getElementById('error-message').style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Network error:", error);
+            }
+        });
+    </script>
 </html>
