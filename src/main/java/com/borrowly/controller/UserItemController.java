@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users/me")
-@Validated
 public class UserItemController {
 
     private final ItemService itemService;

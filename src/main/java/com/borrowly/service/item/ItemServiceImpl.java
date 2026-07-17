@@ -93,13 +93,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponse getById(UUID id) {
-
-        Item item = itemRepository.findByIdAndStatusNot(
-                        id,
-                        ItemStatus.ARCHIVED
-                )
-                .orElseThrow(() ->
-                        new ItemNotFoundException(id));
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException(id));
 
         Double averageRating =
                 reviewRepository.averageRatingByItemId(id);
@@ -124,7 +119,6 @@ public class ItemServiceImpl implements ItemService {
             String search,
             Pageable pageable
     ) {
-
         return itemRepository.findAll(
                         ItemSpecification.browse(
                                 categoryId,

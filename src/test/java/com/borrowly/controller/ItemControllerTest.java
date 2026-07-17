@@ -167,8 +167,7 @@ class ItemControllerTest {
                         BigDecimal.TEN,
                         BigDecimal.TEN,
                         BigDecimal.ONE,
-                        ItemCondition.NEW,
-                        UUID.randomUUID()
+                        ItemCondition.NEW
                 );
 
 

@@ -180,9 +180,7 @@ class ItemServiceImplTest {
     @DisplayName("getById returns active item")
     void getActiveItem() {
 
-        when(itemRepository.findByIdAndStatusNot(
-                item.getId(),
-                ItemStatus.ARCHIVED))
+        when(itemRepository.findById(item.getId()))
                 .thenReturn(Optional.of(item));
 
 
@@ -190,10 +188,7 @@ class ItemServiceImplTest {
 
 
         verify(itemRepository)
-                .findByIdAndStatusNot(
-                        item.getId(),
-                        ItemStatus.ARCHIVED
-                );
+                .findById(item.getId());
     }
 
 
@@ -204,9 +199,7 @@ class ItemServiceImplTest {
         item.setStatus(ItemStatus.RENTED);
 
 
-        when(itemRepository.findByIdAndStatusNot(
-                item.getId(),
-                ItemStatus.ARCHIVED))
+        when(itemRepository.findById(item.getId()))
                 .thenReturn(Optional.of(item));
 
 
@@ -214,28 +207,22 @@ class ItemServiceImplTest {
 
 
         verify(itemRepository)
-                .findByIdAndStatusNot(
-                        item.getId(),
-                        ItemStatus.ARCHIVED
-                );
+                .findById(item.getId());
     }
-
 
     @Test
-    @DisplayName("archived item is hidden")
-    void archivedItemNotVisible() {
+    @DisplayName("getById returns archived item")
+    void getArchivedItem() {
 
-        when(itemRepository.findByIdAndStatusNot(
-                item.getId(),
-                ItemStatus.ARCHIVED))
-                .thenReturn(Optional.empty());
+        item.setStatus(ItemStatus.ARCHIVED);
 
+        when(itemRepository.findById(item.getId()))
+                .thenReturn(Optional.of(item));
 
-        assertThatThrownBy(() ->
-                itemService.getById(item.getId()))
-                .isInstanceOf(ItemNotFoundException.class);
+        itemService.getById(item.getId());
+
+        verify(itemRepository).findById(item.getId());
     }
-
 
     @Test
     @DisplayName("update own item")
@@ -248,8 +235,7 @@ class ItemServiceImplTest {
                         BigDecimal.TEN,
                         BigDecimal.TEN,
                         BigDecimal.ONE,
-                        ItemCondition.NEW,
-                        category.getId()
+                        ItemCondition.NEW
                 );
 
 
@@ -290,7 +276,6 @@ class ItemServiceImplTest {
         UpdateItemRequest request =
                 new UpdateItemRequest(
                         "Updated title",
-                        null,
                         null,
                         null,
                         null,
