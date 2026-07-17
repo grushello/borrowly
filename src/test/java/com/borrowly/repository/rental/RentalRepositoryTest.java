@@ -476,4 +476,199 @@ class RentalRepositoryTest extends AbstractPostgresTest {
             return stats.getPrepareStatementCount();
         }
     }
+    @Nested
+    @DisplayName("findByEndDateBeforeAndStatusIn — overdue scan with reminders")
+    class OverdueScanWithStatuses {
+
+        private static final Set<RentalStatus> OVERDUE_STATUSES =
+                Set.of(
+                        RentalStatus.ACTIVE,
+                        RentalStatus.OVERDUE
+                );
+
+        @Test
+        @DisplayName("finds both ACTIVE and OVERDUE rentals whose endDate is past")
+        void findsActiveAndAlreadyOverdueRentals() {
+
+            LocalDate today = LocalDate.of(2026, Month.JULY, 20);
+
+            Item activeItem = persistItem(
+                    borrower,
+                    "Camera"
+            );
+
+            Item overdueItem = persistItem(
+                    otherBorrower,
+                    "Laptop"
+            );
+
+            Item futureItem = persistItem(
+                    borrower,
+                    "Projector"
+            );
+
+            Item returnedItem = persistItem(
+                    otherBorrower,
+                    "Console"
+            );
+
+
+            Rental activeRental = persistRental(
+                    activeItem,
+                    borrower,
+                    LocalDate.of(2026, Month.JULY, 1),
+                    LocalDate.of(2026, Month.JULY, 10),
+                    RentalStatus.ACTIVE
+            );
+
+
+            Rental overdueRental = persistRental(
+                    overdueItem,
+                    otherBorrower,
+                    LocalDate.of(2026, Month.JULY, 1),
+                    LocalDate.of(2026, Month.JULY, 12),
+                    RentalStatus.OVERDUE
+            );
+
+
+            // Should not be returned (end date is after cutoff)
+            persistRental(
+                    futureItem,
+                    borrower,
+                    LocalDate.of(2026, Month.JULY, 1),
+                    LocalDate.of(2026, Month.JULY, 25),
+                    RentalStatus.ACTIVE
+            );
+
+
+            // Should not be returned (status is RETURNED)
+            persistRental(
+                    returnedItem,
+                    borrower,
+                    LocalDate.of(2026, Month.JULY, 1),
+                    LocalDate.of(2026, Month.JULY, 10),
+                    RentalStatus.RETURNED
+            );
+
+
+            flushAndClear();
+
+
+            List<Rental> result =
+                    rentalRepository.findByEndDateBeforeAndStatusIn(
+                            today,
+                            List.of(
+                                    RentalStatus.ACTIVE,
+                                    RentalStatus.OVERDUE
+                            )
+                    );
+
+
+            assertThat(result)
+                    .extracting(Rental::getId)
+                    .containsExactlyInAnyOrder(
+                            activeRental.getId(),
+                            overdueRental.getId()
+                    );
+        }
+
+
+        @Test
+        @DisplayName("ignores rentals ending exactly on cutoff date")
+        void cutoffIsExclusive() {
+
+            LocalDate cutoff = LocalDate.of(2026, Month.JULY, 15);
+
+            persistRental(
+                    item,
+                    borrower,
+                    JUL_10,
+                    cutoff,
+                    RentalStatus.ACTIVE
+            );
+
+            flushAndClear();
+
+            assertThat(
+                    rentalRepository.findByEndDateBeforeAndStatusIn(
+                            cutoff,
+                            List.of(
+                                    RentalStatus.ACTIVE,
+                                    RentalStatus.OVERDUE
+                            )
+                    )
+            ).isEmpty();
+        }
+
+
+        @Test
+        @DisplayName("ignores statuses not included in the filter")
+        void filtersStatuses() {
+
+            LocalDate today = LocalDate.of(2026, Month.JULY, 20);
+
+            persistRental(
+                    item,
+                    borrower,
+                    JUL_01,
+                    JUL_05,
+                    RentalStatus.RETURNED
+            );
+
+            flushAndClear();
+
+            assertThat(
+                    rentalRepository.findByEndDateBeforeAndStatusIn(
+                            today,
+                            List.of(
+                                    RentalStatus.ACTIVE,
+                                    RentalStatus.OVERDUE
+                            )
+                    )
+            ).isEmpty();
+        }
+
+
+        @Test
+        @DisplayName("returns all matching rentals for scheduler batch processing")
+        void returnsFullList() {
+
+            Item activeItem = persistItem(owner, "Drill");
+            Item overdueItem = persistItem(owner, "Camera");
+
+            Rental activeRental = persistRental(
+                    activeItem,
+                    borrower,
+                    JUL_01,
+                    JUL_05,
+                    RentalStatus.ACTIVE
+            );
+
+            Rental overdueRental = persistRental(
+                    overdueItem,
+                    otherBorrower,
+                    JUL_01,
+                    JUL_10,
+                    RentalStatus.OVERDUE
+            );
+
+            flushAndClear();
+
+            List<Rental> result =
+                    rentalRepository.findByEndDateBeforeAndStatusIn(
+                            LocalDate.of(2026, Month.JULY, 20),
+                            List.of(
+                                    RentalStatus.ACTIVE,
+                                    RentalStatus.OVERDUE
+                            )
+                    );
+
+            assertThat(result)
+                    .extracting(Rental::getId)
+                    .containsExactlyInAnyOrder(
+                            activeRental.getId(),
+                            overdueRental.getId()
+                    );
+        }
+    }
 }
