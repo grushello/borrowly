@@ -1,6 +1,9 @@
 package com.borrowly.controller;
 
+import com.borrowly.dto.response.ItemResponse;
+import com.borrowly.service.ItemService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
@@ -11,6 +14,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 @Controller
 @RequiredArgsConstructor
 public class CatalogPageController {
+
+//    private final ItemService itemService;
 
     @GetMapping("/")
     public String index(@PageableDefault(size = 12, sort = "title") Pageable pageable,
@@ -39,8 +44,6 @@ public class CatalogPageController {
     public String getItemDetail(@PathVariable("id") String id, Model model) {
 
         // ItemResponse item = itemService.findById(id);
-
-
         model.addAttribute("fakeItemId", id);
         return "item";
     }
