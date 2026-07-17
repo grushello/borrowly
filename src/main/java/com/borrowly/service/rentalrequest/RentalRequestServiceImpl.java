@@ -59,10 +59,6 @@ public class RentalRequestServiceImpl implements RentalRequestService {
     private final RentalMapper rentalMapper;
     private final CurrentUserProvider currentUserProvider;
 
-    // ---------------------------------------------------------------------
-    // Borrower: create a request
-    // ---------------------------------------------------------------------
-
     @Override
     @Transactional
     public RentalRequestResponse create(CreateRentalRequest request) {
@@ -126,10 +122,6 @@ public class RentalRequestServiceImpl implements RentalRequestService {
         return rentalRequestMapper.toResponse(rentalRequest);
     }
 
-    // ---------------------------------------------------------------------
-    // Listing
-    // ---------------------------------------------------------------------
-
     @Override
     @Transactional(readOnly = true)
     public Page<RentalRequestResponse> getIncoming(RentalRequestStatus status, Pageable pageable) {
@@ -154,10 +146,6 @@ public class RentalRequestServiceImpl implements RentalRequestService {
         return requests.map(rentalRequestMapper::toResponse);
     }
 
-    // ---------------------------------------------------------------------
-    // Owner: approve
-    // ---------------------------------------------------------------------
-
     @Override
     @Transactional
     public RentalResponse approve(UUID requestId) {
@@ -166,7 +154,6 @@ public class RentalRequestServiceImpl implements RentalRequestService {
 
         requireItemOwner(rentalRequest, owner);
 
-        // Idempotency: an already-approved request returns its existing rental untouched.
         if (rentalRequest.getStatus() == RentalRequestStatus.APPROVED) {
             Rental existing = rentalRepository
                     .findByItem_IdAndBorrower_IdAndStartDateAndEndDate(
@@ -219,14 +206,12 @@ public class RentalRequestServiceImpl implements RentalRequestService {
                 .status(RentalStatus.ACTIVE)
                 .build();
 
-        // Money movement: hold deposit, charge borrower, pay out to owner.
         transactionService.holdDeposit(borrower, depositAmount, rental);
         transactionService.chargeRent(borrower, totalPrice, rental);
         transactionService.payoutRent(item.getOwner(), totalPrice, rental);
 
         rentalRepository.save(rental);
 
-        // Item has @Version: a concurrent approval/edit surfaces as an optimistic-lock failure.
         try {
             item.setStatus(ItemStatus.RENTED);
             itemRepository.save(item);
@@ -240,7 +225,6 @@ public class RentalRequestServiceImpl implements RentalRequestService {
 
         rentalRequest.approve();
 
-        // Auto-reject the other pending requests for this item whose dates overlap the approved range.
         List<RentalRequest> conflicts = rentalRequestRepository
                 .findByItem_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                         item.getId(), RentalRequestStatus.PENDING, endDate, startDate);
@@ -273,10 +257,6 @@ public class RentalRequestServiceImpl implements RentalRequestService {
         return rentalMapper.toResponse(rental);
     }
 
-    // ---------------------------------------------------------------------
-    // Owner: reject
-    // ---------------------------------------------------------------------
-
     @Override
     @Transactional
     public RentalRequestResponse reject(UUID requestId) {
@@ -301,10 +281,6 @@ public class RentalRequestServiceImpl implements RentalRequestService {
         return rentalRequestMapper.toResponse(rentalRequest);
     }
 
-    // ---------------------------------------------------------------------
-    // Borrower: cancel
-    // ---------------------------------------------------------------------
-
     @Override
     @Transactional
     public RentalRequestResponse cancel(UUID requestId) {
@@ -321,10 +297,6 @@ public class RentalRequestServiceImpl implements RentalRequestService {
         log.info("Canceled rental request '{}'", rentalRequest.getId());
         return rentalRequestMapper.toResponse(rentalRequest);
     }
-
-    // ---------------------------------------------------------------------
-    // Helpers
-    // ---------------------------------------------------------------------
 
     private RentalRequest getRequestOrThrow(UUID requestId) {
         return rentalRequestRepository.findById(requestId)
@@ -344,7 +316,6 @@ public class RentalRequestServiceImpl implements RentalRequestService {
         }
     }
 
-    /** Inclusive rental length in days (both start and end count as rented days). */
     private long rentalDays(LocalDate startDate, LocalDate endDate) {
         return ChronoUnit.DAYS.between(startDate, endDate) + 1;
     }
