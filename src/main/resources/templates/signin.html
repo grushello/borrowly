@@ -6,7 +6,7 @@
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
-    <nav th:replace="~{fragments/nav :: nav}">
+    <nav th:replace="~{fragments/general/nav :: nav}">
     </nav>
 
     <main class="signin">
@@ -32,7 +32,7 @@
             <a href="/signup">Sign up</a>
         </div>
     </main>
-    <footer th:replace="~{fragments/footer :: footer}">
+    <footer th:replace="~{fragments/general/footer :: footer}">
     </footer>
 </body>
 </html>

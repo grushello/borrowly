@@ -9,18 +9,18 @@
     <link rel="stylesheet" th:href="@{/css/dashboard/financialSummaryWidget.css}">
 </head>
 <body>
-    <nav th:replace="~{fragments/nav :: nav}">
+    <nav th:replace="~{fragments/general/nav :: nav}">
     </nav>
 
     <main class="dashboard-grid">
-        <div th:replace="~{fragments/activeRentalsWidget :: activeRentalsWidget}">...</div>
+        <div th:replace="~{fragments/dashboard/activeRentalsWidget :: activeRentalsWidget}">...</div>
 
-        <div th:replace="~{fragments/financialSummaryWidget :: financialSummaryWidget}">...</div>
+        <div th:replace="~{fragments/dashboard/financialSummaryWidget :: financialSummaryWidget}">...</div>
 
-        <div th:replace="~{fragments/favoritesWidget :: favoritesWidget}">...</div>
+        <div th:replace="~{fragments/dashboard/favoritesWidget :: favoritesWidget}">...</div>
     </main>
 
-    <div th:insert="~{fragments/footer :: footer}">
+    <div th:insert="~{fragments/general/footer :: footer}">
     </div>
 
 </body>

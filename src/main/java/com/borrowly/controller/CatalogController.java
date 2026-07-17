@@ -1,8 +1,6 @@
 package com.borrowly.controller;
 
-import com.borrowly.dto.response.ItemResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
@@ -12,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 @RequiredArgsConstructor
-public class HomepageController {
+public class CatalogController {
 
     @GetMapping("/")
     public String index(@PageableDefault(size = 12, sort = "title") Pageable pageable,

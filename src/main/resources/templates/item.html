@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <title>Item details</title>
   <link rel="stylesheet" th:href="@{/css/main.css}">
-  <link rel="stylesheet" th:href="@{/css/itemPage.css}">
+  <link rel="stylesheet" th:href="@{/css/itemPage/itemPage.css}">
 </head>
 <body>
-    <nav th:replace="~{fragments/nav :: nav}">
+    <nav th:replace="~{fragments/general/nav :: nav}">
     </nav>
     <main class="item-page-container">
 
@@ -76,7 +76,7 @@
       </div>
   </main>
 
-  <footer th:replace="~{fragments/footer :: footer}">
+  <footer th:replace="~{fragments/general/footer :: footer}">
   </footer>
 
 </body>
