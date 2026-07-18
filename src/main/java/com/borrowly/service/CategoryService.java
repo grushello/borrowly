@@ -7,7 +7,9 @@ import com.borrowly.model.item.Category;
 import com.borrowly.repository.item.CategoryRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +35,12 @@ public class CategoryService {
     }
 
     public CategoryResponse add(CategoryRequest categoryRequest) {
+        if (categoryRepository.existsByNameIgnoreCase(categoryRequest.name())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "A category with the name '" + categoryRequest.name() + "' already exists."
+            );
+        }
         Category category = categoryMapper.toEntity(categoryRequest);
         return categoryMapper.toResponse(categoryRepository.save(category));
     }
