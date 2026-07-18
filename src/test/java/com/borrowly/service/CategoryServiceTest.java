@@ -4,7 +4,6 @@ import com.borrowly.dto.request.CategoryRequest;
 import com.borrowly.dto.response.CategoryResponse;
 import com.borrowly.mapper.CategoryMapper;
 import com.borrowly.model.item.Category;
-import com.borrowly.model.item.Item;
 import com.borrowly.repository.item.CategoryRepository;
 import com.borrowly.repository.item.ItemRepository;
 import jakarta.persistence.EntityNotFoundException;
