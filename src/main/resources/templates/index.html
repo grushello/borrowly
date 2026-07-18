@@ -13,6 +13,18 @@
     </nav>
 
     <main>
+
+        <form th:action="@{/}" method="GET" class="search-form">
+            <label for="search-input"></label>
+            <input type="text"
+                   name="search"
+                   th:value="${currentSearch}"
+                   placeholder="Search in the catalog..." id="search-input">
+
+            <button type="submit">Search</button>
+
+        </form>
+
         <div th:if="${itemPage.isEmpty()}" class="no-results">
             <p>The catalog is empty.</p>
         </div>
