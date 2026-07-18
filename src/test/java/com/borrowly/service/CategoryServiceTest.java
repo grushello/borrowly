@@ -15,6 +15,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,6 +55,23 @@ class CategoryServiceTest {
 
         assertEquals(category2.getName(), results.get(1).name());
         assertEquals(category2.getDescription(), results.get(1).description());
+    }
+
+    @Test
+    void addCategory_DuplicateReturnsConflictAndStatus409() {
+        // Arrange
+        CategoryRequest request = new CategoryRequest("Furniture", "All things furniture");
+
+        when(categoryRepository.existsByNameIgnoreCase("Furniture")).thenReturn(true);
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> categoryService.add(request)
+        );
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+
+        verify(categoryRepository, never()).save(any(Category.class));
     }
 
     @Test
