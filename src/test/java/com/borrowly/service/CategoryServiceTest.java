@@ -136,14 +136,16 @@ class CategoryServiceTest {
         Category existingCategory = Category.builder()
                 .name("Fishing")
                 .build();
-
         UUID id = existingCategory.getId();
 
+        assertNotNull(id);
+        when(categoryRepository.existsById(id)).thenReturn(true);
+        when(itemRepository.existsByCategory_Id(id)).thenReturn(false);
         when(categoryRepository.findById(id)).thenReturn(Optional.of(existingCategory));
 
         categoryService.delete(id);
 
-        verify(categoryRepository).findById(id);
+        verify(itemRepository).existsByCategory_Id(id);
         verify(categoryRepository).delete(existingCategory);
     }
 
@@ -151,14 +153,14 @@ class CategoryServiceTest {
     void delete_deleteThrowsExceptionWhenIdNotFound() {
         UUID fakeId = UUID.randomUUID();
 
-        when(categoryRepository.findById(fakeId)).thenReturn(Optional.empty());
+        when(itemRepository.existsByCategory_Id(fakeId)).thenReturn(false);
+        when(categoryRepository.existsById(fakeId)).thenReturn(false);
 
-        assertThrows(EntityNotFoundException.class, () -> {
+        assertThrows(ResponseStatusException.class, () -> {
             categoryService.delete(fakeId);
         });
 
-        verify(categoryRepository).findById(fakeId);
-
+        verify(categoryRepository).existsById(fakeId);
         verify(categoryRepository, never()).delete(any());
     }
 
