@@ -4,6 +4,7 @@ import com.borrowly.dto.request.CategoryRequest;
 import com.borrowly.dto.response.CategoryResponse;
 import com.borrowly.mapper.CategoryMapper;
 import com.borrowly.model.item.Category;
+import com.borrowly.model.item.Item;
 import com.borrowly.repository.item.CategoryRepository;
 import com.borrowly.repository.item.ItemRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,6 +30,9 @@ import static org.mockito.Mockito.*;
 class CategoryServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private ItemRepository itemRepository;
 
     @Spy
     private CategoryMapper categoryMapper = Mappers.getMapper(CategoryMapper.class);
@@ -156,5 +160,22 @@ class CategoryServiceTest {
         verify(categoryRepository).findById(fakeId);
 
         verify(categoryRepository, never()).delete(any());
+    }
+
+    @Test
+    void delete_ShouldThrowConflict_WhenItemsAreAssociated() {
+        UUID id = UUID.randomUUID();
+        when(itemRepository.existsByCategory_Id(id)).thenReturn(true);
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> categoryService.delete(id)
+        );
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+        assertEquals("Cannot eliminate: there are associated items with this category.", exception.getReason());
+
+        verify(categoryRepository, never()).deleteById(any());
+        verify(itemRepository).existsByCategory_Id(id);
     }
 }
