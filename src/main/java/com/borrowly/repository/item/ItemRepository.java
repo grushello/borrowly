@@ -41,4 +41,6 @@ public interface ItemRepository extends JpaRepository<Item, UUID>, JpaSpecificat
     @Override
     @EntityGraph(attributePaths = {"owner", "images"})
     Page<Item> findAll(Specification<Item> spec, Pageable pageable);
+
+    boolean existsByCategory_Id(UUID categoryId);
 }
