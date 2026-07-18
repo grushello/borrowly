@@ -2,11 +2,13 @@ package com.borrowly.service;
 
 import com.borrowly.dto.request.CategoryRequest;
 import com.borrowly.dto.response.CategoryResponse;
+import com.borrowly.exception.CategoryAlreadyExistsException;
+import com.borrowly.exception.CategoryConflictException;
+import com.borrowly.exception.CategoryNotFoundException;
 import com.borrowly.mapper.CategoryMapper;
 import com.borrowly.model.item.Category;
 import com.borrowly.repository.item.CategoryRepository;
 import com.borrowly.repository.item.ItemRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -15,8 +17,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -67,12 +67,10 @@ class CategoryServiceTest {
 
         when(categoryRepository.existsByNameIgnoreCase("Furniture")).thenReturn(true);
 
-        ResponseStatusException exception = assertThrows(
-                ResponseStatusException.class,
+        assertThrows(
+                CategoryAlreadyExistsException.class,
                 () -> categoryService.add(request)
         );
-
-        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
 
         verify(categoryRepository, never()).save(any(Category.class));
     }
@@ -103,7 +101,7 @@ class CategoryServiceTest {
 
         when(categoryRepository.findById(fakeId)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> {
+        assertThrows(CategoryNotFoundException.class, () -> {
             categoryService.findById(fakeId);
         });
 
@@ -138,7 +136,6 @@ class CategoryServiceTest {
         UUID id = existingCategory.getId();
 
         assertNotNull(id);
-        when(categoryRepository.existsById(id)).thenReturn(true);
         when(itemRepository.existsByCategory_Id(id)).thenReturn(false);
         when(categoryRepository.findById(id)).thenReturn(Optional.of(existingCategory));
 
@@ -153,13 +150,16 @@ class CategoryServiceTest {
         UUID fakeId = UUID.randomUUID();
 
         when(itemRepository.existsByCategory_Id(fakeId)).thenReturn(false);
-        when(categoryRepository.existsById(fakeId)).thenReturn(false);
 
-        assertThrows(ResponseStatusException.class, () -> {
+        when(categoryRepository.findById(fakeId)).thenReturn(Optional.empty());
+
+        assertThrows(CategoryNotFoundException.class, () -> {
             categoryService.delete(fakeId);
         });
 
-        verify(categoryRepository).existsById(fakeId);
+        verify(itemRepository).existsByCategory_Id(fakeId);
+        verify(categoryRepository).findById(fakeId);
+
         verify(categoryRepository, never()).delete(any());
     }
 
@@ -168,13 +168,10 @@ class CategoryServiceTest {
         UUID id = UUID.randomUUID();
         when(itemRepository.existsByCategory_Id(id)).thenReturn(true);
 
-        ResponseStatusException exception = assertThrows(
-                ResponseStatusException.class,
+        assertThrows(
+                CategoryConflictException.class,
                 () -> categoryService.delete(id)
         );
-
-        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
-        assertEquals("Cannot eliminate: there are associated items with this category.", exception.getReason());
 
         verify(categoryRepository, never()).deleteById(any());
         verify(itemRepository).existsByCategory_Id(id);
