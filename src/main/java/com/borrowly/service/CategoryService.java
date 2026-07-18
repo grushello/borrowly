@@ -5,6 +5,7 @@ import com.borrowly.dto.response.CategoryResponse;
 import com.borrowly.mapper.CategoryMapper;
 import com.borrowly.model.item.Category;
 import com.borrowly.repository.item.CategoryRepository;
+import com.borrowly.repository.item.ItemRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ItemRepository itemRepository;
     private final CategoryMapper categoryMapper;
 
     public List<CategoryResponse> findAll() {
@@ -52,6 +54,16 @@ public class CategoryService {
     }
 
     public void delete(UUID id) {
+        if (itemRepository.existsByCategory_Id(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Cannot eliminate: there are associated items with this category."
+            );
+        }
+
+        if (!categoryRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found.");
+        }
         Category category = categoryRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         categoryRepository.delete(category);
     }
