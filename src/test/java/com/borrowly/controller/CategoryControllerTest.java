@@ -23,8 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -113,10 +112,62 @@ class CategoryControllerTest {
     }
 
     @Test
+    void addCategory_WhenNameIsBlank_ReturnsStatus400() throws Exception {
+        CategoryRequest request = new CategoryRequest(" ", "Valid description");
+
+        mockMvc.perform(post("/api/admin/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fields.name").exists());
+    }
+
+    @Test
+    void addCategory_WhenNameIsTooLong_ReturnsStatus400() throws Exception {
+        String tooLongName = "a".repeat(101);
+        CategoryRequest request = new CategoryRequest(tooLongName, "Valid description");
+
+        mockMvc.perform(post("/api/admin/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fields.name").exists());
+
+        verifyNoInteractions(categoryService);
+    }
+
+    @Test
+    void addCategory_WhenDescriptionIsTooLong_ReturnsStatus400() throws Exception {
+        String tooLongDescription = "a".repeat(501);
+        CategoryRequest request = new CategoryRequest("Valid name", tooLongDescription);
+
+        mockMvc.perform(post("/api/admin/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fields.description").exists());
+
+        verifyNoInteractions(categoryService);
+    }
+
+    @Test
     void deleteCategory_ReturnsStatus200() throws Exception {
         UUID id = UUID.randomUUID();
 
         mockMvc.perform(delete("/api/admin/categories/{id}", id))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void deleteCategory_Returns409_WhenItemsAreAssociated() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        doThrow(new ResponseStatusException(HttpStatus.CONFLICT))
+                .when(categoryService).delete(id);
+
+        mockMvc.perform(delete("/api/admin/categories/{id}", id))
+                .andExpect(status().isConflict());
+
+        verify(categoryService).delete(id);
     }
 }
