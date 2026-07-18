@@ -28,7 +28,7 @@ public class CatalogPageController {
                         @RequestParam(required = false) String search,
                         @PageableDefault(size = 12, sort = "title") Pageable pageable,
                         Model model){
-        
+
         Page<ItemSummaryResponse> itemPage = itemService.browseItems(categoryId, condition, minPrice, maxPrice, search, pageable);
 
         model.addAttribute("itemPage", itemPage);
