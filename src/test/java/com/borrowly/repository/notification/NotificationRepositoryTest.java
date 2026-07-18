@@ -278,6 +278,36 @@ class NotificationRepositoryTest extends AbstractPostgresTest {
     }
 
 
+    // ck_notifications_type only lists the types known when 010 ran. Hibernate validates
+    // columns but not check constraints, so a missing value here fails on insert, not startup.
+    @Test
+    void shouldSaveNotificationsWithTypesAddedByChangeset012() {
+
+        Notification overdue = notificationRepository.saveAndFlush(
+                Notification.builder()
+                        .message("Your rental of 'Drill' is 2 days overdue")
+                        .type(NotificationType.RENTAL_OVERDUE)
+                        .recipient(recipient)
+                        .rental(rental)
+                        .build()
+        );
+
+
+        Notification withdrawal = notificationRepository.saveAndFlush(
+                Notification.builder()
+                        .message("Withdrawal of 25.00 completed")
+                        .type(NotificationType.WITHDRAWAL_COMPLETED)
+                        .recipient(recipient)
+                        .transaction(transaction)
+                        .build()
+        );
+
+
+        assertThat(overdue.getId()).isNotNull();
+        assertThat(withdrawal.getId()).isNotNull();
+    }
+
+
     @Test
     void shouldSaveNotificationWithRentalAndTransactionAndReloadRelations() {
 

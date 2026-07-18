@@ -1,12 +1,11 @@
 package com.borrowly.model.rental;
 
+import com.borrowly.model.BaseEntity;
 import com.borrowly.model.item.Item;
 import com.borrowly.model.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,8 +19,8 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @ToString(exclude = {"item", "borrower"})
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Rental {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+public class Rental extends BaseEntity {
 
     @Id
     @EqualsAndHashCode.Include
@@ -82,10 +81,10 @@ public class Rental {
     @Builder.Default
     private RentalStatus status = RentalStatus.ACTIVE;
 
-    @CreationTimestamp
+    // Timestamps are set in @PrePersist/@PreUpdate below: Hibernate's @CreationTimestamp and
+    // @UpdateTimestamp are only generated once the INSERT/UPDATE runs.
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     @PrePersist
@@ -93,6 +92,14 @@ public class Rental {
         if (status == null) {
             status = RentalStatus.ACTIVE;
         }
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void returnItem(LocalDate date) {

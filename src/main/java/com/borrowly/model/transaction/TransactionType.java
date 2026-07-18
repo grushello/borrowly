@@ -8,5 +8,6 @@ public enum TransactionType {
     DEPOSIT_HELD,
     DEPOSIT_RETURN,
     REFUND,
-    FINE
+    FINE,
+    FINE_PAYOUT
 }

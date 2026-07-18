@@ -1,4 +1,192 @@
 package com.borrowly.exception;
 
+import jakarta.persistence.OptimisticLockException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+
+
+@RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+        Map<String, String> fields = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                fields.put(error.getField(), error.getDefaultMessage()));
+
+        Map<String, Object> body = baseBody(HttpStatus.BAD_REQUEST, "Validation failed");
+        body.put("fields", fields);
+        return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthentication(AuthenticationException ex) {
+        log.warn("Authentication failed: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(baseBody(HttpStatus.UNAUTHORIZED, "Invalid username or password"));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
+        log.warn("Access denied: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(baseBody(HttpStatus.FORBIDDEN, "You are not allowed to perform this action"));
+    }
+
+    @ExceptionHandler(AuthUserNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthUserNotFound(AuthUserNotFoundException ex) {
+        log.warn("Authenticated user could not be resolved: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(baseBody(HttpStatus.UNAUTHORIZED, "Authentication required"));
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleEmailExists(EmailAlreadyExistsException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
+    @ExceptionHandler(ItemNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleItemNotFound(ItemNotFoundException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleCategoryNotFound(CategoryNotFoundException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+
+    @ExceptionHandler(ItemHasActiveRentalException.class)
+    public ResponseEntity<Map<String, Object>> handleItemHasRental(ItemHasActiveRentalException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
+
+    @ExceptionHandler(RentalNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleRentalNotFound(RentalNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(RentalNotReturnableException.class)
+    public ResponseEntity<Map<String, Object>> handleRentalNotReturnable(
+            RentalNotReturnableException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
+
+    @ExceptionHandler({
+            OptimisticLockException.class,
+            OptimisticLockingFailureException.class
+    })
+    public ResponseEntity<Map<String, Object>> handleOptimisticLock(Exception ex) {
+
+        log.warn("Optimistic locking conflict: {}", ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, "Item was modified concurrently, please retry"));
+    }
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<Map<String, Object>> handleInsufficientBalance(
+            InsufficientBalanceException ex) {
+        return ResponseEntity.badRequest()
+                .body(baseBody(HttpStatus.BAD_REQUEST, ex.getMessage()));
+
+    }
+    private Map<String, Object> baseBody(HttpStatus status, String message) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", Instant.now().toString());
+        body.put("status", status.value());
+        body.put("error", status.getReasonPhrase());
+        body.put("message", message);
+        return body;
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
+        log.warn("User not found: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(CannotDisableSelfException.class)
+    public ResponseEntity<Map<String, Object>> handleCannotDisableSelf(CannotDisableSelfException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
+    @ExceptionHandler(CannotFavoriteOwnItemException.class)
+    public ResponseEntity<Map<String, Object>> handleCannotFavoriteOwnItem(
+            CannotFavoriteOwnItemException ex) {
+        log.warn("Rejected self-favorite attempt");
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(baseBody(HttpStatus.FORBIDDEN, ex.getMessage()));
+    }
+
+    @ExceptionHandler(RentalRequestNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleRentalRequestNotFound(
+            RentalRequestNotFoundException ex) {
+        log.warn("Rental request not found: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+    }
+
+    @ExceptionHandler(SelfRentalException.class)
+    public ResponseEntity<Map<String, Object>> handleSelfRental(SelfRentalException ex) {
+        log.warn("Self-rental attempt: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(baseBody(HttpStatus.FORBIDDEN, ex.getMessage()));
+    }
+
+    @ExceptionHandler(ForbiddenActionException.class)
+    public ResponseEntity<Map<String, Object>> handleForbiddenAction(ForbiddenActionException ex) {
+        log.warn("Forbidden action: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(baseBody(HttpStatus.FORBIDDEN, ex.getMessage()));
+    }
+
+    @ExceptionHandler(RentalConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleRentalConflict(RentalConflictException ex) {
+        log.warn("Rental conflict: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
 }

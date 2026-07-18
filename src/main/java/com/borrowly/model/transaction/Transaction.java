@@ -1,5 +1,6 @@
 package com.borrowly.model.transaction;
 
+import com.borrowly.model.BaseEntity;
 import com.borrowly.model.rental.Rental;
 import com.borrowly.model.user.User;
 import jakarta.persistence.*;
@@ -7,8 +8,6 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,8 +20,8 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @ToString(exclude = {"user", "rental"})
-@EqualsAndHashCode(of = "id")
-public class Transaction {
+@EqualsAndHashCode(of = "id", callSuper = false)
+public class Transaction extends BaseEntity {
 
     @Id
     @Column(nullable = false, updatable = false)
@@ -49,9 +48,14 @@ public class Transaction {
     @Column(length = 500)
     private String description;
 
-    @CreationTimestamp
+    // @PrePersist, not @CreationTimestamp: the latter is only generated once the INSERT runs.
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
     @NotNull(message = "User is required")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

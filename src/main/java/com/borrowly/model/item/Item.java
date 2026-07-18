@@ -1,11 +1,11 @@
 package com.borrowly.model.item;
 
+import com.borrowly.model.BaseEntity;
 import com.borrowly.model.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,8 +21,8 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @ToString (exclude = {"category", "owner", "images"})
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Item {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+public class Item extends BaseEntity {
 
     @Id
     @EqualsAndHashCode.Include
@@ -75,11 +75,23 @@ public class Item {
     @Version
     private Long version;
 
-    @CreationTimestamp
+    // Timestamps are set in @PrePersist/@PreUpdate below: Hibernate's @CreationTimestamp and
+    // @UpdateTimestamp are only generated once the INSERT/UPDATE runs.
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -92,6 +104,7 @@ public class Item {
     private User owner;
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 50)
     @Builder.Default
     private List<ItemImage> images = new ArrayList<>();
 

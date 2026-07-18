@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-extend-notification-types
+      author: edgaras
+      changes:
+        # RENTAL_OVERDUE is raised by the overdue scheduler, WITHDRAWAL_COMPLETED by a
+        # withdrawal. Hibernate validates columns but not check constraints, so without
+        # this the app would start fine and only fail when one of them is first inserted.
+        - sql:
+            sql: >-
+              ALTER TABLE notifications
+                DROP CONSTRAINT ck_notifications_type,
+                ADD CONSTRAINT ck_notifications_type CHECK (type IN ('RENTAL_REQUEST', 'RENTAL_APPROVED', 'RENTAL_REJECTED', 'RENTAL_OVERDUE', 'ITEM_RETURNED', 'PAYMENT_RECEIVED', 'WITHDRAWAL_COMPLETED', 'FINE', 'GENERAL'))
+      rollback:
+        - sql:
+            sql: >-
+              ALTER TABLE notifications
+                DROP CONSTRAINT ck_notifications_type,
+                ADD CONSTRAINT ck_notifications_type CHECK (type IN ('RENTAL_REQUEST', 'RENTAL_APPROVED', 'RENTAL_REJECTED', 'ITEM_RETURNED', 'PAYMENT_RECEIVED', 'FINE', 'GENERAL'))
