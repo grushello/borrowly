@@ -13,17 +13,25 @@
     </nav>
 
     <main>
-            <h1>Catalog</h1>
-            <ul class="catalog-card-container">
-                <li th:replace="~{fragments/catalog/catalogCard :: catalogCard(name = 'E-Foil Fliteboard', category = 'Water Sports', index = 1, pricePerDay = 120)}"></li>
-                <li th:replace="~{fragments/catalog/catalogCard :: catalogCard(name = 'Electric Screwdriver', category = 'Screwdriver', index = 2, pricePerDay = 12)}"></li>
-                <li th:replace="~{fragments/catalog/catalogCard :: catalogCard(name = 'Electric grasscutter', category = 'Grasscutter', index = 3, pricePerDay = 25)}"></li>
-                <li th:replace="~{fragments/catalog/catalogCard :: catalogCard(name = 'Screwdriver set', category = 'Screwdriver', index = 4, pricePerDay = 5)}"></li>
-                <li th:replace="~{fragments/catalog/catalogCard :: catalogCard(name = 'Kärcher Water Cleaner', category = 'Watercleaner', index = 5, pricePerDay = 20)}"></li>
-                <li th:replace="~{fragments/catalog/catalogCard :: catalogCard(name = 'Stand-up Paddle', category = 'Paddle', index = 6, pricePerDay = 30)}"></li>
-                <li th:replace="~{fragments/catalog/catalogCard :: catalogCard(name = 'HD Portable Projector', category = 'Projector', index = 7, pricePerDay = 18)}"></li>
-                <li th:replace="~{fragments/catalog/catalogCard :: catalogCard(name = 'Mountain Bike', category = 'Bike', index = 8, pricePerDay = 22)}"></li>
-            </ul>
+        <div th:if="${itemPage.isEmpty()}" class="no-results">
+            <p>The catalog is empty.</p>
+        </div>
+
+        <ul class="catalog-card-container" th:unless="${itemPage.isEmpty()}">
+
+            <th:block th:each="item, iterStat : ${itemPage.content}">
+                <li th:replace="~{fragments/catalog/catalogCard :: catalogCard(
+            name = ${item.title},
+            condition = ${item.condition},
+            index = ${iterStat.count},
+            pricePerDay = ${item.pricePerDay},
+            id = ${item.id},
+        )}">
+                </li>
+
+            </th:block>
+
+        </ul>
 <!--            <nav th:replace="~{fragments/general/paginationContainer :: paginationContainer}">-->
 <!--            </nav>-->
     </main>
