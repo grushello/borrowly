@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Item details</title>
+    <title th:text="${item.title}">Item details</title>
   <link rel="stylesheet" th:href="@{/css/main.css}">
   <link rel="stylesheet" th:href="@{/css/itemPage/itemPage.css}">
 </head>
@@ -24,8 +24,8 @@
 
       <div class="item-info">
 
-        <span class="category-badge">Water sports</span>
-        <h1 class="item-title">E-Foil Fliteboard</h1>
+        <span class="category-badge" th:text="${item.category.name}">Category placeholder</span>
+        <h1 class="item-title" th:text="${item.title}">Title placeholder</h1>
 
         <div class="item-meta">
             <span class="rating">
@@ -33,17 +33,17 @@
                 <span class="review-count">(14 reviews)</span>
             </span>
           <span class="meta-divider">•</span>
-          <span class="condition">Condition: EXCELLENT</span>
+          <span class="condition" th:text="'Condition: ' + ${item.condition}">Condition: PLACEHOLDER</span>
         </div>
 
         <div class="item-description">
           <h3>Description</h3>
-          <p>The perfect e-foil for cruising the gulf or lakes. Features an extended-range battery and a silent motor. Available for pickup in central Riga</p>
+          <p th:text="${item.description}">Description placeholder</p>
         </div>
 
         <div class="booking-card">
           <div class="price-header">
-            <span class="daily-price">€ 120.00</span>
+            <span class="daily-price" th:text="${item.pricePerDay} + ' €'">€ 0.00</span>
             <span class="price-suffix">/ day</span>
           </div>
 
