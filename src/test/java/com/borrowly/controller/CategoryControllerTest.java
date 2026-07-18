@@ -2,7 +2,9 @@ package com.borrowly.controller;
 
 import com.borrowly.dto.request.CategoryRequest;
 import com.borrowly.dto.response.CategoryResponse;
+import com.borrowly.security.JwtUtil;
 import com.borrowly.service.CategoryService;
+import com.borrowly.service.UserDetailsServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -10,15 +12,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -38,6 +43,12 @@ class CategoryControllerTest {
 
     @MockitoBean
     private CategoryService categoryService;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
+
+    @MockitoBean
+    private UserDetailsServiceImpl userDetailsService;
 
     @Test
     void findAll_ReturnsListOfCategoriesAndStatus200() throws Exception {
@@ -59,7 +70,7 @@ class CategoryControllerTest {
 
         when(categoryService.findById(id)).thenReturn(Optional.of(response));
 
-        mockMvc.perform(get("/api/admin/categories/{id}", id))
+        mockMvc.perform(get("/api/categories/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Fishing"));
     }
@@ -70,7 +81,7 @@ class CategoryControllerTest {
 
         when(categoryService.findById(id)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/admin/categories/{id}", id))
+        mockMvc.perform(get("/api/categories/{id}", id))
                 .andExpect(status().isNotFound());
     }
 
@@ -86,6 +97,19 @@ class CategoryControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Fishing"));
+    }
+
+    @Test
+    void addCategory_DuplicateReturnsConflictAndStatus409() throws Exception {
+        CategoryRequest request = new CategoryRequest("Furniture", "All things furniture");
+
+        doThrow(new ResponseStatusException(HttpStatus.CONFLICT))
+                .when(categoryService).add(any(CategoryRequest.class));
+
+        mockMvc.perform(post("/api/admin/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict());
     }
 
     @Test
