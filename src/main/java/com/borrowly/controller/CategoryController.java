@@ -27,7 +27,7 @@ public class CategoryController {
         return categoryService.findAll();
     }
 
-    @GetMapping("/api/admin/categories/{id}")
+    @GetMapping("/api/categories/{id}")
     public ResponseEntity<CategoryResponse> findById(@PathVariable UUID id) {
         return categoryService.findById(id).map(ResponseEntity::ok)
                         .orElse(ResponseEntity.notFound().build());
