@@ -1,6 +1,5 @@
 package com.borrowly.dto.request;
 
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
