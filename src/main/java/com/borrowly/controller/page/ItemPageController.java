@@ -32,8 +32,9 @@ public class ItemPageController {
         if (principal != null) {
             isFavorite = favoriteService.isFavoritedByCurrentUser(id);
             UUID currentUserId = currentUserProvider.getCurrentUser().getId();
-            assert currentUserId != null;
-            isOwner = currentUserId.equals(item.owner().id());
+            if (currentUserId != null){
+                isOwner = currentUserId.equals(item.owner().id());
+            }
         }
 
         model.addAttribute("isFavorite", isFavorite);
