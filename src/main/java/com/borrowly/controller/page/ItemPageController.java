@@ -26,7 +26,7 @@ public class ItemPageController {
         if (principal != null) {
             isFavorite = favoriteService.isFavoritedByCurrentUser(id);
         }
-        
+
         model.addAttribute("isFavorite", isFavorite);
         model.addAttribute("item", item);
         return "item";
