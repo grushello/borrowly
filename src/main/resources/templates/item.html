@@ -65,11 +65,11 @@
 
         <div class="owner-profile">
           <div class="owner-avatar">
-            <span>A</span>
+            <span th:text="${item.owner.firstName.charAt(0)}">A</span>
           </div>
           <div class="owner-details">
             <span class="owner-label">Owner</span>
-            <strong>Arturs</strong>
+            <strong th:text="${item.owner.firstName} + ' ' + ${item.owner.lastName}">Owner</strong>
           </div>
         </div>
 
