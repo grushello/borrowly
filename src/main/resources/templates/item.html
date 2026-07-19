@@ -89,7 +89,8 @@
           </div>
           <div class="owner-details">
             <span class="owner-label">Owner</span>
-            <strong th:text="${item.owner.firstName} + ' ' + ${item.owner.lastName}">Owner</strong>
+            <strong th:if="${!isOwner}" th:text="${item.owner.firstName} + ' ' + ${item.owner.lastName}">Owner</strong>
+            <strong th:if="${isOwner}" th:text="'You'">Owner</strong>
           </div>
         </div>
 
