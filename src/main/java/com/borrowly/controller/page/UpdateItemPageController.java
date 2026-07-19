@@ -22,7 +22,6 @@ public class UpdateItemPageController {
     public String dashboard(@PathVariable("id") UUID id, Model model){
         ItemResponse item = itemService.getById(id);
 
-        model.addAttribute("categories", categoryService.findAll());
         model.addAttribute("conditions", ItemCondition.values());
         model.addAttribute("item", item);
         return "updateItem";
