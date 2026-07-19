@@ -1,10 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>Update item</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/createItem/createOrUpdateItemForm.css}">
 </head>
 <body>
-$END$
+    <nav th:replace="~{fragments/general/nav :: nav}">
+    </nav>
+    <main>
+        <div class="create-update-item-form-container">
+            <h1>Update this item listing</h1>
+
+            <form id="updateItemForm" th:attr="data-item-id=${item.id}">
+
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" th:value="${item.title}" required />
+                    <div class="error-message" id="error-title"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="4" th:value="${item.description}" required></textarea>
+                    <div class="error-message" id="error-description"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoryId">Category</label>
+                    <select id="categoryId" name="categoryId" th:value="${item.category.id}" required>
+                        <option value="">-- Select a category --</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                    </select>
+                    <div class="error-message" id="error-categoryId"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="condition">Condition</label>
+                    <select id="condition" name="condition" th:value="${item.condition}" required>
+                        <option value="">-- Select condition --</option>
+                        <option th:each="cond : ${conditions}" th:value="${cond}" th:text="${cond}"></option>
+                    </select>
+                    <div class="error-message" id="error-condition"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pricePerDay">Price Per Day (€)</label>
+                    <input type="number" step="0.01" id="pricePerDay" name="pricePerDay" th:value="${item.pricePerDay}" required />
+                    <div class="error-message" id="error-pricePerDay"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="depositAmount">Deposit Amount (€)</label>
+                    <input type="number" step="0.01" id="depositAmount" name="depositAmount" th:value="${item.depositAmount}" required />
+                    <div class="error-message" id="error-depositAmount"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="finePerDay">Fine Per Day (€)</label>
+                    <input type="number" step="0.01" id="finePerDay" name="finePerDay" th:value="${item.finePerDay}" required />
+                    <div class="error-message" id="error-finePerDay"></div>
+                </div>
+
+                <button type="submit" id="submitBtn">Update Listing</button>
+            </form>
+        </div>
+
+    </main>
+    <footer th:replace="~{fragments/general/footer :: footer}">
+    </footer>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('updateItemForm');
+        const id = form.getAttribute('data-item-id');
+
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.style.display = 'none';
+                el.innerText = '';
+            });
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            data.pricePerDay = parseFloat(data.pricePerDay);
+            data.depositAmount = parseFloat(data.depositAmount);
+            data.finePerDay = parseFloat(data.finePerDay);
+
+            fetch('/api/items/'+ id, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+                .then(async response => {
+                    if (response.ok) {
+                        const result = await response.json();
+                        window.location.href = '/item/' + result.id;
+                    } else if (response.status === 400) {
+                        const errors = await response.json();
+                        handleValidationErrors(errors);
+                    } else {
+                        alert("There was an unexpected error.");
+                    }
+                })
+                .catch(error => console.error("Network error:", error));
+        });
+
+        function handleValidationErrors(errors) {
+            if(Array.isArray(errors.errors)) {
+                errors.errors.forEach(err => {
+                    const errorDiv = document.getElementById('error-' + err.field);
+                    const inputField = document.getElementById(err.field);
+                    if (errorDiv) {
+                        errorDiv.innerText = err.defaultMessage || err.message;
+                        errorDiv.style.display = 'block';
+                    }
+                    if (inputField) {
+                        inputField.classList.add('is-invalid');
+                    }
+                });
+            }
+        }
+    });
+</script>
 </html>
