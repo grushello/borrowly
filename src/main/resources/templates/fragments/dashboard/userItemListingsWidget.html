@@ -1,10 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>Title</title>
 </head>
 <body>
-$END$
+<div th:fragment="userItemListingsWidget" class="widget user-item-listings">
+    <div class="widget-header">
+        <h2>Your item listings</h2>
+        <a href="/" class="link-view-all">View all</a>
+    </div>
+
+    <div class="items-scroll-container">
+
+        <a th:each="item : ${userItemListings}" th:href="@{/item/{id}(id=${item.id})}" class="item-card">
+
+            <div class="item-image-wrapper">
+                <!--                <img th:src="${fav.item.primaryImage}" th:alt="${fav.item.title}" class="fav-image">-->
+                <span class="item-icon">♥️</span>
+            </div>
+
+            <div class="item-info">
+                <h5 class="item-title" th:text="${item.title}">Grass cutter</h5>
+                <span class="item-price" th:text="|€ ${item.pricePerDay}/day|">€ 15/g</span>
+            </div>
+
+        </a>
+
+        <div th:if="${#lists.isEmpty(userItemListings)}" class="empty-state" id="items-empty-state">
+            No saved item
+        </div>
+
+    </div>
+</div>
 </body>
 </html>
