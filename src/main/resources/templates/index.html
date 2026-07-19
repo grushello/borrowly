@@ -13,17 +13,33 @@
     </nav>
 
     <main>
+        <h1 id="page-hero">Borrowly</h1>
+        <div class="search-form-container">
+            <form th:action="@{/}" method="GET" class="search-form">
+                <div class="search-form-input-container">
+                    <label for="search-input"></label>
+                    <input type="text"
+                           name="search"
+                           th:value="${currentSearch}"
+                           placeholder="Search in the catalog..." id="search-input">
 
-        <form th:action="@{/}" method="GET" class="search-form">
-            <label for="search-input"></label>
-            <input type="text"
-                   name="search"
-                   th:value="${currentSearch}"
-                   placeholder="Search in the catalog..." id="search-input">
+                    <button type="submit">Search</button>
+                </div>
+                <label for="category-select" class="sr-only">Category</label>
+                <select name="categoryId" id="category-select">
+                    <option value="">All categories</option>
+                    <option th:each="category : ${categories}"
+                            th:value="${category.id}"
+                            th:text="${category.name}"
+                            th:selected="${categoryId == category.id}">
+                    </option>
+                </select>
 
-            <button type="submit">Search</button>
 
-        </form>
+
+            </form>
+        </div>
+
 
         <div th:if="${itemPage.isEmpty()}" class="no-results">
             <p>The catalog is empty.</p>
