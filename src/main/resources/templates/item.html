@@ -50,11 +50,7 @@
           <ul class="price-details">
             <li>
               <span>Deposit required:</span>
-              <strong>€ 500.00</strong>
-            </li>
-            <li>
-              <span>Penalty</span>
-              <span>€ 40.00 / day</span>
+              <strong th:text="${item.depositAmount} + ' €'">€ 0.00</strong>
             </li>
           </ul>
 
