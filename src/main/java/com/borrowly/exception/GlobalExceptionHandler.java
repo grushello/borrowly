@@ -125,17 +125,15 @@ public class GlobalExceptionHandler {
                 .body(baseBody(HttpStatus.FORBIDDEN, ex.getMessage()));
     }
 
-    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleEntityNotFound(
-            jakarta.persistence.EntityNotFoundException ex) {
-        log.warn("Entity not found: {}", ex.getMessage());
+    @ExceptionHandler(ReviewNotAllowedException.class)
+    public ResponseEntity<Map<String, Object>> handleReviewNotAllowed(ReviewNotAllowedException ex) {
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
+    @ExceptionHandler(ReviewAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleReviewAlreadyExists(ReviewAlreadyExistsException ex) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
