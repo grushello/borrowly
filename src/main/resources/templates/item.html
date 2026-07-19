@@ -52,6 +52,15 @@
               <span>Deposit required:</span>
               <strong th:text="${item.depositAmount} + ' €'">€ 0.00</strong>
             </li>
+            <li sec:authorize="isAuthenticated()">
+              <button id="favorite-btn"
+                      th:data-item-id="${item.id}"
+                      th:data-is-favorite="${isFavorite}"
+                      th:text="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}"
+                      th:class="${isFavorite ? 'btn-remove-fav' : 'btn-add-fav'}">
+                Add to favorites
+              </button>
+            </li>
           </ul>
 
           <button sec:authorize="isAuthenticated()" class="btn-book">
@@ -80,4 +89,45 @@
   </footer>
 
 </body>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const favBtn = document.getElementById('favorite-btn');
+    if (!favBtn) return;
+
+    favBtn.addEventListener('click', function() {
+      console.log('hi')
+      const itemId = this.getAttribute('data-item-id');
+      const isFavorite = this.getAttribute('data-is-favorite') === 'true';
+
+      const method = isFavorite ? 'DELETE' : 'POST';
+
+      const url = '/api/favorites/' + itemId;
+
+      favBtn.disabled = true;
+
+      fetch(url, {
+        method: method,
+      })
+              .then(response => {
+                if (response.ok) {
+                  const newState = !isFavorite;
+                  this.setAttribute('data-is-favorite', newState);
+                  this.innerText = newState ? 'Remove from favorites' : 'Add to favorites';
+
+                  this.classList.toggle('btn-add-fav', !newState);
+                  this.classList.toggle('btn-remove-fav', newState);
+                } else {
+                  alert('Errore during the update of favorites.');
+                }
+              })
+              .catch(err => {
+                console.error('Error:', err);
+                alert('Network error.');
+              })
+              .finally(() => {
+                favBtn.disabled = false;
+              });
+    });
+  });
+</script>
 </html>
