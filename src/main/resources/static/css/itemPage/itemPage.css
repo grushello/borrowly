@@ -178,6 +178,11 @@
     text-transform: uppercase;
 }
 
+.owner-badge {
+    display: flex;
+    justify-content: space-between;
+}
+
 .back-to-catalog {
     text-align: left;
     width: 100%;
