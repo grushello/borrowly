@@ -17,13 +17,13 @@
         <a th:each="fav : ${favorites}" th:href="@{/item/{id}(id=${fav.item.id})}" class="favorite-card">
 
             <div class="fav-image-wrapper">
-                <img th:src="${fav.item.primaryImage}" th:alt="${fav.item.title}" class="fav-image">
+<!--                <img th:src="${fav.item.primaryImage}" th:alt="${fav.item.title}" class="fav-image">-->
                 <span class="fav-icon">♥️</span>
             </div>
 
             <div class="fav-info">
                 <h5 class="fav-title" th:text="${fav.item.title}">Grass cutter</h5>
-                <span class="fav-price" th:text="|€ ${fav.item.pricePerDay}/g|">€ 15/g</span>
+                <span class="fav-price" th:text="|€ ${fav.item.pricePerDay}/day|">€ 15/g</span>
             </div>
 
         </a>
