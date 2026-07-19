@@ -2,7 +2,7 @@ main {
     align-items: center;
 }
 
-.create-item-form-container {
+.create-update-item-form-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
