@@ -95,7 +95,6 @@
     if (!favBtn) return;
 
     favBtn.addEventListener('click', function() {
-      console.log('hi')
       const itemId = this.getAttribute('data-item-id');
       const isFavorite = this.getAttribute('data-is-favorite') === 'true';
 
@@ -117,7 +116,7 @@
                   this.classList.toggle('btn-add-fav', !newState);
                   this.classList.toggle('btn-remove-fav', newState);
                 } else {
-                  alert('Errore during the update of favorites.');
+                  alert('Error during the update of favorites.');
                 }
               })
               .catch(err => {
