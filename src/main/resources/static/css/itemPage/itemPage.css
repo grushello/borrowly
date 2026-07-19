@@ -187,3 +187,39 @@
     margin: 0;
 }
 
+.btn-add-fav {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-add-fav:hover {
+    background-color: #219653;
+    color: white;
+    border: none;
+}
+
+.btn-remove-fav {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-remove-fav:hover {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+}
+
