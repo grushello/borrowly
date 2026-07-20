@@ -72,12 +72,12 @@
           <div sec:authorize="isAuthenticated()">
             <div th:if="${isOwner}" class="owner-badge">
               <span>You are the owner of this item</span>
-              <div>
+              <div class="owner-actions">
                 <a th:href="@{/update/{id}(id=${item.id})}" class="btn btn-edit">Edit Listing</a>
                 <button id="archive-btn"
                         class="btn btn-danger"
-                        th:disabled="${item.itemStatus.name() == 'ARCHIVED'}"
-                        th:text="${item.itemStatus.name() == 'ARCHIVED' ? 'Already Archived' : 'Archive'}">
+                        th:disabled="${item.itemStatus.name() == 'ARCHIVED' or item.itemStatus.name() == 'RENTED'}"
+                        th:text="${item.itemStatus.name() == 'ARCHIVED' ? 'Already Archived' : (item.itemStatus.name() == 'RENTED' ? 'Cannot archive while rented' : 'Archive')}">
                   Archive
                 </button>
               </div>
