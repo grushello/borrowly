@@ -184,6 +184,14 @@
     align-items: center;
 }
 
+.owner-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    flex-grow: 1;
+}
+
 .back-to-catalog {
     text-align: left;
     width: 100%;
