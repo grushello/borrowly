@@ -9,7 +9,7 @@
 <body>
     <nav th:replace="~{fragments/general/nav :: nav}">
     </nav>
-    <main class="item-page-container">
+    <main class="item-page-container" th:attr="data-item-id=${item.id}" id="main-content">
 
       <div class="item-gallery">
         <div class="main-image-wrapper">
@@ -72,7 +72,15 @@
           <div sec:authorize="isAuthenticated()">
             <div th:if="${isOwner}" class="owner-badge">
               <span>You are the owner of this item</span>
-              <a th:href="@{/update/{id}(id=${item.id})}" class="btn btn-edit">Edit Listing</a>
+              <div>
+                <a th:href="@{/update/{id}(id=${item.id})}" class="btn btn-edit">Edit Listing</a>
+                <button id="archive-btn"
+                        class="btn btn-danger"
+                        th:disabled="${item.itemStatus.name() == 'ARCHIVED'}"
+                        th:text="${item.itemStatus.name() == 'ARCHIVED' ? 'Already Archived' : 'Archive'}">
+                  Archive
+                </button>
+              </div>
             </div>
             <button th:unless="${isOwner}"
                     class="btn-book">
@@ -94,11 +102,6 @@
           </div>
         </div>
 
-        <div th:if="${isOwner}" class="owner-actions">
-
-<!--          <button class="btn btn-archive">Archive Item</button>-->
-        </div>
-
       </div>
   </main>
 
@@ -109,10 +112,32 @@
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const favBtn = document.getElementById('favorite-btn');
+    const archiveBtn = document.getElementById('archive-btn');
+
+    if (archiveBtn) archiveBtn.addEventListener('click', function() {
+      const itemId = document.getElementById("main-content").getAttribute('data-item-id');
+      const archiveUrl = "/api/items/" + itemId;
+      console.log(itemId, archiveUrl);
+      fetch(archiveUrl, {
+        method: "DELETE",
+      }).then(response => {
+        if (response.ok) {
+          archiveBtn.textContent = 'Already archived';
+        }  else {
+          alert('Error trying to archive item.');
+        }
+      }).catch(err => {
+        console.error('Error:', err);
+        alert('Network error.');
+      }).finally(() => {
+                archiveBtn.disabled = true;
+      });
+    })
+
     if (!favBtn) return;
 
     favBtn.addEventListener('click', function() {
-      const itemId = this.getAttribute('data-item-id');
+      const itemId = document.getElementById("main-content").getAttribute('data-item-id');
       const isFavorite = this.getAttribute('data-is-favorite') === 'true';
 
       const method = isFavorite ? 'DELETE' : 'POST';
@@ -144,6 +169,8 @@
                 favBtn.disabled = false;
               });
     });
+
+
   });
 </script>
 </html>
