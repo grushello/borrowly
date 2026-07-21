@@ -25,8 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -46,8 +48,8 @@ public class RentalServiceImpl implements RentalService {
         UUID borrowerId = currentUserProvider.getCurrentUser().getId();
 
         Page<Rental> rentals = isEmpty(statuses)
-                ? rentalRepository.findByBorrower_Id(borrowerId, pageable)
-                : rentalRepository.findByBorrower_IdAndStatusIn(borrowerId, statuses, pageable);
+                ? rentalRepository.findByBorrowerId(borrowerId, pageable)
+                : rentalRepository.findByBorrowerIdAndStatusIn(borrowerId, statuses, pageable);
 
         return rentals.map(rentalMapper::toResponse);
     }
@@ -57,8 +59,8 @@ public class RentalServiceImpl implements RentalService {
         UUID ownerId = currentUserProvider.getCurrentUser().getId();
 
         Page<Rental> rentals = isEmpty(statuses)
-                ? rentalRepository.findByItem_Owner_Id(ownerId, pageable)
-                : rentalRepository.findByItem_Owner_IdAndStatusIn(ownerId, statuses, pageable);
+                ? rentalRepository.findByOwnerId(ownerId, pageable)
+                : rentalRepository.findByOwnerIdAndStatusIn(ownerId, statuses, pageable);
 
         return rentals.map(rentalMapper::toResponse);
     }
@@ -89,7 +91,7 @@ public class RentalServiceImpl implements RentalService {
         User owner = item.getOwner();
         User currentUser = currentUserProvider.getCurrentUser();
 
-        if (!owner.getId().equals(currentUser.getId())) {
+        if (!Objects.equals(currentUser.getId(), owner.getId())) {
             log.warn("Unauthorized return attempt rentalId={} userId={}", id, currentUser.getId());
             throw new AccessDeniedException("Only the item owner can confirm a return.");
         }
@@ -99,7 +101,7 @@ public class RentalServiceImpl implements RentalService {
             throw new RentalNotReturnableException(id, status);
         }
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Europe/Vilnius"));
 
         // A rental is ACTIVE from the moment it is approved, which can be days before the
         // borrow window opens. Returning one early would set an actualReturnDate before the
@@ -144,36 +146,37 @@ public class RentalServiceImpl implements RentalService {
     }
 
     private static boolean canView(Rental rental, User user) {
-        return rental.getBorrower().getId().equals(user.getId())
-                || rental.getItem().getOwner().getId().equals(user.getId())
+        return Objects.equals(user.getId(), rental.getBorrower().getId())
+                || Objects.equals(user.getId(), rental.getItem().getOwner().getId())
                 || user.getRole() == UserRole.ADMIN;
     }
 
     private static String borrowerMessage(Rental rental, BigDecimal fine, long overdueDays) {
-        StringBuilder message = new StringBuilder("You returned ")
-                .append(rental.getItemTitle())
-                .append(" on ").append(rental.getActualReturnDate())
-                .append(". Rent paid: ").append(rental.getTotalPrice())
-                .append(". Deposit returned: ").append(rental.getDepositAmount())
-                .append(".");
+        String message = String.format(
+                "You returned %s on %s. Rent paid: %s. Deposit returned: %s.",
+                rental.getItemTitle(),
+                rental.getActualReturnDate(),
+                rental.getTotalPrice(),
+                rental.getDepositAmount());
 
         if (fine.signum() > 0) {
-            message.append(" Fine charged: ").append(fine)
-                    .append(" (").append(overdueDays).append(" day(s) overdue).");
+            message += String.format(
+                    " Fine charged: %s (%d day(s) overdue).", fine, overdueDays);
         }
-        return message.toString();
+        return message;
     }
 
     private static String ownerMessage(Rental rental, BigDecimal fine) {
-        StringBuilder message = new StringBuilder(rental.getItemTitle())
-                .append(" was returned on ").append(rental.getActualReturnDate())
-                .append(". Payout: ").append(rental.getTotalPrice())
-                .append(".");
+        String message = String.format(
+                "%s was returned on %s. Payout: %s.",
+                rental.getItemTitle(),
+                rental.getActualReturnDate(),
+                rental.getTotalPrice());
 
         if (fine.signum() > 0) {
-            message.append(" Fine credited: ").append(fine).append(".");
+            message += String.format(" Fine credited: %s.", fine);
         }
-        return message.toString();
+        return message;
     }
 
     private static boolean isEmpty(List<RentalStatus> statuses) {

@@ -115,7 +115,7 @@ class ItemServiceImplTest {
         when(reviewRepository.averageRatingByItemId(any()))
                 .thenReturn(null);
 
-        when(reviewRepository.countByRental_Item_Id(any()))
+        when(reviewRepository.countByItemId(any()))
                 .thenReturn(0L);
 
         when(itemRepository.save(any(Item.class)))
@@ -257,7 +257,7 @@ class ItemServiceImplTest {
         when(reviewRepository.averageRatingByItemId(any()))
                 .thenReturn(null);
 
-        when(reviewRepository.countByRental_Item_Id(any()))
+        when(reviewRepository.countByItemId(any()))
                 .thenReturn(0L);
 
 

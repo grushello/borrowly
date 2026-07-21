@@ -2,7 +2,7 @@ package com.borrowly.controller.page;
 
 import com.borrowly.dto.response.ItemResponse;
 import com.borrowly.model.item.ItemCondition;
-import com.borrowly.service.CategoryService;
+import com.borrowly.service.item.CategoryService;
 import com.borrowly.service.item.ItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

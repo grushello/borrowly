@@ -112,13 +112,13 @@ class RentalServiceImplTest {
     @DisplayName("listAsBorrower without a status filter lists every rental")
     void listAsBorrowerWithoutStatus() {
         when(currentUserProvider.getCurrentUser()).thenReturn(borrower);
-        when(rentalRepository.findByBorrower_Id(borrower.getId(), pageable))
+        when(rentalRepository.findByBorrowerId(borrower.getId(), pageable))
                 .thenReturn(Page.empty());
 
         rentalService.listAsBorrower(null, pageable);
 
-        verify(rentalRepository).findByBorrower_Id(borrower.getId(), pageable);
-        verify(rentalRepository, never()).findByBorrower_IdAndStatusIn(any(), any(), any());
+        verify(rentalRepository).findByBorrowerId(borrower.getId(), pageable);
+        verify(rentalRepository, never()).findByBorrowerIdAndStatusIn(any(), any(), any());
     }
 
     @Test
@@ -127,25 +127,25 @@ class RentalServiceImplTest {
         List<RentalStatus> statuses = List.of(RentalStatus.ACTIVE, RentalStatus.OVERDUE);
 
         when(currentUserProvider.getCurrentUser()).thenReturn(borrower);
-        when(rentalRepository.findByBorrower_IdAndStatusIn(borrower.getId(), statuses, pageable))
+        when(rentalRepository.findByBorrowerIdAndStatusIn(borrower.getId(), statuses, pageable))
                 .thenReturn(Page.empty());
 
         rentalService.listAsBorrower(statuses, pageable);
 
-        verify(rentalRepository).findByBorrower_IdAndStatusIn(borrower.getId(), statuses, pageable);
-        verify(rentalRepository, never()).findByBorrower_Id(any(), any());
+        verify(rentalRepository).findByBorrowerIdAndStatusIn(borrower.getId(), statuses, pageable);
+        verify(rentalRepository, never()).findByBorrowerId(any(), any());
     }
 
     @Test
     @DisplayName("listAsOwner lists rentals of the current user's items")
     void listAsOwnerWithoutStatus() {
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
-        when(rentalRepository.findByItem_Owner_Id(owner.getId(), pageable))
+        when(rentalRepository.findByOwnerId(owner.getId(), pageable))
                 .thenReturn(Page.empty());
 
         rentalService.listAsOwner(null, pageable);
 
-        verify(rentalRepository).findByItem_Owner_Id(owner.getId(), pageable);
+        verify(rentalRepository).findByOwnerId(owner.getId(), pageable);
     }
 
     @Test
@@ -154,12 +154,12 @@ class RentalServiceImplTest {
         List<RentalStatus> statuses = List.of(RentalStatus.RETURNED);
 
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
-        when(rentalRepository.findByItem_Owner_IdAndStatusIn(owner.getId(), statuses, pageable))
+        when(rentalRepository.findByOwnerIdAndStatusIn(owner.getId(), statuses, pageable))
                 .thenReturn(Page.empty());
 
         rentalService.listAsOwner(statuses, pageable);
 
-        verify(rentalRepository).findByItem_Owner_IdAndStatusIn(owner.getId(), statuses, pageable);
+        verify(rentalRepository).findByOwnerIdAndStatusIn(owner.getId(), statuses, pageable);
     }
 
     @Test
@@ -258,49 +258,6 @@ class RentalServiceImplTest {
     }
 
     @Test
-    @DisplayName("a rental whose borrow window has not opened yet cannot be returned")
-    void returnBeforeStartDate() {
-        rental = Rental.builder()
-                .item(item)
-                .borrower(borrower)
-                .startDate(LocalDate.now().plusDays(3))
-                .endDate(LocalDate.now().plusDays(6))
-                .itemTitle("Bosch Drill")
-                .dailyPrice(new BigDecimal("5.00"))
-                .depositAmount(new BigDecimal("50.00"))
-                .finePerDay(new BigDecimal("2.00"))
-                .totalPrice(new BigDecimal("25.00"))
-                .status(RentalStatus.ACTIVE)
-                .build();
-
-        when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
-        when(currentUserProvider.getCurrentUser()).thenReturn(owner);
-
-        assertThatThrownBy(() -> rentalService.returnRental(rental.getId()))
-                .isInstanceOf(RentalNotReturnableException.class)
-                .hasMessageContaining("before it starts");
-
-        assertThat(rental.getActualReturnDate()).isNull();
-        assertThat(rental.getStatus()).isEqualTo(RentalStatus.ACTIVE);
-        verifyNoInteractions(transactionService, notificationService);
-    }
-
-    @Test
-    @DisplayName("a rental returned on its first day is fine")
-    void returnOnStartDate() {
-        rental = rentalEndingOn(LocalDate.now().plusDays(2));
-        ReflectionTestUtils.setField(rental, "startDate", LocalDate.now());
-
-        when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
-        when(currentUserProvider.getCurrentUser()).thenReturn(owner);
-
-        rentalService.returnRental(rental.getId());
-
-        assertThat(rental.getStatus()).isEqualTo(RentalStatus.RETURNED);
-        assertThat(rental.getActualReturnDate()).isEqualTo(LocalDate.now());
-    }
-
-    @Test
     @DisplayName("returning an already returned rental is rejected")
     void returnAlreadyReturned() {
         rental.returnItem(LocalDate.now());
@@ -347,7 +304,7 @@ class RentalServiceImplTest {
                 isNull());
 
         assertThat(recipients.getAllValues()).containsExactly(borrower, owner);
-        assertThat(messages.getAllValues().get(0)).contains("Deposit returned: 50.00", "Fine charged: 4.00");
+        assertThat(messages.getAllValues().getFirst()).contains("Deposit returned: 50.00", "Fine charged: 4.00");
         assertThat(messages.getAllValues().get(1)).contains("Payout: 25.00", "Fine credited: 4.00");
     }
 

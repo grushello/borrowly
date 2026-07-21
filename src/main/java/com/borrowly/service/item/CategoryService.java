@@ -1,4 +1,4 @@
-package com.borrowly.service;
+package com.borrowly.service.item;
 
 import com.borrowly.dto.request.CategoryRequest;
 import com.borrowly.dto.response.CategoryResponse;
@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -49,7 +48,7 @@ public class CategoryService {
     }
 
     public void delete(UUID id) {
-        if (itemRepository.existsByCategory_Id(id)) {
+        if (itemRepository.existsByCategoryId(id)) {
             throw new CategoryConflictException(
                     "Cannot eliminate: there are associated items with this category."
             );

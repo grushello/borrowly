@@ -12,7 +12,7 @@ public record TopUpRequest(
         @NotNull(message = "Amount is required")
         @DecimalMin(value = "0.01", message = "Amount must be at least 0.01")
         @DecimalMax(value = "5000.00", message = "A single top-up cannot exceed 5000.00")
-        @Digits(integer = 10, fraction = 2)
+        @Digits(integer = 4, fraction = 2, message = "Amount cannot have more than 4 integer digits and 2 decimals")
         BigDecimal amount
 ) {
 }

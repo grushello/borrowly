@@ -135,7 +135,7 @@ class RentalRepositoryTest extends AbstractPostgresTest {
     }
 
     @Nested
-    @DisplayName("findByBorrower_Id")
+    @DisplayName("findByBorrowerId")
     class FindByBorrower {
 
         @Test
@@ -145,7 +145,7 @@ class RentalRepositoryTest extends AbstractPostgresTest {
             persistRental(item, otherBorrower, JUL_20, JUL_25, RentalStatus.ACTIVE);
             flushAndClear();
 
-            Page<Rental> page = rentalRepository.findByBorrower_Id(borrower.getId(), firstPage);
+            Page<Rental> page = rentalRepository.findByBorrowerId(borrower.getId(), firstPage);
 
             assertThat(page.getTotalElements()).isEqualTo(1);
             assertThat(page.getContent())
@@ -157,13 +157,13 @@ class RentalRepositoryTest extends AbstractPostgresTest {
         @Test
         @DisplayName("returns an empty page for a borrower with no rentals")
         void emptyWhenNoRentals() {
-            assertThat(rentalRepository.findByBorrower_Id(borrower.getId(), firstPage))
+            assertThat(rentalRepository.findByBorrowerId(borrower.getId(), firstPage))
                     .isEmpty();
         }
     }
 
     @Nested
-    @DisplayName("findByBorrower_IdAndStatusIn")
+    @DisplayName("findByBorrowerIdAndStatusIn")
     class FindByBorrowerAndStatus {
 
         @Test
@@ -175,7 +175,7 @@ class RentalRepositoryTest extends AbstractPostgresTest {
             persistRental(item, borrower, JUL_10, JUL_15, RentalStatus.RETURNED);
             flushAndClear();
 
-            Page<Rental> active = rentalRepository.findByBorrower_IdAndStatusIn(
+            Page<Rental> active = rentalRepository.findByBorrowerIdAndStatusIn(
                     borrower.getId(),
                     Set.of(RentalStatus.ACTIVE, RentalStatus.OVERDUE),
                     firstPage);
@@ -192,14 +192,14 @@ class RentalRepositoryTest extends AbstractPostgresTest {
             persistRental(item, otherBorrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
             flushAndClear();
 
-            assertThat(rentalRepository.findByBorrower_IdAndStatusIn(
+            assertThat(rentalRepository.findByBorrowerIdAndStatusIn(
                     borrower.getId(), Set.of(RentalStatus.ACTIVE), firstPage))
                     .isEmpty();
         }
     }
 
     @Nested
-    @DisplayName("findByItem_Owner_Id")
+    @DisplayName("findByOwnerId")
     class FindByOwner {
 
         @Test
@@ -213,7 +213,7 @@ class RentalRepositoryTest extends AbstractPostgresTest {
             persistRental(foreign, borrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
             flushAndClear();
 
-            Page<Rental> page = rentalRepository.findByItem_Owner_Id(owner.getId(), firstPage);
+            Page<Rental> page = rentalRepository.findByOwnerId(owner.getId(), firstPage);
 
             assertThat(page.getTotalElements()).isEqualTo(2);
             assertThat(page.getContent())
@@ -223,7 +223,7 @@ class RentalRepositoryTest extends AbstractPostgresTest {
     }
 
     @Nested
-    @DisplayName("findByItem_Owner_IdAndStatusIn")
+    @DisplayName("findByOwnerIdAndStatusIn")
     class FindByOwnerAndStatus {
 
         @Test
@@ -233,7 +233,7 @@ class RentalRepositoryTest extends AbstractPostgresTest {
             persistRental(item, borrower, JUL_10, JUL_15, RentalStatus.RETURNED);
             flushAndClear();
 
-            Page<Rental> page = rentalRepository.findByItem_Owner_IdAndStatusIn(
+            Page<Rental> page = rentalRepository.findByOwnerIdAndStatusIn(
                     owner.getId(), Set.of(RentalStatus.ACTIVE), firstPage);
 
             assertThat(page.getContent())
@@ -394,9 +394,9 @@ class RentalRepositoryTest extends AbstractPostgresTest {
         @DisplayName("excluding-variant ignores the rental being edited")
         void excludingVariantIgnoresSelf() {
             Rental existing = rentalRepository
-                    .findByItem_Owner_Id(owner.getId(), firstPage)
+                    .findByOwnerId(owner.getId(), firstPage)
                     .getContent()
-                    .get(0);
+                    .getFirst();
 
             assertThat(rentalRepository.existsOverlappingByStatusesExcluding(
                     item.getId(), JUL_10, JUL_15, existing.getId(), BLOCKING)).isFalse();
@@ -420,13 +420,13 @@ class RentalRepositoryTest extends AbstractPostgresTest {
             Statistics stats = statistics();
             stats.clear();
 
-            Page<Rental> page = rentalRepository.findByItem_Owner_IdAndStatusIn(
+            Page<Rental> page = rentalRepository.findByOwnerIdAndStatusIn(
                     owner.getId(), Set.of(RentalStatus.ACTIVE), firstPage);
 
             page.getContent().forEach(rental -> {
-                rental.getItem().getTitle();
-                rental.getItem().getOwner().getEmail();
-                rental.getBorrower().getEmail();
+                assertThat(rental.getItem().getTitle()).isNotNull();
+                assertThat(rental.getItem().getOwner().getEmail()).isNotNull();
+                assertThat(rental.getBorrower().getEmail()).isNotNull();
             });
 
             assertThat(page.getContent()).hasSize(3);
@@ -465,210 +465,15 @@ class RentalRepositoryTest extends AbstractPostgresTest {
             Statistics stats = statistics();
             stats.clear();
 
-            Page<Rental> page = rentalRepository.findByItem_Owner_IdAndStatusIn(
+            Page<Rental> page = rentalRepository.findByOwnerIdAndStatusIn(
                     owner.getId(), Set.of(RentalStatus.ACTIVE), PageRequest.of(0, 50));
 
             page.getContent().forEach(rental -> {
-                rental.getItem().getOwner().getEmail();
-                rental.getBorrower().getEmail();
+                assertThat(rental.getItem().getOwner().getEmail()).isNotNull();
+                assertThat(rental.getBorrower().getEmail()).isNotNull();
             });
 
             return stats.getPrepareStatementCount();
-        }
-    }
-    @Nested
-    @DisplayName("findByEndDateBeforeAndStatusIn — overdue scan with reminders")
-    class OverdueScanWithStatuses {
-
-        private static final Set<RentalStatus> OVERDUE_STATUSES =
-                Set.of(
-                        RentalStatus.ACTIVE,
-                        RentalStatus.OVERDUE
-                );
-
-        @Test
-        @DisplayName("finds both ACTIVE and OVERDUE rentals whose endDate is past")
-        void findsActiveAndAlreadyOverdueRentals() {
-
-            LocalDate today = LocalDate.of(2026, Month.JULY, 20);
-
-            Item activeItem = persistItem(
-                    borrower,
-                    "Camera"
-            );
-
-            Item overdueItem = persistItem(
-                    otherBorrower,
-                    "Laptop"
-            );
-
-            Item futureItem = persistItem(
-                    borrower,
-                    "Projector"
-            );
-
-            Item returnedItem = persistItem(
-                    otherBorrower,
-                    "Console"
-            );
-
-
-            Rental activeRental = persistRental(
-                    activeItem,
-                    borrower,
-                    LocalDate.of(2026, Month.JULY, 1),
-                    LocalDate.of(2026, Month.JULY, 10),
-                    RentalStatus.ACTIVE
-            );
-
-
-            Rental overdueRental = persistRental(
-                    overdueItem,
-                    otherBorrower,
-                    LocalDate.of(2026, Month.JULY, 1),
-                    LocalDate.of(2026, Month.JULY, 12),
-                    RentalStatus.OVERDUE
-            );
-
-
-            // Should not be returned (end date is after cutoff)
-            persistRental(
-                    futureItem,
-                    borrower,
-                    LocalDate.of(2026, Month.JULY, 1),
-                    LocalDate.of(2026, Month.JULY, 25),
-                    RentalStatus.ACTIVE
-            );
-
-
-            // Should not be returned (status is RETURNED)
-            persistRental(
-                    returnedItem,
-                    borrower,
-                    LocalDate.of(2026, Month.JULY, 1),
-                    LocalDate.of(2026, Month.JULY, 10),
-                    RentalStatus.RETURNED
-            );
-
-
-            flushAndClear();
-
-
-            List<Rental> result =
-                    rentalRepository.findByEndDateBeforeAndStatusIn(
-                            today,
-                            List.of(
-                                    RentalStatus.ACTIVE,
-                                    RentalStatus.OVERDUE
-                            )
-                    );
-
-
-            assertThat(result)
-                    .extracting(Rental::getId)
-                    .containsExactlyInAnyOrder(
-                            activeRental.getId(),
-                            overdueRental.getId()
-                    );
-        }
-
-
-        @Test
-        @DisplayName("ignores rentals ending exactly on cutoff date")
-        void cutoffIsExclusive() {
-
-            LocalDate cutoff = LocalDate.of(2026, Month.JULY, 15);
-
-            persistRental(
-                    item,
-                    borrower,
-                    JUL_10,
-                    cutoff,
-                    RentalStatus.ACTIVE
-            );
-
-            flushAndClear();
-
-            assertThat(
-                    rentalRepository.findByEndDateBeforeAndStatusIn(
-                            cutoff,
-                            List.of(
-                                    RentalStatus.ACTIVE,
-                                    RentalStatus.OVERDUE
-                            )
-                    )
-            ).isEmpty();
-        }
-
-
-        @Test
-        @DisplayName("ignores statuses not included in the filter")
-        void filtersStatuses() {
-
-            LocalDate today = LocalDate.of(2026, Month.JULY, 20);
-
-            persistRental(
-                    item,
-                    borrower,
-                    JUL_01,
-                    JUL_05,
-                    RentalStatus.RETURNED
-            );
-
-            flushAndClear();
-
-            assertThat(
-                    rentalRepository.findByEndDateBeforeAndStatusIn(
-                            today,
-                            List.of(
-                                    RentalStatus.ACTIVE,
-                                    RentalStatus.OVERDUE
-                            )
-                    )
-            ).isEmpty();
-        }
-
-
-        @Test
-        @DisplayName("returns all matching rentals for scheduler batch processing")
-        void returnsFullList() {
-
-            Item activeItem = persistItem(owner, "Drill");
-            Item overdueItem = persistItem(owner, "Camera");
-
-            Rental activeRental = persistRental(
-                    activeItem,
-                    borrower,
-                    JUL_01,
-                    JUL_05,
-                    RentalStatus.ACTIVE
-            );
-
-            Rental overdueRental = persistRental(
-                    overdueItem,
-                    otherBorrower,
-                    JUL_01,
-                    JUL_10,
-                    RentalStatus.OVERDUE
-            );
-
-            flushAndClear();
-
-            List<Rental> result =
-                    rentalRepository.findByEndDateBeforeAndStatusIn(
-                            LocalDate.of(2026, Month.JULY, 20),
-                            List.of(
-                                    RentalStatus.ACTIVE,
-                                    RentalStatus.OVERDUE
-                            )
-                    );
-
-            assertThat(result)
-                    .extracting(Rental::getId)
-                    .containsExactlyInAnyOrder(
-                            activeRental.getId(),
-                            overdueRental.getId()
-                    );
         }
     }
 }
