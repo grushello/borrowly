@@ -59,4 +59,8 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
+
+    public UserResponse getCurrentUser() {
+        return userMapper.toResponse(currentUserProvider.getCurrentUser());
+    }
 }
