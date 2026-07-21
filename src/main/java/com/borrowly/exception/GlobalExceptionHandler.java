@@ -79,6 +79,22 @@ public class GlobalExceptionHandler {
                 .body(baseBody(HttpStatus.NOT_FOUND, ex.getMessage()));
     }
 
+    @ExceptionHandler(CategoryAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleCategoryAlreadyExists(CategoryAlreadyExistsException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
+    @ExceptionHandler(CategoryConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleCategoryAlreadyExists(CategoryConflictException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
 
     @ExceptionHandler(ItemHasActiveRentalException.class)
     public ResponseEntity<Map<String, Object>> handleItemHasRental(ItemHasActiveRentalException ex) {
