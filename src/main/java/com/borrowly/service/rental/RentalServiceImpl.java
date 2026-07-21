@@ -117,14 +117,25 @@ public class RentalServiceImpl implements RentalService {
 
         User borrower = rental.getBorrower();
 
-        // The transactions table rejects amounts under 0.01, and an item may be listed with
-        // no deposit or no daily price, so only move money that is actually there.
-        if (fine.signum() > 0) {
-            transactionService.chargeFine(borrower, fine, rental);
-            transactionService.payoutFine(owner, fine, rental);
+        // Collect the fine from the borrower's balance first, then from the deposit; whatever
+        // is left over is written off so the borrower never goes into debt. The slice of the
+        // deposit that covers the fine goes to the owner instead of back to the borrower.
+        BigDecimal deposit = rental.getDepositAmount();
+        BigDecimal fineFromBalance = fine.min(borrower.getCurrentBalance());
+        BigDecimal fineFromDeposit = fine.subtract(fineFromBalance).min(deposit);
+        BigDecimal depositRefund = deposit.subtract(fineFromDeposit);
+        BigDecimal finePaidToOwner = fineFromBalance.add(fineFromDeposit);
+
+        // Amounts can be zero and the transactions table rejects anything under 0.01, so only
+        // record the moves that actually shift money.
+        if (fineFromBalance.signum() > 0) {
+            transactionService.chargeFine(borrower, fineFromBalance, rental);
         }
-        if (rental.getDepositAmount().signum() > 0) {
-            transactionService.returnDeposit(borrower, rental.getDepositAmount(), rental);
+        if (finePaidToOwner.signum() > 0) {
+            transactionService.payoutFine(owner, finePaidToOwner, rental);
+        }
+        if (depositRefund.signum() > 0) {
+            transactionService.returnDeposit(borrower, depositRefund, rental);
         }
         if (rental.getTotalPrice().signum() > 0) {
             transactionService.payoutRent(owner, rental.getTotalPrice(), rental);

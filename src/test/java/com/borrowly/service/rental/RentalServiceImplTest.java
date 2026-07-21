@@ -79,6 +79,7 @@ class RentalServiceImplTest {
     void setUp() {
         owner = User.register("Olivia", "Owner", "owner@test.com", "hash");
         borrower = User.register("Ben", "Borrower", "borrower@test.com", "hash");
+        borrower.addBalance(new BigDecimal("100.00"));
 
         item = Item.builder()
                 .title("Bosch Drill")
@@ -240,6 +241,42 @@ class RentalServiceImplTest {
         assertThat(credited.getValue()).isEqualByComparingTo("4.00");
 
         verify(transactionService).returnDeposit(borrower, new BigDecimal("50.00"), rental);
+        verify(transactionService).payoutRent(owner, new BigDecimal("25.00"), rental);
+    }
+
+    @Test
+    @DisplayName("a fine the balance cannot fully cover is topped up from the deposit")
+    void returnLateFineSplitsAcrossBalanceThenDeposit() {
+        ReflectionTestUtils.setField(borrower, "currentBalance", new BigDecimal("1.00"));
+        rental = rentalEndingOn(LocalDate.now().minusDays(2)); // fine 2.00 x 2 = 4.00
+
+        when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
+        when(currentUserProvider.getCurrentUser()).thenReturn(owner);
+
+        rentalService.returnRental(rental.getId());
+
+        // 1.00 comes off the balance, the remaining 3.00 off the deposit, so 47.00 is refunded
+        verify(transactionService).chargeFine(borrower, new BigDecimal("1.00"), rental);
+        verify(transactionService).payoutFine(owner, new BigDecimal("4.00"), rental);
+        verify(transactionService).returnDeposit(borrower, new BigDecimal("47.00"), rental);
+        verify(transactionService).payoutRent(owner, new BigDecimal("25.00"), rental);
+    }
+
+    @Test
+    @DisplayName("a fine beyond balance and deposit is capped, and the owner absorbs the rest")
+    void returnLateFineBeyondBalanceAndDepositIsWrittenOff() {
+        ReflectionTestUtils.setField(borrower, "currentBalance", BigDecimal.ZERO);
+        rental = rentalEndingOn(LocalDate.now().minusDays(26)); // fine 2.00 x 26 = 52.00 > 50.00 deposit
+
+        when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
+        when(currentUserProvider.getCurrentUser()).thenReturn(owner);
+
+        rentalService.returnRental(rental.getId());
+
+        // nothing on the balance, the whole 50.00 deposit goes to the owner, the extra 2.00 is written off
+        verify(transactionService, never()).chargeFine(any(), any(), any());
+        verify(transactionService).payoutFine(owner, new BigDecimal("50.00"), rental);
+        verify(transactionService, never()).returnDeposit(any(), any(), any());
         verify(transactionService).payoutRent(owner, new BigDecimal("25.00"), rental);
     }
 
