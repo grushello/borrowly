@@ -73,7 +73,7 @@ nav a {
 
 .nav-fragment {
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 input {
