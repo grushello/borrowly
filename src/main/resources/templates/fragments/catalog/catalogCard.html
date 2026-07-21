@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <li th:fragment="catalogCard(name, condition, index, pricePerDay, id)" class="catalog-card">
+        <div class="card-image-wrapper">
+            <img src="/images/placeholder.jpg" alt="Item name" class="card-image">
+            <span class="card-category" th:text="${condition}">Condition placeholder</span>
+        </div>
+
+        <div class="card-content">
+            <a th:href="@{/item/{id}(id=${id})}">
+                <h3 class="card-title" th:text="${name}">Fishing rod</h3>
+            </a>
+
+            <div class="card-pricing">
+                <div class="price-daily">
+                    <span class="amount" th:text="|Euros ${pricePerDay}|">€ pricePerDay placeholder</span>
+                    <span class="period">/day</span>
+                </div>
+            </div>
+        </div>
+    </li>
+
+</body>
+</html>
