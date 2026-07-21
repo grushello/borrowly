@@ -1,0 +1,122 @@
+main {
+    align-items: center;
+}
+
+.create-update-item-form-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    font-family: Verdana, sans-serif;
+    box-sizing: border-box;
+}
+
+.create-item-form-container h1 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 500px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 1rem;
+    color: #495057;
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #80bdff;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+.error-message {
+    color: #e63946;
+    font-size: 0.85rem;
+    margin-top: 6px;
+    display: none; /* Nascosto di default, mostrato da JS */
+    font-weight: 500;
+}
+
+.is-invalid {
+    border-color: #e63946 !important;
+    background-color: #fff0f1 !important;
+}
+
+.is-invalid:focus {
+    box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15) !important;
+}
+
+#submitBtn {
+    width: 100%;
+    max-width: 500px;
+    padding: 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+#submitBtn:hover {
+    background-color: #0056b3;
+}
+
+#submitBtn:active {
+    transform: scale(0.98);
+}
+
+#submitBtn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
