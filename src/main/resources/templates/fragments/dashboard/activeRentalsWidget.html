@@ -29,7 +29,10 @@
                 <p class="due-date">
                     Due date: <strong th:text="${#temporals.format(rental.endDate, 'dd MMM yyyy')}">18 Lug 2026</strong>
                 </p>
+
             </div>
+
+            <button th:if="${role == 'Owner'}" class="return-item-button" th:data-rental-id="${rental.id}">Confirm return</button>
 
         </li>
 
