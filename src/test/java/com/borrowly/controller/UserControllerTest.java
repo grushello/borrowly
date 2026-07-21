@@ -118,8 +118,11 @@ class UserControllerTest {
     @WithMockUser
     @DisplayName("PATCH /api/users/me with valid data returns updated profile")
     void patchMeValidDataReturnsUpdated() throws Exception {
-        UserResponse response = sampleResponse();
-        when(userService.updateProfile(any())).thenReturn(response);
+        UserResponse updated = new UserResponse(
+                UUID.randomUUID(), "Bob", "Smith", "alice@example.com",
+                "+37061234567", UserRole.USER, BigDecimal.ZERO,
+                true, FIXED_TIME, FIXED_TIME);
+        when(userService.updateProfile(any())).thenReturn(updated);
 
         UpdateUserRequest request = new UpdateUserRequest("Bob", null, null);
 
@@ -127,7 +130,8 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("Alice"));
+                .andExpect(jsonPath("$.firstName").value("Bob"))
+                .andExpect(jsonPath("$.lastName").value("Smith"));
     }
 
     @Test
