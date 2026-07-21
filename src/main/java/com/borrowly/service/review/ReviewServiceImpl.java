@@ -2,6 +2,9 @@ package com.borrowly.service.review;
 
 import com.borrowly.dto.request.CreateReviewRequest;
 import com.borrowly.dto.response.ReviewResponse;
+import com.borrowly.exception.RentalNotFoundException;
+import com.borrowly.exception.ReviewAlreadyExistsException;
+import com.borrowly.exception.ReviewNotAllowedException;
 import com.borrowly.mapper.ReviewMapper;
 import com.borrowly.model.rental.Rental;
 import com.borrowly.model.rental.RentalStatus;
@@ -10,7 +13,6 @@ import com.borrowly.model.user.User;
 import com.borrowly.repository.rental.RentalRepository;
 import com.borrowly.repository.user.ReviewRepository;
 import com.borrowly.security.CurrentUserProvider;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +20,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -33,20 +36,19 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewResponse createReview(CreateReviewRequest request) {
         Rental rental = rentalRepository.findById(request.rentalId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Rental not found: " + request.rentalId()));
+                .orElseThrow(() -> new RentalNotFoundException(request.rentalId()));
 
         if (rental.getStatus() != RentalStatus.RETURNED) {
-            throw new IllegalStateException("Rental must be RETURNED before reviewing");
+            throw new ReviewNotAllowedException("Rental must be RETURNED before reviewing");
         }
 
         User currentUser = currentUserProvider.getCurrentUser();
-        if (!rental.getBorrower().getId().equals(currentUser.getId())) {
+        if (!Objects.equals(rental.getBorrower().getId(), currentUser.getId())) {
             throw new AccessDeniedException("Only the borrower can review this rental");
         }
 
         if (reviewRepository.existsByRental_Id(rental.getId())) {
-            throw new IllegalStateException("A review already exists for this rental");
+            throw new ReviewAlreadyExistsException(rental.getId());
         }
 
         Review review = Review.builder()

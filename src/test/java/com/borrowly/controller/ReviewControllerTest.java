@@ -23,6 +23,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,6 +40,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({SecurityConfig.class, AuthTokenFilter.class, AuthEntryPointJwt.class,
         GlobalExceptionHandler.class})
 class ReviewControllerTest {
+
+    private static final LocalDateTime FIXED_TIME = LocalDateTime.of(2026, Month.JANUARY, 15, 12, 0);
 
     @Autowired
     private MockMvc mockMvc;
@@ -61,7 +64,7 @@ class ReviewControllerTest {
         UUID itemId = UUID.randomUUID();
         ReviewResponse review = new ReviewResponse(
                 UUID.randomUUID(), null, null, 4, "Nice", UUID.randomUUID(),
-                LocalDateTime.now());
+                FIXED_TIME);
         Page<ReviewResponse> page = new PageImpl<>(List.of(review));
 
         when(reviewService.getReviewsByItem(any(UUID.class), any())).thenReturn(page);
@@ -79,7 +82,7 @@ class ReviewControllerTest {
         CreateReviewRequest request = new CreateReviewRequest(rentalId, 4, "Great item");
         ReviewResponse response = new ReviewResponse(
                 UUID.randomUUID(), null, null, 4, "Great item", rentalId,
-                LocalDateTime.now());
+                FIXED_TIME);
 
         when(reviewService.createReview(any())).thenReturn(response);
 
@@ -95,11 +98,13 @@ class ReviewControllerTest {
     @WithMockUser
     @DisplayName("POST /api/reviews with rating 0 fails validation — 400")
     void createReview_ratingZero_rejected() throws Exception {
-        CreateReviewRequest request = new CreateReviewRequest(UUID.randomUUID(), 0, null);
+        String json = """
+                {"rentalId":"%s","rating":0}
+                """.formatted(UUID.randomUUID());
 
         mockMvc.perform(post("/api/reviews")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(json))
                 .andExpect(status().isBadRequest());
 
         verify(reviewService, never()).createReview(any());
@@ -109,11 +114,13 @@ class ReviewControllerTest {
     @WithMockUser
     @DisplayName("POST /api/reviews with rating 6 fails validation — 400")
     void createReview_ratingSix_rejected() throws Exception {
-        CreateReviewRequest request = new CreateReviewRequest(UUID.randomUUID(), 6, null);
+        String json = """
+                {"rentalId":"%s","rating":6}
+                """.formatted(UUID.randomUUID());
 
         mockMvc.perform(post("/api/reviews")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(json))
                 .andExpect(status().isBadRequest());
 
         verify(reviewService, never()).createReview(any());
@@ -126,7 +133,7 @@ class ReviewControllerTest {
         UUID rentalId = UUID.randomUUID();
         CreateReviewRequest request = new CreateReviewRequest(rentalId, 1, null);
         ReviewResponse response = new ReviewResponse(
-                UUID.randomUUID(), null, null, 1, null, rentalId, LocalDateTime.now());
+                UUID.randomUUID(), null, null, 1, null, rentalId, FIXED_TIME);
 
         when(reviewService.createReview(any())).thenReturn(response);
 
@@ -144,7 +151,7 @@ class ReviewControllerTest {
         UUID rentalId = UUID.randomUUID();
         CreateReviewRequest request = new CreateReviewRequest(rentalId, 5, "Perfect");
         ReviewResponse response = new ReviewResponse(
-                UUID.randomUUID(), null, null, 5, "Perfect", rentalId, LocalDateTime.now());
+                UUID.randomUUID(), null, null, 5, "Perfect", rentalId, FIXED_TIME);
 
         when(reviewService.createReview(any())).thenReturn(response);
 
