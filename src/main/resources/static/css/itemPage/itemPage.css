@@ -6,6 +6,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 60px;
+    row-gap: 0;
 }
 
 .main-image-wrapper {
@@ -253,3 +254,14 @@
     background-color: #6a6d73;
 }
 
+.upload-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+#upload-btn {
+    margin-top: 0.5rem;
+}
