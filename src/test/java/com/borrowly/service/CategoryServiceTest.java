@@ -86,7 +86,7 @@ class CategoryServiceTest {
 
         when(categoryRepository.findById(id)).thenReturn(Optional.of(category));
 
-        CategoryResponse response = categoryService.findById(id).get();
+        CategoryResponse response = categoryService.findById(id);
 
         assertNotNull(response);
         assertEquals("Fishing", response.name());

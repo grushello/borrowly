@@ -30,8 +30,7 @@ public class CategoryController {
 
     @GetMapping("/api/categories/{id}")
     public ResponseEntity<CategoryResponse> findById(@PathVariable UUID id) {
-        return categoryService.findById(id).map(ResponseEntity::ok)
-                        .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(categoryService.findById(id));
     }
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -47,6 +46,7 @@ public class CategoryController {
         return categoryService.update(id, categoryRequest);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Transactional
     @DeleteMapping("/api/admin/categories/{id}")
     public void deleteCategory(@PathVariable UUID id) {
