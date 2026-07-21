@@ -31,7 +31,7 @@ public class DashboardPageController {
 
         Page<FavoriteResponse> favoritesPage = favoriteService.listForCurrentUser(widgetPageable);
         Page<ItemSummaryResponse> itemsPage = itemService.getCurrentUserItems(widgetPageable);
-        UserResponse userResponse = userService.getCurrentUser();
+        UserResponse userResponse = userService.getProfile();
 
         model.addAttribute("favorites", favoritesPage.getContent());
         model.addAttribute("userItemListings", itemsPage.getContent());
