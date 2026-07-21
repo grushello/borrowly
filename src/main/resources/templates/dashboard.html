@@ -7,6 +7,7 @@
     <link rel="stylesheet" th:href="@{/css/dashboard/dashboard.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard/itemsListWidget.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard/financialSummaryWidget.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard/transactionsWidget.css}">
 </head>
 <body>
     <nav th:replace="~{fragments/general/nav :: nav}">
@@ -20,6 +21,8 @@
         <div th:replace="~{fragments/dashboard/activeRentalsAsOwnerWidget :: activeRentalsAsOwnerWidget}">...</div>
 
         <div th:replace="~{fragments/dashboard/financialSummaryWidget :: financialSummaryWidget}">...</div>
+
+        <div th:replace="~{fragments/dashboard/transactionsWidget :: transactionsWidget}">...</div>
 
         <div th:replace="~{fragments/dashboard/favoritesWidget :: favoritesWidget}">...</div>
 
