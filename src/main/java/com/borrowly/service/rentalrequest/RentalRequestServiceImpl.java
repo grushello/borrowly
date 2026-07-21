@@ -206,8 +206,14 @@ public class RentalRequestServiceImpl implements RentalRequestService {
                 .status(RentalStatus.ACTIVE)
                 .build();
 
-        transactionService.holdDeposit(borrower, depositAmount, rental);
-        transactionService.chargeRent(borrower, totalPrice, rental);
+        // The transactions table rejects amounts under 0.01, and an item may be listed with
+        // no deposit or no daily price, so only move money that is actually there.
+        if (depositAmount.signum() > 0) {
+            transactionService.holdDeposit(borrower, depositAmount, rental);
+        }
+        if (totalPrice.signum() > 0) {
+            transactionService.chargeRent(borrower, totalPrice, rental);
+        }
 
         rentalRepository.save(rental);
 
