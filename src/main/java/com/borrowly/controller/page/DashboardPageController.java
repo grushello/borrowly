@@ -8,6 +8,7 @@ import com.borrowly.model.user.User;
 import com.borrowly.security.CurrentUserProvider;
 import com.borrowly.service.favorite.FavoriteService;
 import com.borrowly.service.item.ItemService;
+import com.borrowly.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,8 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class DashboardPageController {
     private final FavoriteService favoriteService;
     private final ItemService itemService;
-    private final CurrentUserProvider currentUserProvider;
-    private final UserMapper userMapper;
+    private final UserService userService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model){
@@ -31,8 +31,7 @@ public class DashboardPageController {
 
         Page<FavoriteResponse> favoritesPage = favoriteService.listForCurrentUser(widgetPageable);
         Page<ItemSummaryResponse> itemsPage = itemService.getCurrentUserItems(widgetPageable);
-        User user = currentUserProvider.getCurrentUser();
-        UserResponse userResponse = userMapper.toResponse(user);
+        UserResponse userResponse = userService.getCurrentUser();
 
         model.addAttribute("favorites", favoritesPage.getContent());
         model.addAttribute("userItemListings", itemsPage.getContent());
