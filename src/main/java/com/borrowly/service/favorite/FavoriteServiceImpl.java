@@ -17,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -34,17 +36,16 @@ public class FavoriteServiceImpl implements FavoriteService {
     public FavoriteResult addFavorite(UUID itemId) {
         User currentUser = currentUserProvider.getCurrentUser();
 
-        Favorite existing = favoriteRepository
-                .findByUser_IdAndItem_Id(currentUser.getId(), itemId)
-                .orElse(null);
-        if (existing != null) {
-            return new FavoriteResult(favoriteMapper.toResponse(existing), false);
+        Optional<Favorite> existingOptional =
+                favoriteRepository.findByUserIdAndItemId(currentUser.getId(), itemId);
+        if (existingOptional.isPresent()) {
+            return new FavoriteResult(favoriteMapper.toResponse(existingOptional.get()), false);
         }
 
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException(itemId));
 
-        if (item.getOwner().getId().equals(currentUser.getId())) {
+        if (Objects.equals(currentUser.getId(), item.getOwner().getId())) {
             throw new CannotFavoriteOwnItemException();
         }
 
@@ -62,7 +63,7 @@ public class FavoriteServiceImpl implements FavoriteService {
     @Transactional
     public void removeFavorite(UUID itemId) {
         UUID userId = currentUserProvider.getCurrentUser().getId();
-        int removed = favoriteRepository.deleteByUser_IdAndItem_Id(userId, itemId);
+        int removed = favoriteRepository.deleteByUserIdAndItemId(userId, itemId);
         if (removed > 0) {
             log.info("User '{}' unfavorited item '{}'", userId, itemId);
         }
@@ -73,18 +74,7 @@ public class FavoriteServiceImpl implements FavoriteService {
     public Page<FavoriteResponse> listForCurrentUser(Pageable pageable) {
         UUID userId = currentUserProvider.getCurrentUser().getId();
         return favoriteRepository
-                .findByUser_IdOrderByCreatedAtDesc(userId, pageable)
+                .findByUserIdOrderByCreatedAtDesc(userId, pageable)
                 .map(favoriteMapper::toResponse);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean isFavoritedByCurrentUser(UUID itemId) {
-        try {
-            UUID userId = currentUserProvider.getCurrentUser().getId();
-            return favoriteRepository.existsByUser_IdAndItem_Id(userId, itemId);
-        } catch (Exception e) {
-            return false;
-        }
     }
 }
