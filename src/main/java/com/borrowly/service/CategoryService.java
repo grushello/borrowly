@@ -28,12 +28,10 @@ public class CategoryService {
         return categoryRepository.findAll().stream().map(categoryMapper::toResponse).toList();
     }
 
-    public Optional<CategoryResponse> findById(UUID id) {
-        Optional<Category> category = categoryRepository.findById(id);
-        if (category.isEmpty()) {
-            throw new CategoryNotFoundException(id);
-        }
-        return category.map(categoryMapper::toResponse);
+    public CategoryResponse findById(UUID id) {
+        return categoryRepository.findById(id)
+                .map(categoryMapper::toResponse)
+                .orElseThrow(() -> new CategoryNotFoundException(id));
     }
 
     public CategoryResponse add(CategoryRequest categoryRequest) {

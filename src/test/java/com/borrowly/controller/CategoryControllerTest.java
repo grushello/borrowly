@@ -1,7 +1,12 @@
 package com.borrowly.controller;
 
+import com.borrowly.config.SecurityConfig;
 import com.borrowly.dto.request.CategoryRequest;
 import com.borrowly.dto.response.CategoryResponse;
+import com.borrowly.exception.CategoryNotFoundException;
+import com.borrowly.exception.GlobalExceptionHandler;
+import com.borrowly.security.AuthEntryPointJwt;
+import com.borrowly.security.AuthTokenFilter;
 import com.borrowly.security.JwtUtil;
 import com.borrowly.service.CategoryService;
 import com.borrowly.service.UserDetailsServiceImpl;
@@ -11,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -31,6 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         excludeAutoConfiguration = {SecurityAutoConfiguration.class}
 )
 @AutoConfigureMockMvc(addFilters = false)
+@Import({SecurityConfig.class, AuthTokenFilter.class, AuthEntryPointJwt.class,
+        GlobalExceptionHandler.class})
 class CategoryControllerTest {
 
     @Autowired
@@ -66,7 +74,7 @@ class CategoryControllerTest {
         UUID id = UUID.randomUUID();
         CategoryResponse response = new CategoryResponse(id, "Fishing", "Gear");
 
-        when(categoryService.findById(id)).thenReturn(Optional.of(response));
+        when(categoryService.findById(id)).thenReturn(response);
 
         mockMvc.perform(get("/api/categories/{id}", id))
                 .andExpect(status().isOk())
@@ -77,7 +85,7 @@ class CategoryControllerTest {
     void findById_ReturnsStatus404_WhenNotFound() throws Exception {
         UUID id = UUID.randomUUID();
 
-        when(categoryService.findById(id)).thenReturn(Optional.empty());
+        when(categoryService.findById(id)).thenThrow(new CategoryNotFoundException(id));
 
         mockMvc.perform(get("/api/categories/{id}", id))
                 .andExpect(status().isNotFound());
@@ -150,11 +158,11 @@ class CategoryControllerTest {
     }
 
     @Test
-    void deleteCategory_ReturnsStatus200() throws Exception {
+    void deleteCategory_ReturnsStatus204() throws Exception {
         UUID id = UUID.randomUUID();
 
         mockMvc.perform(delete("/api/admin/categories/{id}", id))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
