@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 013-extend-transaction-types
+      author: edgaras
+      changes:
+        # FINE_PAYOUT credits the owner with the fine the borrower is charged on a late
+        # return, so the owner is not left out of pocket. Hibernate validates columns but
+        # not check constraints, so without this the app would start fine and only fail
+        # when the first late return is confirmed.
+        - sql:
+            sql: >-
+              ALTER TABLE transactions
+                DROP CONSTRAINT ck_transactions_type,
+                ADD CONSTRAINT ck_transactions_type CHECK (type IN ('TOP_UP', 'WITHDRAWAL', 'RENT_PAYMENT', 'RENT_PAYOUT', 'DEPOSIT_HELD', 'DEPOSIT_RETURN', 'REFUND', 'FINE', 'FINE_PAYOUT'))
+      rollback:
+        - sql:
+            sql: >-
+              ALTER TABLE transactions
+                DROP CONSTRAINT ck_transactions_type,
+                ADD CONSTRAINT ck_transactions_type CHECK (type IN ('TOP_UP', 'WITHDRAWAL', 'RENT_PAYMENT', 'RENT_PAYOUT', 'DEPOSIT_HELD', 'DEPOSIT_RETURN', 'REFUND', 'FINE'))

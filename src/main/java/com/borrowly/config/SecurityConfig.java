@@ -39,6 +39,11 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/index.html",
+                                "/signin.html",
+                                "/signin",
+                                "/signup",
+                                "/login",
+                                "/item/**",
                                 "/*.html",
                                 "/css/**",
                                 "/js/**",
@@ -51,6 +56,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/items", "/api/items/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .deleteCookies("jwt_token")
+                        .logoutSuccessUrl("/")
+                        .permitAll()
                 )
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

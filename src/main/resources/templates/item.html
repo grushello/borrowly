@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${item.title}">Item details</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="stylesheet" th:href="@{/css/itemPage/itemPage.css}">
+</head>
+<body>
+    <nav th:replace="~{fragments/general/nav :: nav}">
+    </nav>
+    <main class="item-page-container">
+
+      <div class="item-gallery">
+        <div class="main-image-wrapper">
+          <img src="https://caprihydro.com/wp-content/uploads/2023/03/eFoil-Fliteboard-lesson-in-Capri.jpg" alt="Tavola E-Foil Fliteboard" class="main-image">
+        </div>
+
+        <div class="thumbnail-list">
+          <img src="https://caprihydro.com/wp-content/uploads/2023/03/eFoil-Fliteboard-lesson-in-Capri.jpg" alt="Miniatura 1" class="thumbnail">
+          <img src="https://www.visitwales.com/sites/visit/files/styles/o_articleimage_medium__16_9_xl_min_2x/public/media-library/2025-05/683281-p5180064-web-optimised-1920px.jpg.webp?itok=f3lxIBbY" alt="Miniatura 2" class="thumbnail">
+        </div>
+      </div>
+
+      <div class="item-info">
+
+        <span class="category-badge" th:text="${item.category.name}">Category placeholder</span>
+        <h1 class="item-title" th:text="${item.title}">Title placeholder</h1>
+
+        <div class="item-meta">
+            <span class="rating">
+                ⭐ <strong>4.8</strong>
+                <span class="review-count">(14 reviews)</span>
+            </span>
+          <span class="meta-divider">•</span>
+          <span class="condition" th:text="'Condition: ' + ${item.condition}">Condition: PLACEHOLDER</span>
+        </div>
+
+        <div class="item-description">
+          <h3>Description</h3>
+          <p th:text="${item.description}">Description placeholder</p>
+        </div>
+
+        <div class="booking-card">
+          <div class="price-header">
+            <span class="daily-price" th:text="${item.pricePerDay} + ' €'">€ 0.00</span>
+            <span class="price-suffix">/ day</span>
+          </div>
+
+          <ul class="price-details">
+            <li>
+              <span>Deposit required:</span>
+              <strong th:text="${item.depositAmount} + ' €'">€ 0.00</strong>
+            </li>
+            <li sec:authorize="isAuthenticated()">
+              <button id="favorite-btn"
+                      th:data-item-id="${item.id}"
+                      th:data-is-favorite="${isFavorite}"
+                      th:text="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}"
+                      th:class="${isFavorite ? 'btn-remove-fav' : 'btn-add-fav'}">
+                Add to favorites
+              </button>
+            </li>
+          </ul>
+
+          <button sec:authorize="isAuthenticated()" class="btn-book">
+            Rent now
+          </button>
+          <button sec:authorize="isAnonymous()" class="btn-book-disabled" disabled th:disabled="true">
+            Rent now
+          </button>
+
+        </div>
+
+        <div class="owner-profile">
+          <div class="owner-avatar">
+            <span th:text="${item.owner.firstName.charAt(0)}">A</span>
+          </div>
+          <div class="owner-details">
+            <span class="owner-label">Owner</span>
+            <strong th:text="${item.owner.firstName} + ' ' + ${item.owner.lastName}">Owner</strong>
+          </div>
+        </div>
+
+      </div>
+  </main>
+
+  <footer th:replace="~{fragments/general/footer :: footer}">
+  </footer>
+
+</body>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const favBtn = document.getElementById('favorite-btn');
+    if (!favBtn) return;
+
+    favBtn.addEventListener('click', function() {
+      const itemId = this.getAttribute('data-item-id');
+      const isFavorite = this.getAttribute('data-is-favorite') === 'true';
+
+      const method = isFavorite ? 'DELETE' : 'POST';
+
+      const url = '/api/favorites/' + itemId;
+
+      favBtn.disabled = true;
+
+      fetch(url, {
+        method: method,
+      })
+              .then(response => {
+                if (response.ok) {
+                  const newState = !isFavorite;
+                  this.setAttribute('data-is-favorite', newState);
+                  this.innerText = newState ? 'Remove from favorites' : 'Add to favorites';
+
+                  this.classList.toggle('btn-add-fav', !newState);
+                  this.classList.toggle('btn-remove-fav', newState);
+                } else {
+                  alert('Error during the update of favorites.');
+                }
+              })
+              .catch(err => {
+                console.error('Error:', err);
+                alert('Network error.');
+              })
+              .finally(() => {
+                favBtn.disabled = false;
+              });
+    });
+  });
+</script>
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>404 Not Found</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <nav th:replace="~{fragments/general/nav :: nav}">
+    </nav>
+    <main class="error-container">
+        <h1>🛑 Not Found! </h1>
+        <p>We are sorry but the resource you requested was not found.</p>
+    </main>
+    <footer th:insert="~{fragments/general/footer :: footer}">
+    </footer>
+</body>
+</html>
