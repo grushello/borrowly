@@ -228,4 +228,28 @@ class ItemControllerTest {
         mockMvc.perform(delete("/api/items/" + UUID.randomUUID()))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @WithMockUser
+    void unarchiveItemSuccess() throws Exception {
+
+        UUID id = UUID.randomUUID();
+
+        when(itemService.unarchive(id))
+                .thenReturn(mock(ItemResponse.class));
+
+        mockMvc.perform(patch("/api/items/" + id + "/unarchive"))
+                .andExpect(status().isOk());
+
+        verify(itemService)
+                .unarchive(id);
+    }
+
+
+    @Test
+    void unarchiveWithoutAuthReturns401() throws Exception {
+
+        mockMvc.perform(patch("/api/items/" + UUID.randomUUID() + "/unarchive"))
+                .andExpect(status().isUnauthorized());
+    }
 }
