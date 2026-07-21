@@ -1,12 +1,8 @@
 package com.borrowly.controller.page;
 
 import com.borrowly.dto.response.*;
-import com.borrowly.mapper.UserMapper;
 import com.borrowly.model.rental.RentalStatus;
-import com.borrowly.model.user.User;
-import com.borrowly.security.CurrentUserProvider;
 import com.borrowly.service.favorite.FavoriteService;
-import com.borrowly.service.item.ItemImageService;
 import com.borrowly.service.item.ItemService;
 import com.borrowly.service.rental.RentalService;
 import com.borrowly.service.transaction.TransactionService;
