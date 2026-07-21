@@ -5,7 +5,7 @@
     <title>Active rentals widget</title>
 </head>
 <body>
-<div th:fragment="activeRentalsWidget" class="widget active-rentals-widget">
+<div th:fragment="activeRentalsAsBorrowerWidget" class="widget active-rentals-widget">
     <div class="widget-header">
         <h2>Active rentals (as borrower) </h2>
     </div>
@@ -14,7 +14,14 @@
 
         <li th:each="rental : ${activeRentalsAsBorrower}" class="rental-item">
 
-<!--            <img th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${rental.item.id}, imageId=${images[0].id})}" th:alt="${rental.item.title}" class="rental-thumb">-->
+            <img th:if="${rental.item.primaryImageId != null}"
+                 th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${rental.item.id}, imageId=${rental.item.primaryImageId})}"
+                 th:alt="${rental.item.title}" class="item-thumbnail">
+
+            <img th:unless="${rental.item.primaryImageId != null}"
+                 th:src="@{/images/placeholder.jpg}"
+                 alt="No image"
+                 class="item-thumbnail" />
 
             <div class="rental-info">
                 <h4 th:text="${rental.item.title}">Fishing rod</h4>
