@@ -140,6 +140,14 @@ public class TransactionServiceImpl implements TransactionService {
         return saveRentalTransaction(borrower, amount, TransactionType.FINE, rental);
     }
 
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public Transaction payoutFine(User owner, BigDecimal amount, Rental rental) {
+        owner.addBalance(amount);
+        userRepository.save(owner);
+        return saveRentalTransaction(owner, amount, TransactionType.FINE_PAYOUT, rental);
+    }
+
     private Transaction saveRentalTransaction(User user, BigDecimal amount,
                                               TransactionType type, Rental rental) {
         Transaction tx = Transaction.builder()
