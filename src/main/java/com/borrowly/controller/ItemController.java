@@ -94,4 +94,11 @@ public class ItemController {
     ) {
         return itemService.archive(id);
     }
+
+    @PatchMapping("/{id}/unarchive")
+    public ItemResponse unarchive(
+            @PathVariable UUID id
+    ) {
+        return itemService.unarchive(id);
+    }
 }

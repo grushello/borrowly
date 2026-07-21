@@ -30,4 +30,5 @@ public interface ItemService {
     ItemResponse update(UUID id, UpdateItemRequest request);
 
     ItemResponse archive(UUID id);
+    ItemResponse unarchive(UUID id);
 }

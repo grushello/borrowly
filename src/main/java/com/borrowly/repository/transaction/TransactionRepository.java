@@ -17,19 +17,19 @@ import java.util.UUID;
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
 
     @EntityGraph(attributePaths = "rental")
-    Page<Transaction> findByUser_IdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
+    Page<Transaction> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
 
     @EntityGraph(attributePaths = "rental")
-    Page<Transaction> findByUser_IdAndTypeIn(UUID userId,
-                                             Collection<TransactionType> types,
-                                             Pageable pageable);
+    Page<Transaction> findByUserIdAndTypeIn(UUID userId,
+                                            Collection<TransactionType> types,
+                                            Pageable pageable);
 
     @EntityGraph(attributePaths = "rental")
-    Page<Transaction> findByUser_IdAndCreatedAtBetween(UUID userId,
-                                                       LocalDateTime from,
-                                                       LocalDateTime to,
-                                                       Pageable pageable);
+    Page<Transaction> findByUserIdAndCreatedAtBetween(UUID userId,
+                                                      LocalDateTime from,
+                                                      LocalDateTime to,
+                                                      Pageable pageable);
 
     @EntityGraph(attributePaths = "user")
-    List<Transaction> findByRental_Id(UUID rentalId);
+    List<Transaction> findByRentalId(UUID rentalId);
 }

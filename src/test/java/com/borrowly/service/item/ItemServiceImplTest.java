@@ -115,7 +115,7 @@ class ItemServiceImplTest {
         when(reviewRepository.averageRatingByItemId(any()))
                 .thenReturn(null);
 
-        when(reviewRepository.countByRental_Item_Id(any()))
+        when(reviewRepository.countByItemId(any()))
                 .thenReturn(0L);
 
         when(itemRepository.save(any(Item.class)))
@@ -257,7 +257,7 @@ class ItemServiceImplTest {
         when(reviewRepository.averageRatingByItemId(any()))
                 .thenReturn(null);
 
-        when(reviewRepository.countByRental_Item_Id(any()))
+        when(reviewRepository.countByItemId(any()))
                 .thenReturn(0L);
 
 
@@ -470,5 +470,104 @@ class ItemServiceImplTest {
 
         assertThat(item.getStatus())
                 .isEqualTo(ItemStatus.ARCHIVED);
+    }
+    @Test
+    @DisplayName("unarchive own item")
+    void unarchiveOwnItem() {
+
+        item.setStatus(ItemStatus.ARCHIVED);
+
+        when(itemRepository.findById(item.getId()))
+                .thenReturn(Optional.of(item));
+
+        when(currentUserProvider.getCurrentUser())
+                .thenReturn(owner);
+
+        when(itemRepository.save(item))
+                .thenReturn(item);
+
+
+        itemService.unarchive(item.getId());
+
+
+        assertThat(item.getStatus())
+                .isEqualTo(ItemStatus.ACTIVE);
+    }
+
+
+    @Test
+    @DisplayName("unarchive forbidden for another user")
+    void unarchiveForbidden() {
+
+        item.setStatus(ItemStatus.ARCHIVED);
+
+        User another =
+                User.register(
+                        "Bob",
+                        "Jones",
+                        "bob@test.com",
+                        "password"
+                );
+
+
+        when(itemRepository.findById(item.getId()))
+                .thenReturn(Optional.of(item));
+
+        when(currentUserProvider.getCurrentUser())
+                .thenReturn(another);
+
+
+        assertThatThrownBy(() ->
+                itemService.unarchive(item.getId()))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+
+
+    @Test
+    @DisplayName("admin can unarchive item")
+    void adminCanUnarchive() {
+
+        item.setStatus(ItemStatus.ARCHIVED);
+
+        User admin = mock(User.class);
+
+        when(admin.getId())
+                .thenReturn(UUID.randomUUID());
+
+        when(admin.getRole())
+                .thenReturn(UserRole.ADMIN);
+
+
+        when(itemRepository.findById(item.getId()))
+                .thenReturn(Optional.of(item));
+
+        when(currentUserProvider.getCurrentUser())
+                .thenReturn(admin);
+
+        when(itemRepository.save(item))
+                .thenReturn(item);
+
+
+        itemService.unarchive(item.getId());
+
+
+        assertThat(item.getStatus())
+                .isEqualTo(ItemStatus.ACTIVE);
+    }
+
+
+    @Test
+    @DisplayName("unarchive throws when item not found")
+    void unarchiveItemNotFound() {
+
+        UUID missingId = UUID.randomUUID();
+
+        when(itemRepository.findById(missingId))
+                .thenReturn(Optional.empty());
+
+
+        assertThatThrownBy(() ->
+                itemService.unarchive(missingId))
+                .isInstanceOf(ItemNotFoundException.class);
     }
 }

@@ -160,7 +160,7 @@ class ItemRepositoryTest extends AbstractPostgresTest {
 
 
         Page<Item> result =
-                itemRepository.findByOwner_IdAndStatusNot(
+                itemRepository.findByOwnerIdAndStatusNot(
                         owner.getId(),
                         ItemStatus.ARCHIVED,
                         PageRequest.of(0, 10)

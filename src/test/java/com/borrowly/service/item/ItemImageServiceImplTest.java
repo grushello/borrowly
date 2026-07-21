@@ -69,7 +69,7 @@ class ItemImageServiceImplTest {
 
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
-        when(itemImageRepository.countByItem_Id(itemId)).thenReturn(0L);
+        when(itemImageRepository.countByItemId(itemId)).thenReturn(0L);
         when(itemImageRepository.save(any(ItemImage.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ItemImageResponse expected = new ItemImageResponse(UUID.randomUUID(), "photo.jpg", "image/jpeg", true, FIXED_TIME);
@@ -88,7 +88,7 @@ class ItemImageServiceImplTest {
 
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
-        when(itemImageRepository.countByItem_Id(itemId)).thenReturn(1L);
+        when(itemImageRepository.countByItemId(itemId)).thenReturn(1L);
         when(itemImageRepository.save(any(ItemImage.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ItemImageResponse expected = new ItemImageResponse(UUID.randomUUID(), "photo2.jpg", "image/jpeg", false, FIXED_TIME);
@@ -106,7 +106,7 @@ class ItemImageServiceImplTest {
 
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
-        when(itemImageRepository.countByItem_Id(itemId)).thenReturn(5L);
+        when(itemImageRepository.countByItemId(itemId)).thenReturn(5L);
 
         assertThatThrownBy(() -> service.upload(itemId, file))
                 .isInstanceOf(ImageLimitExceededException.class);
@@ -160,7 +160,7 @@ class ItemImageServiceImplTest {
                 .contentType("image/jpeg")
                 .build();
 
-        when(itemImageRepository.findByIdAndItem_Id(imageId, itemId)).thenReturn(Optional.of(image));
+        when(itemImageRepository.findByIdAndItemId(imageId, itemId)).thenReturn(Optional.of(image));
 
         ItemImage result = service.download(itemId, imageId);
 
@@ -187,8 +187,8 @@ class ItemImageServiceImplTest {
 
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
-        when(itemImageRepository.findByIdAndItem_Id(imageId, itemId)).thenReturn(Optional.of(primary));
-        when(itemImageRepository.findFirstByItem_IdOrderByCreatedAtAsc(itemId)).thenReturn(Optional.of(oldest));
+        when(itemImageRepository.findByIdAndItemId(imageId, itemId)).thenReturn(Optional.of(primary));
+        when(itemImageRepository.findFirstByItemIdOrderByCreatedAtAsc(itemId)).thenReturn(Optional.of(oldest));
 
         service.delete(itemId, imageId);
 
@@ -209,7 +209,7 @@ class ItemImageServiceImplTest {
 
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
-        when(itemImageRepository.findByIdAndItem_Id(imageId, itemId)).thenReturn(Optional.of(nonPrimary));
+        when(itemImageRepository.findByIdAndItemId(imageId, itemId)).thenReturn(Optional.of(nonPrimary));
 
         service.delete(itemId, imageId);
 
@@ -223,7 +223,7 @@ class ItemImageServiceImplTest {
         ItemImageMetadata meta = mock(ItemImageMetadata.class);
 
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
-        when(itemImageRepository.findByItem_IdOrderByCreatedAtAsc(itemId)).thenReturn(List.of(meta));
+        when(itemImageRepository.findByItemIdOrderByCreatedAtAsc(itemId)).thenReturn(List.of(meta));
         when(itemImageMapper.fromProjectionList(any())).thenReturn(List.of(
                 new ItemImageResponse(UUID.randomUUID(), "a.jpg", "image/jpeg", true, FIXED_TIME)
         ));
@@ -231,8 +231,8 @@ class ItemImageServiceImplTest {
         List<ItemImageResponse> result = service.listMetadata(itemId);
 
         assertThat(result).hasSize(1);
-        verify(itemImageRepository).findByItem_IdOrderByCreatedAtAsc(itemId);
-        verify(itemImageRepository, never()).findByIdAndItem_Id(any(), any());
+        verify(itemImageRepository).findByItemIdOrderByCreatedAtAsc(itemId);
+        verify(itemImageRepository, never()).findByIdAndItemId(any(), any());
     }
 
     private MockMultipartFile jpegFile(String name, int size) {

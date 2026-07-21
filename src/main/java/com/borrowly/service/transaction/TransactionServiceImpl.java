@@ -94,62 +94,62 @@ public class TransactionServiceImpl implements TransactionService {
         Pageable pageable = PageRequest.of(page, size);
 
         Page<Transaction> transactions = (types == null || types.isEmpty())
-                ? transactionRepository.findByUser_IdOrderByCreatedAtDesc(user.getId(), pageable)
-                : transactionRepository.findByUser_IdAndTypeIn(user.getId(), types, pageable);
+                ? transactionRepository.findByUserIdOrderByCreatedAtDesc(user.getId(), pageable)
+                : transactionRepository.findByUserIdAndTypeIn(user.getId(), types, pageable);
 
         return transactions.map(transactionMapper::toResponse);
     }
 
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
-    public Transaction holdDeposit(User borrower, BigDecimal amount, Rental rental) {
+    public void holdDeposit(User borrower, BigDecimal amount, Rental rental) {
         borrower.subtractBalance(amount);
         userRepository.save(borrower);
-        return saveRentalTransaction(borrower, amount, TransactionType.DEPOSIT_HELD, rental);
+        saveRentalTransaction(borrower, amount, TransactionType.DEPOSIT_HELD, rental);
     }
 
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
-    public Transaction chargeRent(User borrower, BigDecimal amount, Rental rental) {
+    public void chargeRent(User borrower, BigDecimal amount, Rental rental) {
         borrower.subtractBalance(amount);
         userRepository.save(borrower);
-        return saveRentalTransaction(borrower, amount, TransactionType.RENT_PAYMENT, rental);
+        saveRentalTransaction(borrower, amount, TransactionType.RENT_PAYMENT, rental);
     }
 
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
-    public Transaction payoutRent(User owner, BigDecimal amount, Rental rental) {
+    public void payoutRent(User owner, BigDecimal amount, Rental rental) {
         owner.addBalance(amount);
         userRepository.save(owner);
-        return saveRentalTransaction(owner, amount, TransactionType.RENT_PAYOUT, rental);
+        saveRentalTransaction(owner, amount, TransactionType.RENT_PAYOUT, rental);
     }
 
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
-    public Transaction returnDeposit(User borrower, BigDecimal amount, Rental rental) {
+    public void returnDeposit(User borrower, BigDecimal amount, Rental rental) {
         borrower.addBalance(amount);
         userRepository.save(borrower);
-        return saveRentalTransaction(borrower, amount, TransactionType.DEPOSIT_RETURN, rental);
+        saveRentalTransaction(borrower, amount, TransactionType.DEPOSIT_RETURN, rental);
     }
 
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
-    public Transaction chargeFine(User borrower, BigDecimal amount, Rental rental) {
+    public void chargeFine(User borrower, BigDecimal amount, Rental rental) {
         borrower.subtractBalance(amount);
         userRepository.save(borrower);
-        return saveRentalTransaction(borrower, amount, TransactionType.FINE, rental);
+        saveRentalTransaction(borrower, amount, TransactionType.FINE, rental);
     }
 
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
-    public Transaction payoutFine(User owner, BigDecimal amount, Rental rental) {
+    public void payoutFine(User owner, BigDecimal amount, Rental rental) {
         owner.addBalance(amount);
         userRepository.save(owner);
-        return saveRentalTransaction(owner, amount, TransactionType.FINE_PAYOUT, rental);
+        saveRentalTransaction(owner, amount, TransactionType.FINE_PAYOUT, rental);
     }
 
-    private Transaction saveRentalTransaction(User user, BigDecimal amount,
-                                              TransactionType type, Rental rental) {
+    private void saveRentalTransaction(User user, BigDecimal amount,
+                                       TransactionType type, Rental rental) {
         Transaction tx = Transaction.builder()
                 .amount(amount)
                 .type(type)
@@ -157,6 +157,6 @@ public class TransactionServiceImpl implements TransactionService {
                 .user(user)
                 .rental(rental)
                 .build();
-        return transactionRepository.save(tx);
+        transactionRepository.save(tx);
     }
 }
