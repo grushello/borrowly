@@ -384,8 +384,32 @@ class RentalServiceImplTest {
                 isNull());
 
         assertThat(recipients.getAllValues()).containsExactly(borrower, owner);
-        assertThat(messages.getAllValues().get(0)).contains("Deposit returned: 50.00", "Fine charged: 4.00");
-        assertThat(messages.getAllValues().get(1)).contains("Payout: 25.00", "Fine credited: 4.00");
+        assertThat(messages.getAllValues().get(0))
+                .contains("fine charged: 4.00", "Deposit returned in full: 50.00");
+        assertThat(messages.getAllValues().get(1))
+                .contains("Payout: 25.00", "late fine of 4.00");
+    }
+
+    @Test
+    @DisplayName("when the fine outruns the deposit, the messages say so")
+    void returnNotifiesWhenFineExceedsDeposit() {
+        ReflectionTestUtils.setField(borrower, "currentBalance", BigDecimal.ZERO);
+        rental = rentalEndingOn(LocalDate.now().minusDays(26)); // fine 52.00 > 50.00 deposit
+
+        when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
+        when(currentUserProvider.getCurrentUser()).thenReturn(owner);
+
+        rentalService.returnRental(rental.getId());
+
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        verify(notificationService, times(2))
+                .send(any(), eq(NotificationType.ITEM_RETURNED), messages.capture(), eq(rental), isNull());
+
+        // only the 50.00 deposit was collected, the extra 2.00 is written off
+        assertThat(messages.getAllValues().get(0))
+                .contains("fine of 50.00", "nothing was returned");
+        assertThat(messages.getAllValues().get(1))
+                .contains("50.00 of the 52.00 fine", "could not cover the rest");
     }
 
     @Test

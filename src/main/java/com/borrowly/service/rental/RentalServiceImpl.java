@@ -144,9 +144,10 @@ public class RentalServiceImpl implements RentalService {
         item.setStatus(ItemStatus.ACTIVE);
 
         notificationService.send(borrower, NotificationType.ITEM_RETURNED,
-                borrowerMessage(rental, fine, overdueDays), rental, null);
+                borrowerMessage(rental, overdueDays, fine, depositRefund, finePaidToOwner),
+                rental, null);
         notificationService.send(owner, NotificationType.ITEM_RETURNED,
-                ownerMessage(rental, fine), rental, null);
+                ownerMessage(rental, overdueDays, fine, finePaidToOwner), rental, null);
 
         log.info("Rental id={} returned by ownerId={} overdueDays={} fine={}",
                 id, owner.getId(), overdueDays, fine);
@@ -160,31 +161,53 @@ public class RentalServiceImpl implements RentalService {
                 || user.getRole() == UserRole.ADMIN;
     }
 
-    private static String borrowerMessage(Rental rental, BigDecimal fine, long overdueDays) {
-        StringBuilder message = new StringBuilder("You returned ")
-                .append(rental.getItemTitle())
-                .append(" on ").append(rental.getActualReturnDate())
-                .append(". Rent paid: ").append(rental.getTotalPrice())
-                .append(". Deposit returned: ").append(rental.getDepositAmount())
-                .append(".");
+    private static String borrowerMessage(Rental rental, long overdueDays, BigDecimal fine,
+                                          BigDecimal depositRefund, BigDecimal finePaidToOwner) {
+        String title = rental.getItemTitle();
+        LocalDate returnedOn = rental.getActualReturnDate();
+        BigDecimal rent = rental.getTotalPrice();
 
-        if (fine.signum() > 0) {
-            message.append(" Fine charged: ").append(fine)
-                    .append(" (").append(overdueDays).append(" day(s) overdue).");
+        if (fine.signum() == 0) {
+            return String.format(
+                    "You returned '%s' on %s. Rent paid: %s, deposit returned: %s.",
+                    title, returnedOn, rent, depositRefund);
         }
-        return message.toString();
+        if (depositRefund.compareTo(rental.getDepositAmount()) == 0) {
+            return String.format(
+                    "You returned '%s' on %s, %d day(s) late. Rent paid: %s, fine charged: %s. "
+                            + "Deposit returned in full: %s.",
+                    title, returnedOn, overdueDays, rent, finePaidToOwner, depositRefund);
+        }
+        if (depositRefund.signum() > 0) {
+            return String.format(
+                    "You returned '%s' on %s, %d day(s) late. Rent paid: %s, fine charged: %s. "
+                            + "Part of your deposit covered the fine, so %s was returned.",
+                    title, returnedOn, overdueDays, rent, finePaidToOwner, depositRefund);
+        }
+        return String.format(
+                "You returned '%s' on %s, %d day(s) late. Rent paid: %s. Your fine of %s used up "
+                        + "the entire deposit, so nothing was returned.",
+                title, returnedOn, overdueDays, rent, finePaidToOwner);
     }
 
-    private static String ownerMessage(Rental rental, BigDecimal fine) {
-        StringBuilder message = new StringBuilder(rental.getItemTitle())
-                .append(" was returned on ").append(rental.getActualReturnDate())
-                .append(". Payout: ").append(rental.getTotalPrice())
-                .append(".");
+    private static String ownerMessage(Rental rental, long overdueDays,
+                                       BigDecimal fine, BigDecimal finePaidToOwner) {
+        String title = rental.getItemTitle();
+        LocalDate returnedOn = rental.getActualReturnDate();
+        BigDecimal rent = rental.getTotalPrice();
 
-        if (fine.signum() > 0) {
-            message.append(" Fine credited: ").append(fine).append(".");
+        if (fine.signum() == 0) {
+            return String.format("'%s' was returned on %s. Payout: %s.", title, returnedOn, rent);
         }
-        return message.toString();
+        if (finePaidToOwner.compareTo(fine) == 0) {
+            return String.format(
+                    "'%s' was returned on %s, %d day(s) late. Payout: %s, plus a late fine of %s.",
+                    title, returnedOn, overdueDays, rent, finePaidToOwner);
+        }
+        return String.format(
+                "'%s' was returned on %s, %d day(s) late. Payout: %s, plus %s of the %s fine; "
+                        + "the borrower could not cover the rest.",
+                title, returnedOn, overdueDays, rent, finePaidToOwner, fine);
     }
 
     private static boolean isEmpty(List<RentalStatus> statuses) {
