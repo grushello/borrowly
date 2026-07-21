@@ -1,5 +1,6 @@
 package com.borrowly.scheduler;
 
+import com.borrowly.exception.RentalNotFoundException;
 import com.borrowly.model.notification.NotificationType;
 import com.borrowly.model.rental.Rental;
 import com.borrowly.model.rental.RentalStatus;
@@ -58,9 +59,7 @@ public class OverdueRentalScheduler {
 
         Rental rental = rentalRepository.findById(rentalId)
                 .orElseThrow(() ->
-                        new IllegalStateException(
-                                "Rental not found: " + rentalId
-                        )
+                        new RentalNotFoundException(rentalId)
                 );
 
         if (rental.getStatus() == RentalStatus.ACTIVE) {
