@@ -12,6 +12,8 @@
     <nav th:replace="~{fragments/general/nav :: nav}">
     </nav>
 
+    <h1 th:text="|${user.firstName} ${user.lastName}|">User name</h1>
+
     <main class="dashboard-grid">
         <div th:replace="~{fragments/dashboard/activeRentalsWidget :: activeRentalsWidget}">...</div>
 
