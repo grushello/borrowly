@@ -30,7 +30,7 @@
 
               <button class="delete-image-btn"
                       th:data-image-id="${image.id}"
-                      title="Delete image">
+                      title="Delete image" th:if="${isOwner}" sec:authorize="isAuthenticated()">
                 &times;
               </button>
 
@@ -89,7 +89,7 @@
           <button sec:authorize="isAnonymous()"
                   class="btn-book-disabled"
                   disabled>
-            Rent now (Login required)
+            Request (Login required)
           </button>
 
           <div sec:authorize="isAuthenticated()">
@@ -105,10 +105,22 @@
                 </button>
               </div>
             </div>
-            <button th:unless="${isOwner}"
-                    class="btn-book">
-              Rent now
-            </button>
+            <div th:unless="${isOwner}" class="booking-section">
+              <div id="booking-error" class="alert-error" style="display: none;"></div>
+
+              <div class="date-pickers">
+                <div class="input-group">
+                  <label for="start-date">Start Date:</label>
+                  <input type="date" id="start-date" required>
+                </div>
+                <div class="input-group">
+                  <label for="end-date">End Date:</label>
+                  <input type="date" id="end-date" required>
+                </div>
+              </div>
+
+              <button id="request-btn" class="btn-book">Request</button>
+            </div>
 
           </div>
 
@@ -127,7 +139,7 @@
 
       </div>
 
-      <div class="upload-section">
+      <div class="upload-section" th:if="${isOwner}" sec:authorize="isAuthenticated()">
         <label for="image-upload">Add an image:</label>
         <input type="file" id="image-upload" name="file" accept="image/*">
         <button id="upload-btn" type="button">Upload an image</button>
@@ -242,7 +254,7 @@
     const favBtn = document.getElementById('favorite-btn');
     const archiveBtn = document.getElementById('archive-btn');
 
-    archiveBtn.addEventListener('click', (event) => {
+    if (archiveBtn) archiveBtn.addEventListener('click', (event) => {
       event.stopPropagation();
 
       const itemId = document.getElementById("main-content").getAttribute('data-item-id');
@@ -270,9 +282,78 @@
     })
 
 
-    if (!favBtn) return;
+    const requestBtn = document.getElementById('request-btn');
 
-    favBtn.addEventListener('click', function() {
+    if (requestBtn) {
+      requestBtn.addEventListener('click', function(event) {
+        const startDateInput = document.getElementById('start-date').value;
+        const endDateInput = document.getElementById('end-date').value;
+        const itemId = document.getElementById("main-content").getAttribute('data-item-id');
+
+        if (!startDateInput || !endDateInput) {
+          alert("Please select both start and end dates.");
+          return;
+        }
+
+        if (new Date(endDateInput) <= new Date(startDateInput)) {
+          alert("End date must be after start date.");
+          return;
+        }
+
+        const payload = {
+          itemId: itemId,
+          startDate: startDateInput,
+          endDate: endDateInput
+        };
+
+        requestBtn.disabled = true;
+        requestBtn.textContent = "Sending...";
+
+        fetch('/api/rental-requests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+                .then(async response => {
+                  if (response.ok) {
+                    alert("Request sent successfully!");
+                    window.location.href = "/dashboard";
+                  } else {
+                    const errorData = await response.json();
+                    const errorBox = document.getElementById('booking-error');
+                    if (errorBox) errorBox.style.display = 'none';
+
+                    if (errorBox) {
+                      errorBox.textContent = errorData.message || "There was an error with the request...";
+                      console.log(errorData)
+
+                      if (errorData.fields) {
+                        const fieldErrors = Object.entries(errorData.fields)
+                                .map(([field, msg]) => `${field}: ${msg}`)
+                                .join(" | ");
+                        errorBox.textContent += " - " + fieldErrors;
+                      }
+
+                      errorBox.style.display = 'block';
+                    } else {
+                      alert(errorData.message || "Error during the request");
+                    }
+                  }
+                })
+                .catch(error => {
+                  console.error("Error:", error);
+                  alert("Network error.");
+                })
+                .finally(() => {
+                  requestBtn.disabled = false;
+                  requestBtn.textContent = "Request";
+                });
+      });
+    }
+
+    if (favBtn) favBtn.addEventListener('click', function() {
       const itemId = document.getElementById("main-content").getAttribute('data-item-id');
       const isFavorite = this.getAttribute('data-is-favorite') === 'true';
 
