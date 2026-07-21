@@ -6,7 +6,9 @@ import com.borrowly.dto.response.AuthResponse;
 import com.borrowly.service.auth.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,15 +22,33 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/register")
+    @PostMapping("/signup")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        AuthResponse response = authService.register(request);
+        System.out.println(request);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(authService.register(request));
+                .header(HttpHeaders.SET_COOKIE, createJwtCookie(response.token()).toString())
+                .body(response);
     }
 
-    @PostMapping("/login")
+    @PostMapping("/signin")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, createJwtCookie(response.token()).toString())
+                .body(response);
+    }
+
+    private ResponseCookie createJwtCookie(String token) {
+        return ResponseCookie.from("jwt_token", token)
+                .httpOnly(true)   // (anti-XSS)
+                .secure(false)    // True in prod (with HTTPS)
+                .path("/")        // cookie valid site wide
+                .maxAge(24 * 60 * 60) // 24 hours expiration
+                .sameSite("Strict") // Anti-CSRF protection
+                .build();
+
     }
 }

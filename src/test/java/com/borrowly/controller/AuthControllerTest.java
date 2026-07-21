@@ -63,7 +63,7 @@ class AuthControllerTest {
         when(authService.register(any()))
                 .thenReturn(new AuthResponse("jwt-token", "alice@example.com", UserRole.USER));
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRegistration())))
                 .andExpect(status().isCreated())
@@ -78,7 +78,7 @@ class AuthControllerTest {
         when(authService.register(any()))
                 .thenReturn(new AuthResponse("jwt-token", "alice@example.com", UserRole.USER));
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRegistration())))
                 .andExpect(jsonPath("$.passwordHash").doesNotExist())
@@ -91,7 +91,7 @@ class AuthControllerTest {
         RegisterRequest request = new RegisterRequest(
                 "", "Smith", "alice@example.com", "s3cur3P@ss!", null);
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -105,7 +105,7 @@ class AuthControllerTest {
         RegisterRequest request = new RegisterRequest(
                 "Alice", "Smith", "not-an-email", "s3cur3P@ss!", null);
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -117,7 +117,7 @@ class AuthControllerTest {
         RegisterRequest request = new RegisterRequest(
                 "Alice", "Smith", "alice@example.com", "plainpassword", null);
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -129,19 +129,19 @@ class AuthControllerTest {
         when(authService.register(any())).thenThrow(
                 new EmailAlreadyExistsException("alice@example.com"));
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRegistration())))
                 .andExpect(status().isConflict());
     }
 
     @Test
-    @DisplayName("POST /api/auth/login returns 200 with a token")
+    @DisplayName("POST /api/auth/signin returns 200 with a token")
     void loginReturns200() throws Exception {
         when(authService.login(any()))
                 .thenReturn(new AuthResponse("jwt-token", "alice@example.com", UserRole.USER));
 
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new LoginRequest("alice@example.com", "s3cur3P@ss!"))))
@@ -155,7 +155,7 @@ class AuthControllerTest {
     void loginReturns401OnBadCredentials() throws Exception {
         when(authService.login(any())).thenThrow(new BadCredentialsException("Bad credentials"));
 
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new LoginRequest("alice@example.com", "wrong-password"))))
@@ -166,7 +166,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("login rejects a blank password with 400")
     void loginRejectsBlankPassword() throws Exception {
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new LoginRequest("alice@example.com", ""))))
@@ -178,7 +178,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("login rejects a malformed email with 400")
     void loginRejectsMalformedEmail() throws Exception {
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/auth/signin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new LoginRequest("not-an-email", "s3cur3P@ss!"))))

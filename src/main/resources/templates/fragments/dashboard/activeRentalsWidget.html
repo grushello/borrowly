@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Active rentals widget</title>
+</head>
+<body>
+<div th:fragment="activeRentalsWidget" class="widget active-rentals-widget">
+    <div class="widget-header">
+        <h2>Active rentals</h2>
+        <a href="/" class="link-view-all">See history</a>
+    </div>
+
+    <ul class="rental-list">
+
+        <li th:each="rental : ${activeRentals}" class="rental-item">
+
+            <img th:src="${rental.item.primaryImage}" th:alt="${rental.item.title}" class="rental-thumb">
+
+            <div class="rental-info">
+                <h4 th:text="${rental.item.title}">Fishing rod</h4>
+
+                <p class="due-date">
+                    Due date: <strong th:text="${#temporals.format(rental.returnDate, 'dd MMM yyyy')}">18 Lug 2026</strong>
+                </p>
+            </div>
+
+            <span class="status-badge"
+                  th:classappend="${rental.daysLeft <= 1} ? 'badge-danger' : 'badge-success'"
+                  th:text="${rental.daysLeft <= 1} ? 'In expiration' : 'Regular'">
+                  Regolare
+            </span>
+
+        </li>
+
+        <li th:if="${#lists.isEmpty(activeRentals)}" class="empty-state">
+            <span>You don't have any active rentals </span>
+            <a href="/">Explore the catalog!</a>
+        </li>
+    </ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard/favoritesWidget.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard/financialSummaryWidget.css}">
+</head>
+<body>
+    <nav th:replace="~{fragments/general/nav :: nav}">
+    </nav>
+
+    <main class="dashboard-grid">
+        <div th:replace="~{fragments/dashboard/activeRentalsWidget :: activeRentalsWidget}">...</div>
+
+        <div th:replace="~{fragments/dashboard/financialSummaryWidget :: financialSummaryWidget}">...</div>
+
+        <div th:replace="~{fragments/dashboard/favoritesWidget :: favoritesWidget}">...</div>
+    </main>
+
+    <footer th:insert="~{fragments/general/footer :: footer}">
+    </footer>
+
+</body>
+</html>

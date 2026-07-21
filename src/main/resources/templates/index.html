@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrowly — Home</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/catalog/catalogCard.css}">
+</head>
+<body>
+
+    <nav th:replace="~{fragments/general/nav :: nav}">
+    </nav>
+
+    <main>
+        <h1 id="page-hero">Borrowly</h1>
+        <div class="search-form-container">
+            <form th:action="@{/}" method="GET" class="search-form">
+                <div class="search-form-input-container">
+                    <label for="search-input"></label>
+                    <input type="text"
+                           name="search"
+                           th:value="${currentSearch}"
+                           placeholder="Search in the catalog..." id="search-input">
+
+                    <button type="submit">Search</button>
+                </div>
+                <label for="category-select" class="sr-only">Category</label>
+                <select name="categoryId" id="category-select">
+                    <option value="">All categories</option>
+                    <option th:each="category : ${categories}"
+                            th:value="${category.id}"
+                            th:text="${category.name}"
+                            th:selected="${categoryId == category.id}">
+                    </option>
+                </select>
+
+
+
+            </form>
+        </div>
+
+
+        <div th:if="${itemPage.isEmpty()}" class="no-results">
+            <p>The catalog is empty.</p>
+        </div>
+
+        <ul class="catalog-card-container" th:unless="${itemPage.isEmpty()}">
+
+            <th:block th:each="item, iterStat : ${itemPage.content}">
+                <li th:replace="~{fragments/catalog/catalogCard :: catalogCard(
+            name = ${item.title},
+            condition = ${item.condition},
+            index = ${iterStat.count},
+            pricePerDay = ${item.pricePerDay},
+            id = ${item.id},
+        )}">
+                </li>
+
+            </th:block>
+
+        </ul>
+<!--            <nav th:replace="~{fragments/general/paginationContainer :: paginationContainer}">-->
+<!--            </nav>-->
+    </main>
+
+    <footer th:replace="~{fragments/general/footer :: footer}">
+    </footer>
+
+</body>
+</html>
