@@ -13,4 +13,6 @@ public interface UserService {
     UserResponse disableUser(UUID id);
 
     UserResponse enableUser(UUID id);
+
+    UserResponse getCurrentUser();
 }
