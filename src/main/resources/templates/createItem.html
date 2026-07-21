@@ -113,19 +113,19 @@
         });
 
         function handleValidationErrors(errors) {
-            if(Array.isArray(errors.errors)) {
-                errors.errors.forEach(err => {
-                    const errorDiv = document.getElementById('error-' + err.field);
-                    const inputField = document.getElementById(err.field);
-                    if (errorDiv) {
-                        errorDiv.innerText = err.defaultMessage || err.message;
-                        errorDiv.style.display = 'block';
-                    }
-                    if (inputField) {
-                        inputField.classList.add('is-invalid');
-                    }
-                });
-            }
+            Object.entries(errors.fields).forEach(([field, message]) => {
+                const errorDiv = document.getElementById('error-' + field);
+                const inputField = document.getElementById(field);
+
+                if (errorDiv) {
+                    errorDiv.innerText = message;
+                    errorDiv.style.display = 'block';
+                }
+
+                if (inputField) {
+                    inputField.classList.add('is-invalid');
+                }
+            });
         }
     });
 </script>
