@@ -282,4 +282,57 @@ public class ItemServiceImpl implements ItemService {
 
         return itemMapper.toResponse(saved, averageRating, reviewCount);
     }
+
+    @Override
+    @Transactional
+    public ItemResponse unarchive(UUID id) {
+
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() ->
+                        new ItemNotFoundException(id));
+
+        User currentUser = currentUserProvider.getCurrentUser();
+
+        boolean isOwner =
+                item.getOwner().getId()
+                        .equals(currentUser.getId());
+
+        boolean isAdmin =
+                currentUser.getRole() == UserRole.ADMIN;
+
+        if (!isOwner && !isAdmin) {
+
+            log.warn(
+                    "Unauthorized unarchive attempt itemId={} userId={}",
+                    id,
+                    currentUser.getId()
+            );
+
+            throw new AccessDeniedException(
+                    "You are not allowed to unarchive this item."
+            );
+        }
+
+        item.setStatus(ItemStatus.ACTIVE);
+
+        Item saved = itemRepository.save(item);
+
+        log.info(
+                "Unarchived item id={} by userId={}",
+                saved.getId(),
+                currentUser.getId()
+        );
+
+        Double averageRating =
+                reviewRepository.averageRatingByItemId(saved.getId());
+
+        long reviewCount =
+                reviewRepository.countByRental_Item_Id(saved.getId());
+
+        return itemMapper.toResponse(
+                saved,
+                averageRating,
+                reviewCount
+        );
+    }
 }
