@@ -15,7 +15,9 @@
     <h1 th:text="|${user.firstName} ${user.lastName}|">User name</h1>
 
     <main class="dashboard-grid">
-        <div th:replace="~{fragments/dashboard/activeRentalsWidget :: activeRentalsWidget}">...</div>
+        <div th:replace="~{fragments/dashboard/activeRentalsAsBorrowerWidget :: activeRentalsAsBorrowerWidget}">...</div>
+
+        <div th:replace="~{fragments/dashboard/activeRentalsAsOwnerWidget :: activeRentalsAsOwnerWidget}">...</div>
 
         <div th:replace="~{fragments/dashboard/financialSummaryWidget :: financialSummaryWidget}">...</div>
 
