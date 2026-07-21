@@ -77,4 +77,11 @@ public class FavoriteServiceImpl implements FavoriteService {
                 .findByUserIdOrderByCreatedAtDesc(userId, pageable)
                 .map(favoriteMapper::toResponse);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isFavoritedByCurrentUser(UUID itemId) {
+        UUID userId = currentUserProvider.getCurrentUser().getId();
+        return favoriteRepository.existsByUserIdAndItemId(userId, itemId);
+    }
 }

@@ -141,7 +141,7 @@ public class ItemServiceImpl implements ItemService {
 
         User currentUser = currentUserProvider.getCurrentUser();
 
-        return itemRepository.findByOwner_Id(
+        return itemRepository.findByOwnerId(
                         currentUser.getId(),
                         pageable
                 )
@@ -162,7 +162,7 @@ public class ItemServiceImpl implements ItemService {
 
         User currentUser = currentUserProvider.getCurrentUser();
 
-        if (!Objects.equals(currentUser.getId(), item.getOwner().getId())) {
+        if (!Objects.equals(item.getOwner().getId(), currentUser.getId())) {
 
             log.warn(
                     "Unauthorized update attempt itemId={} userId={}",
@@ -230,7 +230,7 @@ public class ItemServiceImpl implements ItemService {
         User currentUser = currentUserProvider.getCurrentUser();
 
         boolean isOwner =
-                Objects.equals(currentUser.getId(), item.getOwner().getId());
+                Objects.equals(item.getOwner().getId(), currentUser.getId());
 
         boolean isAdmin =
                 currentUser.getRole() == UserRole.ADMIN;
@@ -294,8 +294,7 @@ public class ItemServiceImpl implements ItemService {
         User currentUser = currentUserProvider.getCurrentUser();
 
         boolean isOwner =
-                item.getOwner().getId()
-                        .equals(currentUser.getId());
+                Objects.equals(item.getOwner().getId(), currentUser.getId());
 
         boolean isAdmin =
                 currentUser.getRole() == UserRole.ADMIN;
@@ -327,7 +326,7 @@ public class ItemServiceImpl implements ItemService {
                 reviewRepository.averageRatingByItemId(saved.getId());
 
         long reviewCount =
-                reviewRepository.countByRental_Item_Id(saved.getId());
+                reviewRepository.countByItemId(saved.getId());
 
         return itemMapper.toResponse(
                 saved,

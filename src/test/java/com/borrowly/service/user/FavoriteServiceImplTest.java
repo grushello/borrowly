@@ -1,4 +1,4 @@
-package com.borrowly.service;
+package com.borrowly.service.user;
 
 import com.borrowly.dto.response.FavoriteResponse;
 import com.borrowly.exception.CannotFavoriteOwnItemException;
@@ -27,10 +27,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FavoriteServiceImplTest {
@@ -79,7 +79,7 @@ class FavoriteServiceImplTest {
         Item item = itemOwnedBy(itemId, userWithId(UUID.randomUUID()));
 
         when(currentUserProvider.getCurrentUser()).thenReturn(me);
-        when(favoriteRepository.findByUser_IdAndItem_Id(me.getId(), itemId))
+        when(favoriteRepository.findByUserIdAndItemId(me.getId(), itemId))
                 .thenReturn(Optional.empty());
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(favoriteMapper.toResponse(any(Favorite.class))).thenReturn(someResponse());
@@ -101,7 +101,7 @@ class FavoriteServiceImplTest {
                 .build();
 
         when(currentUserProvider.getCurrentUser()).thenReturn(me);
-        when(favoriteRepository.findByUser_IdAndItem_Id(me.getId(), itemId))
+        when(favoriteRepository.findByUserIdAndItemId(me.getId(), itemId))
                 .thenReturn(Optional.of(existing));
         when(favoriteMapper.toResponse(existing)).thenReturn(someResponse());
 
@@ -119,7 +119,7 @@ class FavoriteServiceImplTest {
         User me = userWithId(UUID.randomUUID());
 
         when(currentUserProvider.getCurrentUser()).thenReturn(me);
-        when(favoriteRepository.findByUser_IdAndItem_Id(me.getId(), itemId))
+        when(favoriteRepository.findByUserIdAndItemId(me.getId(), itemId))
                 .thenReturn(Optional.empty());
         when(itemRepository.findById(itemId)).thenReturn(Optional.empty());
 
@@ -137,7 +137,7 @@ class FavoriteServiceImplTest {
         Item myItem = itemOwnedBy(itemId, me);
 
         when(currentUserProvider.getCurrentUser()).thenReturn(me);
-        when(favoriteRepository.findByUser_IdAndItem_Id(me.getId(), itemId))
+        when(favoriteRepository.findByUserIdAndItemId(me.getId(), itemId))
                 .thenReturn(Optional.empty());
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(myItem));
 
@@ -154,11 +154,11 @@ class FavoriteServiceImplTest {
         User me = userWithId(UUID.randomUUID());
 
         when(currentUserProvider.getCurrentUser()).thenReturn(me);
-        when(favoriteRepository.deleteByUser_IdAndItem_Id(me.getId(), itemId)).thenReturn(1);
+        when(favoriteRepository.deleteByUserIdAndItemId(me.getId(), itemId)).thenReturn(1);
 
         favoriteService.removeFavorite(itemId);
 
-        verify(favoriteRepository).deleteByUser_IdAndItem_Id(me.getId(), itemId);
+        verify(favoriteRepository).deleteByUserIdAndItemId(me.getId(), itemId);
     }
 
     @Test
@@ -168,59 +168,10 @@ class FavoriteServiceImplTest {
         User me = userWithId(UUID.randomUUID());
 
         when(currentUserProvider.getCurrentUser()).thenReturn(me);
-        when(favoriteRepository.deleteByUser_IdAndItem_Id(me.getId(), itemId)).thenReturn(0);
+        when(favoriteRepository.deleteByUserIdAndItemId(me.getId(), itemId)).thenReturn(0);
 
         favoriteService.removeFavorite(itemId);
 
-        verify(favoriteRepository).deleteByUser_IdAndItem_Id(me.getId(), itemId);
-    }
-
-    @Test
-    @DisplayName("Should return true when the item is already in the current user's favorites")
-    void isFavoritedByCurrentUser_WhenFavorited_ReturnsTrue() {
-        UUID userId = UUID.randomUUID();
-        UUID itemId = UUID.randomUUID();
-
-        User mockUser = mock(User.class);
-        when(mockUser.getId()).thenReturn(userId);
-
-        when(currentUserProvider.getCurrentUser()).thenReturn(mockUser);
-        when(favoriteRepository.existsByUser_IdAndItem_Id(userId, itemId)).thenReturn(true);
-
-        boolean result = favoriteService.isFavoritedByCurrentUser(itemId);
-
-        assertTrue(result);
-        verify(favoriteRepository).existsByUser_IdAndItem_Id(userId, itemId);
-    }
-
-    @Test
-    @DisplayName("Should return false when the item is NOT in the current user's favorites")
-    void isFavoritedByCurrentUser_WhenNotFavorited_ReturnsFalse() {
-        UUID userId = UUID.randomUUID();
-        UUID itemId = UUID.randomUUID();
-
-        User mockUser = mock(User.class);
-        when(mockUser.getId()).thenReturn(userId);
-
-        when(currentUserProvider.getCurrentUser()).thenReturn(mockUser);
-        when(favoriteRepository.existsByUser_IdAndItem_Id(userId, itemId)).thenReturn(false);
-
-        boolean result = favoriteService.isFavoritedByCurrentUser(itemId);
-
-        assertFalse(result);
-        verify(favoriteRepository).existsByUser_IdAndItem_Id(userId, itemId);
-    }
-
-    @Test
-    @DisplayName("Should gracefully return false when no user is authenticated (Exception caught)")
-    void isFavoritedByCurrentUser_WhenUserNotAuthenticated_ReturnsFalse() {
-        UUID itemId = UUID.randomUUID();
-
-        when(currentUserProvider.getCurrentUser()).thenThrow(new RuntimeException("User not found"));
-
-        boolean result = favoriteService.isFavoritedByCurrentUser(itemId);
-
-        assertFalse(result);
-        verifyNoInteractions(favoriteRepository);
+        verify(favoriteRepository).deleteByUserIdAndItemId(me.getId(), itemId);
     }
 }

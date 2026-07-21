@@ -99,4 +99,7 @@ public interface RentalRepository extends JpaRepository<Rental, UUID> {
                                                                      @Param("borrowerId") UUID borrowerId,
                                                                      @Param("startDate") LocalDate startDate,
                                                                      @Param("endDate") LocalDate endDate);
+
+    @EntityGraph(attributePaths = {"item", "item.owner", "borrower"})
+    List<Rental> findByEndDateBeforeAndStatusIn(LocalDate cutoff, Collection<RentalStatus> statuses);
 }

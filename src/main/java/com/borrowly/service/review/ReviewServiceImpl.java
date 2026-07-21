@@ -47,7 +47,7 @@ public class ReviewServiceImpl implements ReviewService {
             throw new AccessDeniedException("Only the borrower can review this rental");
         }
 
-        if (reviewRepository.existsByRental_Id(rental.getId())) {
+        if (reviewRepository.existsByRentalId(rental.getId())) {
             throw new ReviewAlreadyExistsException(rental.getId());
         }
 
@@ -65,7 +65,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional(readOnly = true)
     public Page<ReviewResponse> getReviewsByItem(UUID itemId, Pageable pageable) {
         return reviewRepository
-                .findByRental_Item_IdOrderByCreatedAtDesc(itemId, pageable)
+                .findByItemIdOrderByCreatedAtDesc(itemId, pageable)
                 .map(reviewMapper::toResponse);
     }
 }
