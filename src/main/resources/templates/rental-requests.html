@@ -1,10 +1,116 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>Rental requests</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="stylesheet" th:href="@{/css/rentalRequests/rentalRequests.css}">
 </head>
 <body>
-$END$
+  <nav th:replace="~{fragments/general/nav :: nav}">
+  </nav>
+  <main id="main-content">
+    <h2>Pending Requests</h2>
+
+    <div th:if="${pending.isEmpty()}" class="empty-state">
+      <p>You currently have no pending rental requests.</p>
+    </div>
+
+    <div th:unless="${pending.isEmpty()}">
+      <table class="table">
+        <thead>
+        <tr>
+          <th>Item</th>
+          <th>Requester</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="request : ${pending.content}">
+          <td th:text="${request.item.title}">Item Title</td>
+          <td th:text="${request.borrower.firstName + ' ' + request.borrower.lastName}">First name Last name</td>
+          <td th:text="${request.startDate}">01/08/2026</td>
+          <td th:text="${request.endDate}">10/08/2026</td>
+
+          <td class="actions">
+              <button type="submit" class="btn btn-success approve-btn" th:data-id="${request.id}">Approve</button>
+              <button class="btn btn-danger reject-btn" th:data-id="${request.id}">Reject</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+<!--      <div class="pagination" th:if="${pending.totalPages > 1}">-->
+<!--        <a th:if="${pending.hasPrevious()}"-->
+<!--           th:href="@{/rental-requests(page=${pending.number - 1})}">&laquo; Previous</a>-->
+
+<!--        <span th:text="|Page ${pending.number + 1} of ${pending.totalPages}|">Page 1 of 5</span>-->
+
+<!--        <a th:if="${pending.hasNext()}"-->
+<!--           th:href="@{/rental-requests(page=${pending.number + 1})}">Next &raquo;</a>-->
+<!--      </div>-->
+    </div>
+  </main>
+  <footer th:replace="~{fragments/general/footer :: footer}">
+  </footer>
 </body>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const approveButtons = document.querySelectorAll('.approve-btn');
+    const rejectButtons = document.querySelectorAll('.reject-btn');
+    console.log(approveButtons);
+    console.log(rejectButtons);
+
+    function handleRequestAction(button, action) {
+      const requestId = button.getAttribute('data-id');
+      const url = `/api/rental-requests/${requestId}/${action}`;
+
+      button.disabled = true;
+      const originalText = button.textContent;
+      button.textContent = "...";
+
+
+      fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+              .then(response => {
+                if (response.ok) {
+                  window.location.reload();
+                } else {
+                  alert("Cannot complete request. Please try again.");
+                  button.disabled = false;
+                  button.textContent = originalText;
+                }
+              })
+              .catch(error => {
+                console.error("Error:", error);
+                alert("Network error");
+                button.disabled = false;
+                button.textContent = originalText;
+              });
+    }
+
+    approveButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        if(confirm("Are you sure?")) {
+          handleRequestAction(this, 'approve');
+        }
+      });
+    });
+
+    rejectButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        if(confirm("Are you sure you want to reject this request")) {
+          handleRequestAction(this, 'reject');
+        }
+      });
+    });
+
+  });
+</script>
 </html>
