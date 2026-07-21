@@ -23,7 +23,7 @@ public class OverdueRentalScheduler {
 
     private final RentalRepository rentalRepository;
     private final NotificationService notificationService;
-    private final TransactionTemplate transactionTemplate;
+    private final TransactionTemplate requiresNewTransactionTemplate;
 
     @Scheduled(cron = "0 0 1 * * *")
     public void markOverdueRentals() {
@@ -41,7 +41,7 @@ public class OverdueRentalScheduler {
 
         for (Rental rental : overdueRentals) {
             try {
-                transactionTemplate.executeWithoutResult(status ->
+                requiresNewTransactionTemplate.executeWithoutResult(status ->
                         processRental(rental.getId(), today)
                 );
             } catch (Exception ex) {

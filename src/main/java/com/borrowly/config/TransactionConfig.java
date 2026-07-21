@@ -10,7 +10,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class TransactionConfig {
 
     @Bean
-    public TransactionTemplate transactionTemplate(
+    public TransactionTemplate requiresNewTransactionTemplate(
             PlatformTransactionManager transactionManager) {
 
         TransactionTemplate template = new TransactionTemplate(transactionManager);
