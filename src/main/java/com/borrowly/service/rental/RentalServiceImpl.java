@@ -100,6 +100,14 @@ public class RentalServiceImpl implements RentalService {
         }
 
         LocalDate today = LocalDate.now();
+
+        // A rental is ACTIVE from the moment it is approved, which can be days before the
+        // borrow window opens. Returning one early would set an actualReturnDate before the
+        // start date, which Rental and the rentals table both reject.
+        if (today.isBefore(rental.getStartDate())) {
+            throw new RentalNotReturnableException(id, rental.getStartDate());
+        }
+
         long overdueDays = today.isAfter(rental.getEndDate())
                 ? ChronoUnit.DAYS.between(rental.getEndDate(), today)
                 : 0;
