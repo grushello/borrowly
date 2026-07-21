@@ -258,6 +258,49 @@ class RentalServiceImplTest {
     }
 
     @Test
+    @DisplayName("a rental whose borrow window has not opened yet cannot be returned")
+    void returnBeforeStartDate() {
+        rental = Rental.builder()
+                .item(item)
+                .borrower(borrower)
+                .startDate(LocalDate.now().plusDays(3))
+                .endDate(LocalDate.now().plusDays(6))
+                .itemTitle("Bosch Drill")
+                .dailyPrice(new BigDecimal("5.00"))
+                .depositAmount(new BigDecimal("50.00"))
+                .finePerDay(new BigDecimal("2.00"))
+                .totalPrice(new BigDecimal("25.00"))
+                .status(RentalStatus.ACTIVE)
+                .build();
+
+        when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
+        when(currentUserProvider.getCurrentUser()).thenReturn(owner);
+
+        assertThatThrownBy(() -> rentalService.returnRental(rental.getId()))
+                .isInstanceOf(RentalNotReturnableException.class)
+                .hasMessageContaining("before it starts");
+
+        assertThat(rental.getActualReturnDate()).isNull();
+        assertThat(rental.getStatus()).isEqualTo(RentalStatus.ACTIVE);
+        verifyNoInteractions(transactionService, notificationService);
+    }
+
+    @Test
+    @DisplayName("a rental returned on its first day is fine")
+    void returnOnStartDate() {
+        rental = rentalEndingOn(LocalDate.now().plusDays(2));
+        ReflectionTestUtils.setField(rental, "startDate", LocalDate.now());
+
+        when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
+        when(currentUserProvider.getCurrentUser()).thenReturn(owner);
+
+        rentalService.returnRental(rental.getId());
+
+        assertThat(rental.getStatus()).isEqualTo(RentalStatus.RETURNED);
+        assertThat(rental.getActualReturnDate()).isEqualTo(LocalDate.now());
+    }
+
+    @Test
     @DisplayName("returning an already returned rental is rejected")
     void returnAlreadyReturned() {
         rental.returnItem(LocalDate.now());
