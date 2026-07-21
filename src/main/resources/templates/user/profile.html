@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title th:text="${profile.firstName + ' ' + profile.lastName}">
+        User Profile
+    </title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/main.css}">
+</head>
+
+
+<body>
+
+
+<nav th:replace="~{fragments/general/nav :: nav}">
+</nav>
+
+
+
+<main class="profile-container">
+
+
+    <section class="profile-header">
+
+
+        <div class="avatar">
+
+        <span th:text="${profile.firstName.charAt(0)}">
+            A
+        </span>
+
+        </div>
+
+
+
+        <div>
+
+
+            <h1 th:text="${profile.firstName + ' ' + profile.lastName}">
+                John Smith
+            </h1>
+
+
+            <div>
+
+                ⭐
+
+                <span th:text="${profile.averageRating}">
+                0
+            </span>
+
+
+                (
+
+                <span th:text="${profile.reviewCount}">
+                0
+            </span>
+
+                reviews)
+
+            </div>
+
+
+        </div>
+
+
+
+        <div th:if="${isOwner}">
+
+            <a th:href="@{/account}"
+               class="btn">
+
+                Edit account
+
+            </a>
+
+        </div>
+
+
+
+    </section>
+
+
+
+
+
+    <section>
+
+
+        <h2>Items</h2>
+
+
+        <ul>
+
+
+            <li th:each="item : ${profile.items}">
+
+
+                <a th:href="@{/item/{id}(id=${item.id})}"
+                   th:text="${item.title}">
+
+                    Item name
+
+                </a>
+
+
+            </li>
+
+
+        </ul>
+
+
+    </section>
+
+
+
+
+
+    <section>
+
+
+        <h2>Reviews</h2>
+
+
+        <div th:each="review : ${profile.reviews}">
+
+
+            <p th:text="${review.comment}">
+                Comment
+            </p>
+
+
+            <span>
+
+Rating:
+
+<span th:text="${review.rating}">
+    5
+</span>
+
+
+</span>
+
+
+        </div>
+
+
+    </section>
+
+
+
+
+</main>
+
+
+
+<footer th:replace="~{fragments/general/footer :: footer}">
+</footer>
+
+
+
+</body>
+
+</html>

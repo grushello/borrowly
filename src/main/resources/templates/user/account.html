@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>
+        Account settings
+    </title>
+
+
+</head>
+
+
+<body>
+
+
+<h1>
+    Account settings
+</h1>
+
+
+
+<form id="account-form">
+
+
+    <label>
+        First name
+    </label>
+
+    <input id="firstName"
+           type="text"
+           th:value="${account.firstName}">
+
+
+
+    <label>
+        Last name
+    </label>
+
+    <input id="lastName"
+           type="text"
+           th:value="${account.lastName}">
+
+
+
+    <label>
+        Email
+    </label>
+
+    <input id="email"
+           type="email"
+           th:value="${account.email}">
+
+
+
+    <label>
+        Phone
+    </label>
+
+    <input id="phone"
+           type="text"
+           th:value="${account.phone}">
+
+
+
+    <button type="submit">
+        Save
+    </button>
+
+
+
+</form>
+
+
+
+
+
+<script>
+
+
+    document
+        .getElementById("account-form")
+        .addEventListener("submit", function(event){
+
+
+            event.preventDefault();
+
+
+
+            fetch("/api/users/me",
+                {
+
+                    method:"PATCH",
+
+                    headers:
+                        {
+                            "Content-Type":"application/json"
+                        },
+
+
+                    body:JSON.stringify({
+
+                        firstName:
+                        document.getElementById("firstName").value,
+
+
+                        lastName:
+                        document.getElementById("lastName").value,
+
+
+                        email:
+                        document.getElementById("email").value,
+
+
+                        phone:
+                        document.getElementById("phone").value
+
+                    })
+
+
+                })
+
+                .then(response => {
+
+                    if(response.ok){
+
+                        window.location.href="/user/" + response.id;
+
+                    }
+
+                    else {
+
+                        alert("Failed to update account");
+
+                    }
+
+                });
+
+
+
+        });
+
+
+</script>
+
+
+
+</body>
+
+</html>

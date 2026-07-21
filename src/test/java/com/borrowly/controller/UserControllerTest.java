@@ -72,7 +72,7 @@ class UserControllerTest {
         mockMvc.perform(get("/api/users/me"))
                 .andExpect(status().isUnauthorized());
 
-        verify(userService, never()).getProfile();
+        verify(userService, never()).getAccountInfo();
     }
 
     @Test
@@ -80,7 +80,7 @@ class UserControllerTest {
     @DisplayName("GET /api/users/me returns profile for authenticated user")
     void getMeReturnsProfile() throws Exception {
         UserResponse response = sampleResponse();
-        when(userService.getProfile()).thenReturn(response);
+        when(userService.getAccountInfo()).thenReturn(response);
 
         mockMvc.perform(get("/api/users/me"))
                 .andExpect(status().isOk())
@@ -96,7 +96,7 @@ class UserControllerTest {
                         .content("{}"))
                 .andExpect(status().isUnauthorized());
 
-        verify(userService, never()).updateProfile(any());
+        verify(userService, never()).updateAccountInfo(any());
     }
 
     @Test
@@ -111,7 +111,7 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fields.phone").value("Invalid phone format."));
 
-        verify(userService, never()).updateProfile(any());
+        verify(userService, never()).updateAccountInfo(any());
     }
 
     @Test
@@ -122,7 +122,7 @@ class UserControllerTest {
                 UUID.randomUUID(), "Bob", "Smith", "alice@example.com",
                 "+37061234567", UserRole.USER, BigDecimal.ZERO,
                 true, FIXED_TIME, FIXED_TIME);
-        when(userService.updateProfile(any())).thenReturn(updated);
+        when(userService.updateAccountInfo(any())).thenReturn(updated);
 
         UpdateUserRequest request = new UpdateUserRequest("Bob", null, null);
 

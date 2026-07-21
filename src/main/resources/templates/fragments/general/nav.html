@@ -8,8 +8,16 @@
 <body>
     <nav th:fragment="nav">
         <div class="nav-fragment">
-            <a href="/">Catalog</a>
-            <a href="/dashboard">My Dashboard</a>
+            <a href="/">
+                Catalog
+            </a>
+            <a href="/dashboard">
+                My Dashboard
+            </a>
+            <a sec:authorize="isAuthenticated()"
+               href="/profile">
+                Profile
+            </a>
         </div>
         <div class="nav-fragment">
             <a sec:authorize="isAnonymous()" href="/signin">Sign in</a>

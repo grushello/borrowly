@@ -1,12 +1,17 @@
 package com.borrowly.service.user;
 
 import com.borrowly.dto.request.UpdateUserRequest;
+import com.borrowly.dto.response.ReviewResponse;
+import com.borrowly.dto.response.UserProfileResponse;
 import com.borrowly.dto.response.UserResponse;
 import com.borrowly.dto.response.UserSummaryResponse;
 import com.borrowly.exception.CannotDisableSelfException;
 import com.borrowly.exception.UserNotFoundException;
+import com.borrowly.mapper.ReviewMapper;
 import com.borrowly.mapper.UserMapper;
+import com.borrowly.model.user.Review;
 import com.borrowly.model.user.User;
+import com.borrowly.repository.user.ReviewRepository;
 import com.borrowly.repository.user.UserRepository;
 import com.borrowly.security.CurrentUserProvider;
 import org.junit.jupiter.api.DisplayName;
@@ -30,9 +35,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -41,7 +44,13 @@ class UserServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
+    private ReviewRepository reviewRepository;
+
+    @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private ReviewMapper reviewMapper;
 
     @Mock
     private CurrentUserProvider currentUserProvider;
@@ -168,12 +177,12 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("getProfile returns the authenticated user's full profile")
-    void getProfileReturnsCurrentUser() {
+    void getAccountInfoReturnsCurrentUser() {
         User user = userWithId(UUID.randomUUID());
         when(currentUserProvider.getCurrentUser()).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(responseFor(user));
 
-        UserResponse result = userService.getProfile();
+        UserResponse result = userService.getAccountInfo();
 
         assertThat(result.email()).isEqualTo("alice@example.com");
         verify(currentUserProvider).getCurrentUser();
@@ -182,14 +191,14 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("updateProfile applies only provided fields, leaves others untouched")
-    void updateProfilePartialFields() {
+    void updateAccountInfoPartialFields() {
         User user = userWithId(UUID.randomUUID());
         user.setPhone("+37061234567");
         when(currentUserProvider.getCurrentUser()).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(responseFor(user));
 
         UpdateUserRequest request = new UpdateUserRequest("Bob", null, null);
-        userService.updateProfile(request);
+        userService.updateAccountInfo(request);
 
         verify(userMapper).updateEntity(user, request);
         verify(userMapper).toResponse(user);
@@ -221,5 +230,60 @@ class UserServiceImplTest {
                 .isInstanceOf(UserNotFoundException.class);
 
         verify(userMapper, never()).toSummary(any());
+    }
+
+    @Test
+    @DisplayName("getUserProfile returns reviews")
+    void getUserProfileReturnsReviews() {
+
+        UUID id = UUID.randomUUID();
+
+        User user = userWithId(id);
+
+        Review reviewEntity = mock(Review.class);
+
+        ReviewResponse reviewResponse =
+                new ReviewResponse(
+                        UUID.randomUUID(),
+                        null,
+                        null,
+                        5,
+                        "Great item",
+                        UUID.randomUUID(),
+                        LocalDateTime.now()
+                );
+
+
+        when(userRepository.findById(id))
+                .thenReturn(Optional.of(user));
+
+        when(reviewRepository.findByRentalItemOwner(user))
+                .thenReturn(List.of(reviewEntity));
+
+        when(reviewMapper.toResponse(reviewEntity))
+                .thenReturn(reviewResponse);
+
+        when(reviewRepository.averageRatingByRentalItemOwner(user))
+                .thenReturn(5.0);
+
+        when(reviewRepository.countByRentalItemOwner(user))
+                .thenReturn(1L);
+
+
+        UserProfileResponse result =
+                userService.getUserProfile(id);
+
+
+        assertThat(result.reviews())
+                .hasSize(1);
+
+        assertThat(result.reviews().get(0).rating())
+                .isEqualTo(5);
+
+        assertThat(result.averageRating())
+                .isEqualTo(5.0);
+
+        assertThat(result.reviewCount())
+                .isEqualTo(1);
     }
 }
