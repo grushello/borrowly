@@ -371,7 +371,6 @@
     background-color: #1d4ed8;
 }
 
-/* Effetto click */
 .btn-book:active:not(:disabled) {
     transform: scale(0.98);
 }
