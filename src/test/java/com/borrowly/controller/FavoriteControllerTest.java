@@ -8,7 +8,7 @@ import com.borrowly.exception.ItemNotFoundException;
 import com.borrowly.security.AuthEntryPointJwt;
 import com.borrowly.security.AuthTokenFilter;
 import com.borrowly.security.JwtUtil;
-import com.borrowly.service.UserDetailsServiceImpl;
+import com.borrowly.service.auth.UserDetailsServiceImpl;
 import com.borrowly.service.favorite.FavoriteResult;
 import com.borrowly.service.favorite.FavoriteService;
 import org.junit.jupiter.api.DisplayName;

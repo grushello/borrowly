@@ -109,28 +109,28 @@ class ItemImageRepositoryTest extends AbstractPostgresTest {
     void shouldReturnMetadataOrderedByCreatedAtAscending() {
 
         itemImageRepository.saveAndFlush(
-                        ItemImage.builder()
-                                .imageData(new byte[]{1})
-                                .fileName("first.png")
-                                .contentType("image/png")
-                                .primary(false)
-                                .item(item)
-                                .build()
+                ItemImage.builder()
+                        .imageData(new byte[]{1})
+                        .fileName("first.png")
+                        .contentType("image/png")
+                        .primary(false)
+                        .item(item)
+                        .build()
         );
 
         itemImageRepository.saveAndFlush(
-                        ItemImage.builder()
-                                .imageData(new byte[]{2})
-                                .fileName("second.png")
-                                .contentType("image/png")
-                                .primary(true)
-                                .item(item)
-                                .build()
+                ItemImage.builder()
+                        .imageData(new byte[]{2})
+                        .fileName("second.png")
+                        .contentType("image/png")
+                        .primary(true)
+                        .item(item)
+                        .build()
         );
 
 
         List<ItemImageMetadata> result =
-                itemImageRepository.findByItem_IdOrderByCreatedAtAsc(
+                itemImageRepository.findByItemIdOrderByCreatedAtAsc(
                         item.getId()
                 );
 
@@ -175,7 +175,7 @@ class ItemImageRepositoryTest extends AbstractPostgresTest {
 
 
         Optional<ItemImageMetadata> result =
-                itemImageRepository.findByItem_IdAndPrimaryTrue(
+                itemImageRepository.findByItemIdAndPrimaryTrue(
                         item.getId()
                 );
 
@@ -216,7 +216,7 @@ class ItemImageRepositoryTest extends AbstractPostgresTest {
 
 
         long count =
-                itemImageRepository.countByItem_Id(
+                itemImageRepository.countByItemId(
                         item.getId()
                 );
 
@@ -246,7 +246,7 @@ class ItemImageRepositoryTest extends AbstractPostgresTest {
 
 
         ItemImage image =
-                itemImageRepository.findByIdAndItem_Id(
+                itemImageRepository.findByIdAndItemId(
                                 saved.getId(),
                                 item.getId()
                         )

@@ -2,7 +2,7 @@ package com.borrowly.controller;
 
 import com.borrowly.dto.request.CategoryRequest;
 import com.borrowly.dto.response.CategoryResponse;
-import com.borrowly.service.CategoryService;
+import com.borrowly.service.item.CategoryService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -4,7 +4,6 @@ import com.borrowly.dto.request.TopUpRequest;
 import com.borrowly.dto.request.WithdrawRequest;
 import com.borrowly.dto.response.TransactionResponse;
 import com.borrowly.model.rental.Rental;
-import com.borrowly.model.transaction.Transaction;
 import com.borrowly.model.transaction.TransactionType;
 import com.borrowly.model.user.User;
 import org.springframework.data.domain.Page;
@@ -20,15 +19,15 @@ public interface TransactionService {
 
     Page<TransactionResponse> getHistory(List<TransactionType> types, int page, int size);
 
-    Transaction holdDeposit(User borrower, BigDecimal amount, Rental rental);
+    void holdDeposit(User borrower, BigDecimal amount, Rental rental);
 
-    Transaction chargeRent(User borrower, BigDecimal amount, Rental rental);
+    void chargeRent(User borrower, BigDecimal amount, Rental rental);
 
-    Transaction payoutRent(User owner, BigDecimal amount, Rental rental);
+    void payoutRent(User owner, BigDecimal amount, Rental rental);
 
-    Transaction returnDeposit(User borrower, BigDecimal amount, Rental rental);
+    void returnDeposit(User borrower, BigDecimal amount, Rental rental);
 
-    Transaction chargeFine(User borrower, BigDecimal amount, Rental rental);
+    void chargeFine(User borrower, BigDecimal amount, Rental rental);
 
-    Transaction payoutFine(User owner, BigDecimal amount, Rental rental);
+    void payoutFine(User owner, BigDecimal amount, Rental rental);
 }

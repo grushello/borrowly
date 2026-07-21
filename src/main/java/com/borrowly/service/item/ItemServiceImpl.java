@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -81,7 +82,7 @@ public class ItemServiceImpl implements ItemService {
                 reviewRepository.averageRatingByItemId(saved.getId());
 
         long reviewCount =
-                reviewRepository.countByRental_Item_Id(saved.getId());
+                reviewRepository.countByItemId(saved.getId());
 
         return itemMapper.toResponse(
                 saved,
@@ -100,7 +101,7 @@ public class ItemServiceImpl implements ItemService {
                 reviewRepository.averageRatingByItemId(id);
 
         long reviewCount =
-                reviewRepository.countByRental_Item_Id(id);
+                reviewRepository.countByItemId(id);
 
         return itemMapper.toResponse(
                 item,
@@ -140,7 +141,7 @@ public class ItemServiceImpl implements ItemService {
 
         User currentUser = currentUserProvider.getCurrentUser();
 
-        return itemRepository.findByOwner_Id(
+        return itemRepository.findByOwnerId(
                         currentUser.getId(),
                         pageable
                 )
@@ -161,7 +162,7 @@ public class ItemServiceImpl implements ItemService {
 
         User currentUser = currentUserProvider.getCurrentUser();
 
-        if (!item.getOwner().getId().equals(currentUser.getId())) {
+        if (!Objects.equals(item.getOwner().getId(), currentUser.getId())) {
 
             log.warn(
                     "Unauthorized update attempt itemId={} userId={}",
@@ -206,7 +207,7 @@ public class ItemServiceImpl implements ItemService {
                 reviewRepository.averageRatingByItemId(saved.getId());
 
         long reviewCount =
-                reviewRepository.countByRental_Item_Id(saved.getId());
+                reviewRepository.countByItemId(saved.getId());
 
 
         return itemMapper.toResponse(
@@ -229,8 +230,7 @@ public class ItemServiceImpl implements ItemService {
         User currentUser = currentUserProvider.getCurrentUser();
 
         boolean isOwner =
-                item.getOwner().getId()
-                        .equals(currentUser.getId());
+                Objects.equals(item.getOwner().getId(), currentUser.getId());
 
         boolean isAdmin =
                 currentUser.getRole() == UserRole.ADMIN;
@@ -278,7 +278,7 @@ public class ItemServiceImpl implements ItemService {
         );
 
         Double averageRating = reviewRepository.averageRatingByItemId(saved.getId());
-        long reviewCount = reviewRepository.countByRental_Item_Id(saved.getId());
+        long reviewCount = reviewRepository.countByItemId(saved.getId());
 
         return itemMapper.toResponse(saved, averageRating, reviewCount);
     }
@@ -294,8 +294,7 @@ public class ItemServiceImpl implements ItemService {
         User currentUser = currentUserProvider.getCurrentUser();
 
         boolean isOwner =
-                item.getOwner().getId()
-                        .equals(currentUser.getId());
+                Objects.equals(item.getOwner().getId(), currentUser.getId());
 
         boolean isAdmin =
                 currentUser.getRole() == UserRole.ADMIN;
@@ -327,7 +326,7 @@ public class ItemServiceImpl implements ItemService {
                 reviewRepository.averageRatingByItemId(saved.getId());
 
         long reviewCount =
-                reviewRepository.countByRental_Item_Id(saved.getId());
+                reviewRepository.countByItemId(saved.getId());
 
         return itemMapper.toResponse(
                 saved,

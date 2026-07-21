@@ -1,4 +1,4 @@
-package com.borrowly.service;
+package com.borrowly.service.auth;
 
 import com.borrowly.model.user.User;
 import com.borrowly.repository.user.UserRepository;

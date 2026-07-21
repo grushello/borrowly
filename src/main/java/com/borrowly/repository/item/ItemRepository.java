@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface ItemRepository extends JpaRepository<Item, UUID>, JpaSpecificationExecutor<Item> {
 
     @EntityGraph(attributePaths = {"owner", "category"})
-    Page<Item> findByOwner_IdAndStatusNot(
+    Page<Item> findByOwnerIdAndStatusNot(
             UUID ownerId,
             ItemStatus excluded,
             Pageable pageable
@@ -36,11 +36,11 @@ public interface ItemRepository extends JpaRepository<Item, UUID>, JpaSpecificat
     );
 
     @EntityGraph(attributePaths = {"owner", "category"})
-    Page<Item> findByOwner_Id(UUID ownerId, Pageable pageable);
+    Page<Item> findByOwnerId(UUID ownerId, Pageable pageable);
 
     @Override
     @EntityGraph(attributePaths = {"owner", "images"})
     Page<Item> findAll(Specification<Item> spec, Pageable pageable);
 
-    boolean existsByCategory_Id(UUID categoryId);
+    boolean existsByCategoryId(UUID categoryId);
 }

@@ -11,15 +11,15 @@ import java.util.UUID;
 
 public interface ItemImageRepository extends JpaRepository<ItemImage, UUID> {
 
-    List<ItemImageMetadata> findByItem_IdOrderByCreatedAtAsc(UUID itemId);
+    List<ItemImageMetadata> findByItemIdOrderByCreatedAtAsc(UUID itemId);
 
-    Optional<ItemImage> findByIdAndItem_Id(UUID id, UUID itemId);
+    Optional<ItemImage> findByIdAndItemId(UUID id, UUID itemId);
 
-    Optional<ItemImageMetadata> findByItem_IdAndPrimaryTrue(UUID itemId);
+    Optional<ItemImageMetadata> findByItemIdAndPrimaryTrue(UUID itemId);
 
-    long countByItem_Id(UUID itemId);
+    long countByItemId(UUID itemId);
 
-    Optional<ItemImage> findFirstByItem_IdOrderByCreatedAtAsc(UUID itemId);
+    Optional<ItemImage> findFirstByItemIdOrderByCreatedAtAsc(UUID itemId);
 
     @Modifying
     @Query("UPDATE ItemImage i SET i.primary = true WHERE i.id = :imageId")

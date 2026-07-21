@@ -94,11 +94,11 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
         return created;
     }
 
-    private RentalRequest persistRequest(Item requestedItem,
-                                         User requestBorrower,
-                                         LocalDate startDate,
-                                         LocalDate endDate,
-                                         RentalRequestStatus status) {
+    private void persistRequest(Item requestedItem,
+                                User requestBorrower,
+                                LocalDate startDate,
+                                LocalDate endDate,
+                                RentalRequestStatus status) {
         RentalRequest request = RentalRequest.builder()
                 .item(requestedItem)
                 .borrower(requestBorrower)
@@ -107,13 +107,12 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
                 .status(status)
                 .build();
         entityManager.persist(request);
-        return request;
     }
 
-    private RentalRequest persistRequest(Item requestedItem,
-                                         User requestBorrower,
-                                         RentalRequestStatus status) {
-        return persistRequest(requestedItem, requestBorrower, JUL_10, JUL_15, status);
+    private void persistRequest(Item requestedItem,
+                                User requestBorrower,
+                                RentalRequestStatus status) {
+        persistRequest(requestedItem, requestBorrower, JUL_10, JUL_15, status);
     }
 
     private void flushAndClear() {
@@ -122,7 +121,7 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
     }
 
     @Nested
-    @DisplayName("findByBorrower_Id")
+    @DisplayName("findByBorrowerId")
     class FindByBorrower {
 
         @Test
@@ -133,7 +132,7 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
             flushAndClear();
 
             Page<RentalRequest> page =
-                    rentalRequestRepository.findByBorrower_Id(borrower.getId(), firstPage);
+                    rentalRequestRepository.findByBorrowerId(borrower.getId(), firstPage);
 
             assertThat(page.getTotalElements()).isEqualTo(1);
             assertThat(page.getContent())
@@ -149,7 +148,7 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
             persistRequest(foreignItem, borrower, RentalRequestStatus.APPROVED);
             flushAndClear();
 
-            assertThat(rentalRequestRepository.findByBorrower_Id(borrower.getId(), firstPage))
+            assertThat(rentalRequestRepository.findByBorrowerId(borrower.getId(), firstPage))
                     .hasSize(2);
         }
 
@@ -160,7 +159,7 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
             persistRequest(otherItem, borrower, RentalRequestStatus.REJECTED);
             flushAndClear();
 
-            assertThat(rentalRequestRepository.findByBorrower_Id(borrower.getId(), firstPage))
+            assertThat(rentalRequestRepository.findByBorrowerId(borrower.getId(), firstPage))
                     .extracting(RentalRequest::getStatus)
                     .containsExactlyInAnyOrder(
                             RentalRequestStatus.PENDING, RentalRequestStatus.REJECTED);
@@ -169,13 +168,13 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
         @Test
         @DisplayName("returns an empty page for a borrower with no requests")
         void emptyWhenNone() {
-            assertThat(rentalRequestRepository.findByBorrower_Id(borrower.getId(), firstPage))
+            assertThat(rentalRequestRepository.findByBorrowerId(borrower.getId(), firstPage))
                     .isEmpty();
         }
     }
 
     @Nested
-    @DisplayName("findByItem_Owner_Id")
+    @DisplayName("findByOwnerId")
     class FindByOwner {
 
         @Test
@@ -187,7 +186,7 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
             flushAndClear();
 
             Page<RentalRequest> page =
-                    rentalRequestRepository.findByItem_Owner_Id(owner.getId(), firstPage);
+                    rentalRequestRepository.findByOwnerId(owner.getId(), firstPage);
 
             assertThat(page.getTotalElements())
                     .as("the request on otherOwner's item must not leak in")
@@ -200,13 +199,13 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
         @Test
         @DisplayName("returns an empty page for a lender with no incoming requests")
         void emptyWhenNone() {
-            assertThat(rentalRequestRepository.findByItem_Owner_Id(owner.getId(), firstPage))
+            assertThat(rentalRequestRepository.findByOwnerId(owner.getId(), firstPage))
                     .isEmpty();
         }
     }
 
     @Nested
-    @DisplayName("findByItem_Owner_IdAndStatus")
+    @DisplayName("findByOwnerIdAndStatus")
     class FindByOwnerAndStatus {
 
         @Test
@@ -217,7 +216,7 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
             persistRequest(otherItem, borrower, RentalRequestStatus.REJECTED);
             flushAndClear();
 
-            Page<RentalRequest> pending = rentalRequestRepository.findByItem_Owner_IdAndStatus(
+            Page<RentalRequest> pending = rentalRequestRepository.findByOwnerIdAndStatus(
                     owner.getId(), RentalRequestStatus.PENDING, firstPage);
 
             assertThat(pending.getTotalElements()).isEqualTo(1);
@@ -233,7 +232,7 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
             persistRequest(foreignItem, borrower, RentalRequestStatus.PENDING);
             flushAndClear();
 
-            assertThat(rentalRequestRepository.findByItem_Owner_IdAndStatus(
+            assertThat(rentalRequestRepository.findByOwnerIdAndStatus(
                     owner.getId(), RentalRequestStatus.PENDING, firstPage))
                     .as("a PENDING request on someone else's item is not this lender's inbox")
                     .isEmpty();
@@ -245,14 +244,14 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
             persistRequest(item, borrower, RentalRequestStatus.PENDING);
             flushAndClear();
 
-            assertThat(rentalRequestRepository.findByItem_Owner_IdAndStatus(
+            assertThat(rentalRequestRepository.findByOwnerIdAndStatus(
                     owner.getId(), RentalRequestStatus.CANCELED, firstPage))
                     .isEmpty();
         }
     }
 
     @Nested
-    @DisplayName("existsByItem_IdAndBorrower_IdAndStatusIn")
+    @DisplayName("existsByItemIdAndBorrowerIdAndStatusIn")
     class ExistsByItemAndBorrower {
 
         private final Set<RentalRequestStatus> blocking =
@@ -264,7 +263,7 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
             persistRequest(item, borrower, RentalRequestStatus.PENDING);
             flushAndClear();
 
-            assertThat(rentalRequestRepository.existsByItem_IdAndBorrower_IdAndStatusIn(
+            assertThat(rentalRequestRepository.existsByItemIdAndBorrowerIdAndStatusIn(
                     item.getId(), borrower.getId(), blocking)).isTrue();
         }
 
@@ -274,7 +273,7 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
             persistRequest(item, borrower, RentalRequestStatus.REJECTED);
             flushAndClear();
 
-            assertThat(rentalRequestRepository.existsByItem_IdAndBorrower_IdAndStatusIn(
+            assertThat(rentalRequestRepository.existsByItemIdAndBorrowerIdAndStatusIn(
                     item.getId(), borrower.getId(), blocking))
                     .as("REJECTED is not in the blocking set")
                     .isFalse();
@@ -286,7 +285,7 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
             persistRequest(item, otherBorrower, RentalRequestStatus.PENDING);
             flushAndClear();
 
-            assertThat(rentalRequestRepository.existsByItem_IdAndBorrower_IdAndStatusIn(
+            assertThat(rentalRequestRepository.existsByItemIdAndBorrowerIdAndStatusIn(
                     item.getId(), borrower.getId(), blocking)).isFalse();
         }
 
@@ -296,14 +295,14 @@ class RentalRequestRepositoryTest extends AbstractPostgresTest {
             persistRequest(otherItem, borrower, RentalRequestStatus.PENDING);
             flushAndClear();
 
-            assertThat(rentalRequestRepository.existsByItem_IdAndBorrower_IdAndStatusIn(
+            assertThat(rentalRequestRepository.existsByItemIdAndBorrowerIdAndStatusIn(
                     item.getId(), borrower.getId(), blocking)).isFalse();
         }
 
         @Test
         @DisplayName("false when nothing has been requested at all")
         void falseWhenEmpty() {
-            assertThat(rentalRequestRepository.existsByItem_IdAndBorrower_IdAndStatusIn(
+            assertThat(rentalRequestRepository.existsByItemIdAndBorrowerIdAndStatusIn(
                     item.getId(), borrower.getId(), blocking)).isFalse();
         }
     }

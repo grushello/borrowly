@@ -22,7 +22,6 @@ import com.borrowly.model.user.User;
 import com.borrowly.repository.item.ItemRepository;
 import com.borrowly.repository.rental.RentalRepository;
 import com.borrowly.repository.rental.RentalRequestRepository;
-import com.borrowly.repository.user.UserRepository;
 import com.borrowly.security.CurrentUserProvider;
 import com.borrowly.service.notification.NotificationService;
 import com.borrowly.service.transaction.TransactionService;
@@ -39,6 +38,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -49,10 +49,11 @@ public class RentalRequestServiceImpl implements RentalRequestService {
     private static final List<RentalStatus> BLOCKING_RENTAL_STATUSES =
             List.of(RentalStatus.ACTIVE, RentalStatus.OVERDUE);
 
+    private static final String REQUEST_FOR_PREFIX = "Your request for ";
+
     private final RentalRequestRepository rentalRequestRepository;
     private final RentalRepository rentalRepository;
     private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
     private final TransactionService transactionService;
     private final NotificationService notificationService;
     private final RentalRequestMapper rentalRequestMapper;
@@ -62,8 +63,6 @@ public class RentalRequestServiceImpl implements RentalRequestService {
     @Override
     @Transactional
     public RentalRequestResponse create(CreateRentalRequest request) {
-        User borrower = currentUserProvider.getCurrentUser();
-
         Item item = itemRepository.findById(request.itemId())
                 .orElseThrow(() -> new ItemNotFoundException(request.itemId()));
 
@@ -72,7 +71,9 @@ public class RentalRequestServiceImpl implements RentalRequestService {
                     "Item is not available for rent (status " + item.getStatus() + ")");
         }
 
-        if (item.getOwner().getId().equals(borrower.getId())) {
+        User borrower = currentUserProvider.getCurrentUser();
+
+        if (Objects.equals(borrower.getId(), item.getOwner().getId())) {
             throw new SelfRentalException();
         }
 
@@ -110,12 +111,11 @@ public class RentalRequestServiceImpl implements RentalRequestService {
 
         rentalRequestRepository.save(rentalRequest);
 
-        notificationService.send(
+        notify(
                 item.getOwner(),
                 NotificationType.RENTAL_REQUEST,
                 "New rental request for '" + item.getTitle() + "' from "
                         + startDate + " to " + endDate,
-                null,
                 null);
 
         log.info("Created rental request '{}' for item '{}'", rentalRequest.getId(), item.getId());
@@ -128,8 +128,8 @@ public class RentalRequestServiceImpl implements RentalRequestService {
         User owner = currentUserProvider.getCurrentUser();
 
         Page<RentalRequest> requests = (status == null)
-                ? rentalRequestRepository.findByItem_Owner_Id(owner.getId(), pageable)
-                : rentalRequestRepository.findByItem_Owner_IdAndStatus(owner.getId(), status, pageable);
+                ? rentalRequestRepository.findByOwnerId(owner.getId(), pageable)
+                : rentalRequestRepository.findByOwnerIdAndStatus(owner.getId(), status, pageable);
 
         return requests.map(rentalRequestMapper::toResponse);
     }
@@ -140,8 +140,8 @@ public class RentalRequestServiceImpl implements RentalRequestService {
         User borrower = currentUserProvider.getCurrentUser();
 
         Page<RentalRequest> requests = (status == null)
-                ? rentalRequestRepository.findByBorrower_Id(borrower.getId(), pageable)
-                : rentalRequestRepository.findByBorrower_IdAndStatus(borrower.getId(), status, pageable);
+                ? rentalRequestRepository.findByBorrowerId(borrower.getId(), pageable)
+                : rentalRequestRepository.findByBorrowerIdAndStatus(borrower.getId(), status, pageable);
 
         return requests.map(rentalRequestMapper::toResponse);
     }
@@ -156,7 +156,7 @@ public class RentalRequestServiceImpl implements RentalRequestService {
 
         if (rentalRequest.getStatus() == RentalRequestStatus.APPROVED) {
             Rental existing = rentalRepository
-                    .findByItem_IdAndBorrower_IdAndStartDateAndEndDate(
+                    .findByItemIdAndBorrowerIdAndStartDateAndEndDate(
                             rentalRequest.getItem().getId(),
                             rentalRequest.getBorrower().getId(),
                             rentalRequest.getStartDate(),
@@ -206,14 +206,8 @@ public class RentalRequestServiceImpl implements RentalRequestService {
                 .status(RentalStatus.ACTIVE)
                 .build();
 
-        // The transactions table rejects amounts under 0.01, and an item may be listed with
-        // no deposit or no daily price, so only move money that is actually there.
-        if (depositAmount.signum() > 0) {
-            transactionService.holdDeposit(borrower, depositAmount, rental);
-        }
-        if (totalPrice.signum() > 0) {
-            transactionService.chargeRent(borrower, totalPrice, rental);
-        }
+        transactionService.holdDeposit(borrower, depositAmount, rental);
+        transactionService.chargeRent(borrower, totalPrice, rental);
 
         rentalRepository.save(rental);
 
@@ -231,31 +225,27 @@ public class RentalRequestServiceImpl implements RentalRequestService {
         rentalRequest.approve();
 
         List<RentalRequest> conflicts = rentalRequestRepository
-                .findByItem_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                        item.getId(), RentalRequestStatus.PENDING, endDate, startDate);
+                .findOverlappingByItemIdAndStatus(
+                        item.getId(), RentalRequestStatus.PENDING, startDate, endDate);
 
         for (RentalRequest conflict : conflicts) {
-            if (conflict.getId().equals(rentalRequest.getId())) {
+            if (Objects.equals(rentalRequest.getId(), conflict.getId())) {
                 continue;
             }
             conflict.reject();
-            notificationService.send(
+            notify(
                     conflict.getBorrower(),
                     NotificationType.RENTAL_REJECTED,
-                    "Your request for '" + item.getTitle() + "' ("
-                            + conflict.getStartDate() + " to " + conflict.getEndDate()
-                            + ") was rejected because the item was rented for overlapping dates",
-                    null,
+                    REQUEST_FOR_PREFIX + window(item, conflict.getStartDate(), conflict.getEndDate())
+                            + " was rejected because the item was rented for overlapping dates",
                     null);
         }
 
-        notificationService.send(
+        notify(
                 borrower,
                 NotificationType.RENTAL_APPROVED,
-                "Your request for '" + item.getTitle() + "' ("
-                        + startDate + " to " + endDate + ") was approved",
-                rental,
-                null);
+                REQUEST_FOR_PREFIX + window(item, startDate, endDate) + " was approved",
+                rental);
 
         log.info("Approved rental request '{}', created rental '{}'",
                 rentalRequest.getId(), rental.getId());
@@ -273,13 +263,11 @@ public class RentalRequestServiceImpl implements RentalRequestService {
 
         rentalRequest.reject();
 
-        notificationService.send(
+        notify(
                 rentalRequest.getBorrower(),
                 NotificationType.RENTAL_REJECTED,
-                "Your request for '" + rentalRequest.getItem().getTitle() + "' ("
-                        + rentalRequest.getStartDate() + " to " + rentalRequest.getEndDate()
-                        + ") was rejected",
-                null,
+                REQUEST_FOR_PREFIX + window(rentalRequest.getItem(),
+                        rentalRequest.getStartDate(), rentalRequest.getEndDate()) + " was rejected",
                 null);
 
         log.info("Rejected rental request '{}'", rentalRequest.getId());
@@ -292,7 +280,7 @@ public class RentalRequestServiceImpl implements RentalRequestService {
         User borrower = currentUserProvider.getCurrentUser();
         RentalRequest rentalRequest = getRequestOrThrow(requestId);
 
-        if (!rentalRequest.getBorrower().getId().equals(borrower.getId())) {
+        if (!Objects.equals(borrower.getId(), rentalRequest.getBorrower().getId())) {
             throw new ForbiddenActionException("You can only cancel your own requests");
         }
         requirePending(rentalRequest);
@@ -303,13 +291,24 @@ public class RentalRequestServiceImpl implements RentalRequestService {
         return rentalRequestMapper.toResponse(rentalRequest);
     }
 
+    // All rental-request notifications carry a rental context link (often null) and never a
+    // transaction, so this overload keeps the trailing transaction argument out of the call sites.
+    private void notify(User recipient, NotificationType type, String message, Rental rental) {
+        notificationService.send(recipient, type, message, rental, null);
+    }
+
+    // Shared "'<item title>' (<start> to <end>)" fragment used across request notifications.
+    private static String window(Item item, LocalDate startDate, LocalDate endDate) {
+        return "'" + item.getTitle() + "' (" + startDate + " to " + endDate + ")";
+    }
+
     private RentalRequest getRequestOrThrow(UUID requestId) {
         return rentalRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RentalRequestNotFoundException(requestId));
     }
 
     private void requireItemOwner(RentalRequest rentalRequest, User owner) {
-        if (!rentalRequest.getItem().getOwner().getId().equals(owner.getId())) {
+        if (!Objects.equals(owner.getId(), rentalRequest.getItem().getOwner().getId())) {
             throw new ForbiddenActionException("You do not own the item for this request");
         }
     }

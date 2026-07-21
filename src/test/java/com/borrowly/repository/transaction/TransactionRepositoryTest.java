@@ -154,7 +154,7 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
     }
 
     @Nested
-    @DisplayName("findByUser_IdOrderByCreatedAtDesc")
+    @DisplayName("findByUserIdOrderByCreatedAtDesc")
     class FindByUserOrderByCreatedAtDesc {
 
         @Test
@@ -169,7 +169,7 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
             forceCreatedAt(newest, LocalDateTime.of(2026, Month.JULY, 5, 10, 0));
 
             Page<Transaction> page = transactionRepository
-                    .findByUser_IdOrderByCreatedAtDesc(user.getId(), firstPage);
+                    .findByUserIdOrderByCreatedAtDesc(user.getId(), firstPage);
 
             assertThat(page.getTotalElements()).isEqualTo(2);
             assertThat(page.getContent())
@@ -181,13 +181,13 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
         @DisplayName("returns an empty page for a user with no transactions")
         void emptyWhenNoTransactions() {
             assertThat(transactionRepository
-                    .findByUser_IdOrderByCreatedAtDesc(otherUser.getId(), firstPage))
+                    .findByUserIdOrderByCreatedAtDesc(otherUser.getId(), firstPage))
                     .isEmpty();
         }
     }
 
     @Nested
-    @DisplayName("findByUser_IdAndTypeIn")
+    @DisplayName("findByUserIdAndTypeIn")
     class FindByUserAndTypeIn {
 
         @Test
@@ -198,7 +198,7 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
             persistTransaction(user, TransactionType.WITHDRAWAL);
             flushAndClear();
 
-            Page<Transaction> page = transactionRepository.findByUser_IdAndTypeIn(
+            Page<Transaction> page = transactionRepository.findByUserIdAndTypeIn(
                     user.getId(),
                     Set.of(TransactionType.TOP_UP, TransactionType.RENT_PAYMENT),
                     firstPage);
@@ -215,14 +215,14 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
             persistTransaction(otherUser, TransactionType.TOP_UP);
             flushAndClear();
 
-            assertThat(transactionRepository.findByUser_IdAndTypeIn(
+            assertThat(transactionRepository.findByUserIdAndTypeIn(
                     user.getId(), Set.of(TransactionType.TOP_UP), firstPage))
                     .isEmpty();
         }
     }
 
     @Nested
-    @DisplayName("findByRental_Id")
+    @DisplayName("findByRentalId")
     class FindByRentalId {
 
         @Test
@@ -233,7 +233,7 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
             persistTransaction(otherUser, TransactionType.TOP_UP, null);
             flushAndClear();
 
-            List<Transaction> results = transactionRepository.findByRental_Id(rental.getId());
+            List<Transaction> results = transactionRepository.findByRentalId(rental.getId());
 
             assertThat(results)
                     .extracting(Transaction::getId)
@@ -243,12 +243,12 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
         @Test
         @DisplayName("returns an empty list for a rental with no transactions")
         void emptyWhenNoTransactionsForRental() {
-            assertThat(transactionRepository.findByRental_Id(UUID.randomUUID())).isEmpty();
+            assertThat(transactionRepository.findByRentalId(UUID.randomUUID())).isEmpty();
         }
     }
 
     @Nested
-    @DisplayName("findByUser_IdAndCreatedAtBetween")
+    @DisplayName("findByUserIdAndCreatedAtBetween")
     class FindByUserAndCreatedAtBetween {
 
         @Test
@@ -271,7 +271,7 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
             forceCreatedAt(onUpperBound, to);
             forceCreatedAt(after, LocalDateTime.of(2026, Month.JULY, 10, 0, 1));
 
-            Page<Transaction> page = transactionRepository.findByUser_IdAndCreatedAtBetween(
+            Page<Transaction> page = transactionRepository.findByUserIdAndCreatedAtBetween(
                     user.getId(), from, to, firstPage);
 
             assertThat(page.getContent())
@@ -289,7 +289,7 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
             LocalDateTime to = LocalDateTime.of(2026, Month.DECEMBER, 31, 23, 59);
             forceCreatedAt(otherUserTransaction, LocalDateTime.of(2026, Month.JULY, 7, 12, 0));
 
-            assertThat(transactionRepository.findByUser_IdAndCreatedAtBetween(
+            assertThat(transactionRepository.findByUserIdAndCreatedAtBetween(
                     user.getId(), from, to, firstPage))
                     .isEmpty();
         }
@@ -327,11 +327,11 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
             stats.clear();
 
             Page<Transaction> page = transactionRepository
-                    .findByUser_IdOrderByCreatedAtDesc(user.getId(), PageRequest.of(0, 50));
+                    .findByUserIdOrderByCreatedAtDesc(user.getId(), PageRequest.of(0, 50));
 
             page.getContent().forEach(tx -> {
                 if (tx.getRental() != null) {
-                    tx.getRental().getItemTitle();
+                    assertThat(tx.getRental().getItemTitle()).isNotNull();
                 }
             });
 
@@ -363,8 +363,8 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
             Statistics stats = statistics();
             stats.clear();
 
-            List<Transaction> results = transactionRepository.findByRental_Id(rental.getId());
-            results.forEach(tx -> tx.getUser().getEmail());
+            List<Transaction> results = transactionRepository.findByRentalId(rental.getId());
+            results.forEach(tx -> assertThat(tx.getUser().getEmail()).isNotNull());
 
             return stats.getPrepareStatementCount();
         }

@@ -8,8 +8,8 @@ import com.borrowly.exception.GlobalExceptionHandler;
 import com.borrowly.security.AuthEntryPointJwt;
 import com.borrowly.security.AuthTokenFilter;
 import com.borrowly.security.JwtUtil;
-import com.borrowly.service.CategoryService;
-import com.borrowly.service.UserDetailsServiceImpl;
+import com.borrowly.service.item.CategoryService;
+import com.borrowly.service.auth.UserDetailsServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;

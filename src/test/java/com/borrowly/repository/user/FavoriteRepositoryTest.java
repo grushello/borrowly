@@ -15,8 +15,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -112,7 +114,7 @@ class FavoriteRepositoryTest extends AbstractPostgresTest {
 
 
     @Test
-    void shouldFindFavoritesOrderedByCreatedAtDesc() throws InterruptedException {
+    void shouldFindFavoritesOrderedByCreatedAtDesc() {
 
         Favorite first = favoriteRepository.saveAndFlush(
                 Favorite.builder()
@@ -121,10 +123,6 @@ class FavoriteRepositoryTest extends AbstractPostgresTest {
                         .build()
         );
 
-
-        Thread.sleep(10);
-
-
         Favorite second = favoriteRepository.saveAndFlush(
                 Favorite.builder()
                         .user(user)
@@ -132,9 +130,16 @@ class FavoriteRepositoryTest extends AbstractPostgresTest {
                         .build()
         );
 
+        // @PrePersist stamps createdAt at insert time, so both rows land on near-identical
+        // timestamps. Set explicit, ordered values (no Thread.sleep) so the ordering is
+        // deterministic instead of racing the clock.
+        ReflectionTestUtils.setField(first, "createdAt", LocalDateTime.now().minusMinutes(1));
+        ReflectionTestUtils.setField(second, "createdAt", LocalDateTime.now());
+        favoriteRepository.saveAndFlush(first);
+        favoriteRepository.saveAndFlush(second);
 
         Page<Favorite> result =
-                favoriteRepository.findByUser_IdOrderByCreatedAtDesc(
+                favoriteRepository.findByUserIdOrderByCreatedAtDesc(
                         user.getId(),
                         PageRequest.of(0, 10)
                 );
@@ -161,7 +166,7 @@ class FavoriteRepositoryTest extends AbstractPostgresTest {
 
 
         boolean exists =
-                favoriteRepository.existsByUser_IdAndItem_Id(
+                favoriteRepository.existsByUserIdAndItemId(
                         user.getId(),
                         item1.getId()
                 );
@@ -176,7 +181,7 @@ class FavoriteRepositoryTest extends AbstractPostgresTest {
 
 
         boolean exists =
-                favoriteRepository.existsByUser_IdAndItem_Id(
+                favoriteRepository.existsByUserIdAndItemId(
                         user.getId(),
                         item1.getId()
                 );
@@ -198,7 +203,7 @@ class FavoriteRepositoryTest extends AbstractPostgresTest {
 
 
         int deleted =
-                favoriteRepository.deleteByUser_IdAndItem_Id(
+                favoriteRepository.deleteByUserIdAndItemId(
                         user.getId(),
                         item1.getId()
                 );
@@ -211,7 +216,7 @@ class FavoriteRepositoryTest extends AbstractPostgresTest {
 
 
         assertThat(
-                favoriteRepository.existsByUser_IdAndItem_Id(
+                favoriteRepository.existsByUserIdAndItemId(
                         user.getId(),
                         item1.getId()
                 )
@@ -224,7 +229,7 @@ class FavoriteRepositoryTest extends AbstractPostgresTest {
 
 
         int deleted =
-                favoriteRepository.deleteByUser_IdAndItem_Id(
+                favoriteRepository.deleteByUserIdAndItemId(
                         user.getId(),
                         item1.getId()
                 );

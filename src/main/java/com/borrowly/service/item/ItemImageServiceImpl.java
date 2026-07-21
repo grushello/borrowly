@@ -43,7 +43,7 @@ public class ItemImageServiceImpl implements ItemImageService {
         enforceOwnership(item);
         validateFile(file);
 
-        long count = itemImageRepository.countByItem_Id(itemId);
+        long count = itemImageRepository.countByItemId(itemId);
         if (count >= MAX_IMAGES) {
             throw new ImageLimitExceededException("Item already has the maximum of " + MAX_IMAGES + " images");
         }
@@ -72,13 +72,13 @@ public class ItemImageServiceImpl implements ItemImageService {
     public List<ItemImageResponse> listMetadata(UUID itemId) {
         findItem(itemId);
         return itemImageMapper.fromProjectionList(
-                itemImageRepository.findByItem_IdOrderByCreatedAtAsc(itemId)
+                itemImageRepository.findByItemIdOrderByCreatedAtAsc(itemId)
         );
     }
 
     @Override
     public ItemImage download(UUID itemId, UUID imageId) {
-        return itemImageRepository.findByIdAndItem_Id(imageId, itemId)
+        return itemImageRepository.findByIdAndItemId(imageId, itemId)
                 .orElseThrow(() -> new ImageNotFoundException(imageId));
     }
 
@@ -88,7 +88,7 @@ public class ItemImageServiceImpl implements ItemImageService {
         Item item = findItem(itemId);
         enforceOwnership(item);
 
-        ItemImage image = itemImageRepository.findByIdAndItem_Id(imageId, itemId)
+        ItemImage image = itemImageRepository.findByIdAndItemId(imageId, itemId)
                 .orElseThrow(() -> new ImageNotFoundException(imageId));
 
         boolean wasPrimary = image.isPrimary();
@@ -96,7 +96,7 @@ public class ItemImageServiceImpl implements ItemImageService {
 
         if (wasPrimary) {
             itemImageRepository.flush();
-            itemImageRepository.findFirstByItem_IdOrderByCreatedAtAsc(itemId)
+            itemImageRepository.findFirstByItemIdOrderByCreatedAtAsc(itemId)
                     .ifPresent(oldest -> itemImageRepository.markAsPrimary(oldest.getId()));
         }
 
