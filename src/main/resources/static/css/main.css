@@ -63,6 +63,7 @@ nav {
     background-color: darkslategray;
     color: whitesmoke;
     padding: 1rem;
+    max-height: 2rem;
 }
 
 nav a {
