@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface FavoriteRepository extends JpaRepository<Favorite, UUID> {
@@ -17,4 +18,6 @@ public interface FavoriteRepository extends JpaRepository<Favorite, UUID> {
 
     @Modifying
     int deleteByUser_IdAndItem_Id(UUID userId, UUID itemId);
+
+    Optional<Favorite> findByUser_IdAndItem_Id(UUID userId, UUID itemId);
 }
