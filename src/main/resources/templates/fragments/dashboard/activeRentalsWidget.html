@@ -5,14 +5,14 @@
     <title>Active rentals widget</title>
 </head>
 <body>
-<div th:fragment="activeRentalsAsBorrowerWidget" class="widget active-rentals-widget">
+<div th:fragment="activeRentalsWidget(activeRentals, role)" class="widget active-rentals-widget">
     <div class="widget-header">
-        <h2>Active rentals (borrower) </h2>
+        <h2 th:text="|Active rentals (${role}) |">Active rentals (role) </h2>
     </div>
 
     <ul class="rental-list">
 
-        <li th:each="rental : ${activeRentalsAsBorrower}" class="rental-item">
+        <li th:each="rental : ${activeRentals}" class="rental-item">
 
             <img th:if="${rental.item.primaryImageId != null}"
                  th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${rental.item.id}, imageId=${rental.item.primaryImageId})}"
@@ -33,7 +33,7 @@
 
         </li>
 
-        <li th:if="${#lists.isEmpty(activeRentalsAsBorrower)}" class="empty-state">
+        <li th:if="${#lists.isEmpty(activeRentals)}" class="empty-state">
             <span>You don't have any active rentals </span>
             <a href="/">Explore the catalog!</a>
         </li>
