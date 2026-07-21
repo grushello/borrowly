@@ -3,7 +3,6 @@
     border: 1px solid #e5e7eb;
     border-radius: 10px;
     padding: 24px;
-    max-height: 240px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     overflow: scroll;
 }
