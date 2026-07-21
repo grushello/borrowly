@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error page</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+    <body>
+        <nav th:replace="~{fragments/general/nav :: nav}">
+        </nav>
+        <main class="error-container">
+            <h1>🛑 Error (500) </h1>
+            <p>We are sorry but due to an internal server we could not serve you the page.</p>
+        </main>
+        <footer th:insert="~{fragments/general/footer :: footer}">
+        </footer>
+
+    </body>
+</html>

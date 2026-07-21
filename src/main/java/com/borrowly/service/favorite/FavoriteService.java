@@ -13,4 +13,6 @@ public interface FavoriteService {
     void removeFavorite(UUID itemId);
 
     Page<FavoriteResponse> listForCurrentUser(Pageable pageable);
+
+    boolean isFavoritedByCurrentUser(UUID itemId);
 }

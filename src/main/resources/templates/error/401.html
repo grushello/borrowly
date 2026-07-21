@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>401 error</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <nav th:replace="~{fragments/general/nav :: nav}">
+    </nav>
+    <main class="error-container">
+        <h1>🛑 Access denied! </h1>
+        <p>We are sorry but you are unauthorized to access this page.</p>
+        <a href="/">Go back to the catalog</a>
+    </main>
+    <footer th:insert="~{fragments/general/footer :: footer}">
+    </footer>
+</body>
+</html>
