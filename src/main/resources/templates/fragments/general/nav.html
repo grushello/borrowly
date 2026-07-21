@@ -9,7 +9,8 @@
     <nav th:fragment="nav">
         <div class="nav-fragment">
             <a href="/">Catalog</a>
-            <a href="/dashboard">My Dashboard</a>
+            <a sec:authorize="isAuthenticated()" href="/dashboard">My Dashboard</a>
+            <a sec:authorize="isAuthenticated()" href="/createItem">Create item</a>
         </div>
         <div class="nav-fragment">
             <a sec:authorize="isAnonymous()" href="/signin">Sign in</a>

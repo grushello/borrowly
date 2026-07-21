@@ -5,12 +5,14 @@
     <title>Dashboard</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard/dashboard.css}">
-    <link rel="stylesheet" th:href="@{/css/dashboard/favoritesWidget.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard/itemsListWidget.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard/financialSummaryWidget.css}">
 </head>
 <body>
     <nav th:replace="~{fragments/general/nav :: nav}">
     </nav>
+
+    <h1 th:text="|${user.firstName} ${user.lastName}|">User name</h1>
 
     <main class="dashboard-grid">
         <div th:replace="~{fragments/dashboard/activeRentalsWidget :: activeRentalsWidget}">...</div>
@@ -18,6 +20,8 @@
         <div th:replace="~{fragments/dashboard/financialSummaryWidget :: financialSummaryWidget}">...</div>
 
         <div th:replace="~{fragments/dashboard/favoritesWidget :: favoritesWidget}">...</div>
+
+        <div th:replace="~{fragments/dashboard/userItemListingsWidget :: userItemListingsWidget}">...</div>
     </main>
 
     <footer th:insert="~{fragments/general/footer :: footer}">
