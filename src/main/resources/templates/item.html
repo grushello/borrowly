@@ -76,8 +76,8 @@
                 <a th:href="@{/update/{id}(id=${item.id})}" class="btn btn-edit">Edit Listing</a>
                 <button id="archive-btn"
                         class="btn btn-danger"
-                        th:disabled="${item.itemStatus.name() == 'ARCHIVED' or item.itemStatus.name() == 'RENTED'}"
-                        th:text="${item.itemStatus.name() == 'ARCHIVED' ? 'Already Archived' : (item.itemStatus.name() == 'RENTED' ? 'Cannot archive while rented' : 'Archive')}">
+                        th:disabled="${item.itemStatus.name() == 'RENTED'}"
+                        th:text="${item.itemStatus.name() == 'ARCHIVED' ? 'Unarchive' : (item.itemStatus.name() == 'RENTED' ? 'Cannot archive while rented' : 'Archive')}">
                   Archive
                 </button>
               </div>
@@ -114,25 +114,33 @@
     const favBtn = document.getElementById('favorite-btn');
     const archiveBtn = document.getElementById('archive-btn');
 
-    if (archiveBtn) archiveBtn.addEventListener('click', function() {
+    archiveBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+
       const itemId = document.getElementById("main-content").getAttribute('data-item-id');
-      const archiveUrl = "/api/items/" + itemId;
-      console.log(itemId, archiveUrl);
-      fetch(archiveUrl, {
-        method: "DELETE",
+
+      const isArchiving = event.target.textContent === "Archive";
+      const method = isArchiving ? "DELETE" : "PATCH";
+      const url = isArchiving ? "/api/items/" + itemId : "/api/items/" + itemId + "/unarchive";
+
+      event.target.disabled = true;
+
+      fetch(url, {
+        method: method,
       }).then(response => {
         if (response.ok) {
-          archiveBtn.textContent = 'Already archived';
-        }  else {
-          alert('Error trying to archive item.');
+          event.target.textContent = isArchiving ? 'Unarchive' : 'Archive';
+        } else {
+          alert(isArchiving ? 'Error trying to archive item.' : 'Error trying to unarchive item.');
         }
       }).catch(err => {
         console.error('Error:', err);
         alert('Network error.');
       }).finally(() => {
-                archiveBtn.disabled = true;
+        event.target.disabled = false;
       });
     })
+
 
     if (!favBtn) return;
 
