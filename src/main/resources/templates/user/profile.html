@@ -2,16 +2,24 @@
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org">
 
+
 <head>
+
     <meta charset="UTF-8">
 
     <title th:text="${profile.firstName + ' ' + profile.lastName}">
         User Profile
     </title>
 
+
     <link rel="stylesheet"
           th:href="@{/css/main.css}">
+
+    <link rel="stylesheet"
+          th:href="@{/css/user/profile.css}">
+
 </head>
+
 
 
 <body>
@@ -22,7 +30,9 @@
 
 
 
+
 <main class="profile-container">
+
 
 
     <section class="profile-header">
@@ -30,36 +40,37 @@
 
         <div class="avatar">
 
-        <span th:text="${profile.firstName.charAt(0)}">
-            A
-        </span>
+            <span th:text="${profile.firstName.charAt(0)}">
+                A
+            </span>
 
         </div>
 
 
 
-        <div>
 
+        <div>
 
             <h1 th:text="${profile.firstName + ' ' + profile.lastName}">
                 John Smith
             </h1>
 
 
-            <div>
+
+            <div class="profile-rating">
 
                 ⭐
 
-                <span th:text="${profile.averageRating}">
-                0
-            </span>
+                <span th:text="${profile.averageRating ?: 0}">
+                    0
+                </span>
 
 
                 (
 
                 <span th:text="${profile.reviewCount}">
-                0
-            </span>
+                    0
+                </span>
 
                 reviews)
 
@@ -70,16 +81,14 @@
 
 
 
-        <div th:if="${isOwner}">
 
-            <a th:href="@{/account}"
-               class="btn">
+        <a th:if="${isOwner}"
+           th:href="@{/account}"
+           class="btn">
 
-                Edit account
+            Edit account
 
-            </a>
-
-        </div>
+        </a>
 
 
 
@@ -89,17 +98,21 @@
 
 
 
-    <section>
 
 
-        <h2>Items</h2>
+    <section class="profile-section">
 
 
-        <ul>
+        <h2>
+            Items
+        </h2>
+
+
+        <ul class="profile-items"
+            th:if="${profile.items != null and !profile.items.isEmpty()}">
 
 
             <li th:each="item : ${profile.items}">
-
 
                 <a th:href="@{/item/{id}(id=${item.id})}"
                    th:text="${item.title}">
@@ -108,11 +121,19 @@
 
                 </a>
 
-
             </li>
 
 
         </ul>
+
+
+
+        <p class="empty-message"
+           th:if="${profile.items == null or profile.items.isEmpty()}">
+
+            This user has no items yet.
+
+        </p>
 
 
     </section>
@@ -121,33 +142,58 @@
 
 
 
-    <section>
 
 
-        <h2>Reviews</h2>
+    <section class="profile-section">
 
 
-        <div th:each="review : ${profile.reviews}">
+        <h2>
+            Reviews
+        </h2>
 
 
-            <p th:text="${review.comment}">
-                Comment
-            </p>
+
+        <div th:if="${profile.reviews != null and !profile.reviews.isEmpty()}">
 
 
-            <span>
-
-Rating:
-
-<span th:text="${review.rating}">
-    5
-</span>
+            <div th:each="review : ${profile.reviews}"
+                 class="review-card">
 
 
-</span>
+                <p class="review-comment"
+                   th:text="${review.comment}">
+
+                    Comment
+
+                </p>
+
+
+
+                <span class="review-rating">
+
+                Rating:
+
+                <strong th:text="${review.rating}">
+                    5
+                </strong>
+
+            </span>
+
+
+            </div>
 
 
         </div>
+
+
+
+
+        <p class="empty-message"
+           th:if="${profile.reviews == null or profile.reviews.isEmpty()}">
+
+            This user has no reviews yet.
+
+        </p>
 
 
     </section>
@@ -159,11 +205,14 @@ Rating:
 
 
 
+
+
 <footer th:replace="~{fragments/general/footer :: footer}">
 </footer>
 
 
 
 </body>
+
 
 </html>

@@ -1,0 +1,258 @@
+.profile-container {
+
+    max-width: 1200px;
+
+    margin: 40px auto;
+
+    padding: 0 20px;
+
+}
+
+
+
+.profile-header {
+
+    background: #ffffff;
+
+    border: 1px solid #e0e0e0;
+
+    border-radius: 12px;
+
+    padding: 30px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 24px;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+    margin-bottom: 30px;
+
+}
+
+
+
+.avatar {
+
+    width: 80px;
+
+    height: 80px;
+
+    background-color: #3498db;
+
+    color: white;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    font-size: 2.5rem;
+
+    font-weight: bold;
+
+}
+
+
+
+.profile-header h1 {
+
+    margin: 0 0 10px 0;
+
+    color: #2c3e50;
+
+    font-size: 2.2rem;
+
+}
+
+
+
+.profile-header p {
+
+    color: #7f8c8d;
+
+}
+
+
+
+.profile-rating {
+
+    color: #7f8c8d;
+
+    font-size: 1rem;
+
+}
+
+
+
+.profile-rating span {
+
+    color: #2c3e50;
+
+    font-weight: 600;
+
+}
+
+
+
+.btn {
+
+    margin-left: auto;
+
+    background-color: #3498db;
+
+    color: white;
+
+    padding: 12px 20px;
+
+    border-radius: 8px;
+
+    text-decoration: none;
+
+    font-weight: 600;
+
+}
+
+
+
+.btn:hover {
+
+    background-color: #2980b9;
+
+}
+
+
+
+
+
+.profile-section {
+
+    background: white;
+
+    border: 1px solid #e0e0e0;
+
+    border-radius: 12px;
+
+    padding: 25px;
+
+    margin-bottom: 25px;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+}
+
+
+
+.profile-section h2 {
+
+    color: #2c3e50;
+
+    margin-top: 0;
+
+}
+
+
+
+
+
+.profile-items {
+
+    list-style: none;
+
+    padding: 0;
+
+    margin: 0;
+
+}
+
+
+
+.profile-items li {
+
+    padding: 12px 0;
+
+    border-bottom: 1px solid #eeeeee;
+
+}
+
+
+
+.profile-items li:last-child {
+
+    border-bottom: none;
+
+}
+
+
+
+.profile-items a {
+
+    color: #3498db;
+
+    text-decoration: none;
+
+    font-weight: 600;
+
+}
+
+
+
+.profile-items a:hover {
+
+    text-decoration: underline;
+
+}
+
+
+
+
+
+.review-card {
+
+    padding: 15px;
+
+    background: #f9f9f9;
+
+    border-radius: 8px;
+
+    margin-bottom: 12px;
+
+}
+
+
+
+.review-comment {
+
+    color: #555;
+
+    line-height: 1.5;
+
+}
+
+
+
+.review-rating {
+
+    color: #7f8c8d;
+
+    font-size: 0.9rem;
+
+}
+.empty-message {
+
+    color: #7f8c8d;
+
+    text-align: center;
+
+    padding: 20px;
+
+    background: #f9f9f9;
+
+    border-radius: 8px;
+
+}

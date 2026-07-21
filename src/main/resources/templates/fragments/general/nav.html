@@ -11,7 +11,8 @@
             <a href="/">
                 Catalog
             </a>
-            <a href="/dashboard">
+            <a sec:authorize="isAuthenticated()"
+               href="/dashboard">
                 My Dashboard
             </a>
             <a sec:authorize="isAuthenticated()"
