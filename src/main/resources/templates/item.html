@@ -107,40 +107,9 @@
           </div>
 
         </div>
-
-        <a th:href="@{/user/{id}(id=${item.owner.id})}"
-           class="owner-profile">
-
-
-          <div class="owner-avatar">
-
-        <span th:text="${item.owner.firstName.charAt(0)}">
-            A
-        </span>
-
-          </div>
-
-
-          <div class="owner-details">
-            <span class="owner-label">Owner</span>
-            <strong th:if="${!isOwner}" th:text="${item.owner.firstName} + ' ' + ${item.owner.lastName}">Owner</strong>
-            <strong th:if="${isOwner}" th:text="'You'">Owner</strong>
-          </div>
-
-
-        </a>
-          </div>
-        </div>
-        <button th:unless="${isOwner}"
-                class="btn-book">
-          Rent now
-        </button>
-
       </div>
 
-    </div>
-
-    <div class="owner-profile">
+      <a th:href="@{/user/{id}(id=${item.owner.id})}" class="owner-profile">
       <div class="owner-avatar">
         <span th:text="${item.owner.firstName.charAt(0)}">A</span>
       </div>
@@ -149,6 +118,7 @@
         <strong th:if="${!isOwner}" th:text="${item.owner.firstName} + ' ' + ${item.owner.lastName}">Owner</strong>
         <strong th:if="${isOwner}" th:text="'You'">Owner</strong>
       </div>
+      </a>
     </div>
 
   </div>
@@ -163,7 +133,6 @@
 <footer th:replace="~{fragments/general/footer :: footer}">
 </footer>
 
-</body>
 <script src="/js/csrf.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -336,4 +305,5 @@
 
   });
 </script>
+</body>
 </html>
