@@ -1,4 +1,4 @@
-package com.borrowly.controller.page;
+package com.borrowly.controller.advice;
 
 import com.borrowly.dto.response.NotificationResponse;
 import com.borrowly.service.notification.NotificationService;
