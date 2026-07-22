@@ -44,6 +44,13 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
     boolean existsByRentalId(UUID rentalId);
 
+    @EntityGraph(attributePaths = {
+            "reviewer",
+            "rental",
+            "rental.item",
+            "rental.item.owner",
+            "rental.item.primaryImage"
+    })
     List<Review> findByRentalItemOwner(User owner);
 
 
