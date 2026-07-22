@@ -35,6 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @WebMvcTest(FavoriteController.class)
 @Import({SecurityConfig.class, AuthTokenFilter.class, AuthEntryPointJwt.class,
@@ -60,7 +61,8 @@ class FavoriteControllerTest {
     @Test
     @DisplayName("POST without authentication returns 401")
     void addUnauthenticatedReturns401() throws Exception {
-        mockMvc.perform(post("/api/favorites/{itemId}", UUID.randomUUID()))
+        mockMvc.perform(post("/api/favorites/{itemId}", UUID.randomUUID())
+                        .with(csrf()))
                 .andExpect(status().isUnauthorized());
 
         verify(favoriteService, never()).addFavorite(any());
@@ -73,7 +75,8 @@ class FavoriteControllerTest {
         when(favoriteService.addFavorite(any()))
                 .thenReturn(new FavoriteResult(favoriteResponse(), true));
 
-        mockMvc.perform(post("/api/favorites/{itemId}", UUID.randomUUID()))
+        mockMvc.perform(post("/api/favorites/{itemId}", UUID.randomUUID())
+                        .with(csrf()))
                 .andExpect(status().isCreated());
     }
 
@@ -84,7 +87,8 @@ class FavoriteControllerTest {
         when(favoriteService.addFavorite(any()))
                 .thenReturn(new FavoriteResult(favoriteResponse(), false));
 
-        mockMvc.perform(post("/api/favorites/{itemId}", UUID.randomUUID()))
+        mockMvc.perform(post("/api/favorites/{itemId}", UUID.randomUUID())
+                        .with(csrf()))
                 .andExpect(status().isOk());
     }
 
@@ -95,7 +99,8 @@ class FavoriteControllerTest {
         UUID itemId = UUID.randomUUID();
         when(favoriteService.addFavorite(itemId)).thenThrow(new ItemNotFoundException(itemId));
 
-        mockMvc.perform(post("/api/favorites/{itemId}", itemId))
+        mockMvc.perform(post("/api/favorites/{itemId}", itemId)
+                        .with(csrf()))
                 .andExpect(status().isNotFound());
     }
 
@@ -106,7 +111,8 @@ class FavoriteControllerTest {
         when(favoriteService.addFavorite(any()))
                 .thenThrow(new CannotFavoriteOwnItemException());
 
-        mockMvc.perform(post("/api/favorites/{itemId}", UUID.randomUUID()))
+        mockMvc.perform(post("/api/favorites/{itemId}", UUID.randomUUID())
+                        .with(csrf()))
                 .andExpect(status().isForbidden());
     }
 
@@ -114,7 +120,8 @@ class FavoriteControllerTest {
     @WithMockUser
     @DisplayName("DELETE returns 204")
     void removeReturns204() throws Exception {
-        mockMvc.perform(delete("/api/favorites/{itemId}", UUID.randomUUID()))
+        mockMvc.perform(delete("/api/favorites/{itemId}", UUID.randomUUID())
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         verify(favoriteService).removeFavorite(any());

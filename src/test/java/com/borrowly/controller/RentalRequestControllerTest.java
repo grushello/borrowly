@@ -47,6 +47,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @WebMvcTest(RentalRequestController.class)
 @Import({SecurityConfig.class, AuthTokenFilter.class, AuthEntryPointJwt.class,
@@ -109,6 +110,7 @@ class RentalRequestControllerTest {
                     .thenReturn(sampleRequestResponse(RentalRequestStatus.PENDING));
 
             mockMvc.perform(post("/api/rental-requests")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body(START, END)))
                     .andExpect(status().isCreated())
@@ -120,6 +122,7 @@ class RentalRequestControllerTest {
         @DisplayName("returns 400 when startDate is in the past")
         void pastStartDate() throws Exception {
             mockMvc.perform(post("/api/rental-requests")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body(LocalDate.now().minusDays(1), END)))
                     .andExpect(status().isBadRequest());
@@ -130,6 +133,7 @@ class RentalRequestControllerTest {
         @DisplayName("returns 400 when endDate is not after startDate")
         void endBeforeStart() throws Exception {
             mockMvc.perform(post("/api/rental-requests")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body(START, START)))
                     .andExpect(status().isBadRequest());
@@ -140,6 +144,7 @@ class RentalRequestControllerTest {
         @DisplayName("returns 400 when fields are missing")
         void missingFields() throws Exception {
             mockMvc.perform(post("/api/rental-requests")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
                     .andExpect(status().isBadRequest());
@@ -152,6 +157,7 @@ class RentalRequestControllerTest {
             when(rentalRequestService.create(any())).thenThrow(new SelfRentalException());
 
             mockMvc.perform(post("/api/rental-requests")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body(START, END)))
                     .andExpect(status().isForbidden());
@@ -165,6 +171,7 @@ class RentalRequestControllerTest {
                     .thenThrow(new RentalConflictException("overlap"));
 
             mockMvc.perform(post("/api/rental-requests")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body(START, END)))
                     .andExpect(status().isConflict());
@@ -178,6 +185,7 @@ class RentalRequestControllerTest {
                     .thenThrow(new InsufficientBalanceException("low"));
 
             mockMvc.perform(post("/api/rental-requests")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body(START, END)))
                     .andExpect(status().isBadRequest());
@@ -235,7 +243,8 @@ class RentalRequestControllerTest {
             UUID id = UUID.randomUUID();
             when(rentalRequestService.approve(id)).thenReturn(sampleRentalResponse());
 
-            mockMvc.perform(patch("/api/rental-requests/{id}/approve", id))
+            mockMvc.perform(patch("/api/rental-requests/{id}/approve", id)
+                            .with(csrf()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("ACTIVE"))
                     .andExpect(jsonPath("$.totalPrice").value(30.00));
@@ -249,7 +258,8 @@ class RentalRequestControllerTest {
             when(rentalRequestService.approve(id))
                     .thenThrow(new ForbiddenActionException("not owner"));
 
-            mockMvc.perform(patch("/api/rental-requests/{id}/approve", id))
+            mockMvc.perform(patch("/api/rental-requests/{id}/approve", id)
+                            .with(csrf()))
                     .andExpect(status().isForbidden());
         }
 
@@ -261,7 +271,8 @@ class RentalRequestControllerTest {
             when(rentalRequestService.approve(id))
                     .thenThrow(new RentalConflictException("not pending"));
 
-            mockMvc.perform(patch("/api/rental-requests/{id}/approve", id))
+            mockMvc.perform(patch("/api/rental-requests/{id}/approve", id)
+                            .with(csrf()))
                     .andExpect(status().isConflict());
         }
     }
@@ -278,7 +289,8 @@ class RentalRequestControllerTest {
             when(rentalRequestService.reject(id))
                     .thenReturn(sampleRequestResponse(RentalRequestStatus.REJECTED));
 
-            mockMvc.perform(patch("/api/rental-requests/{id}/reject", id))
+            mockMvc.perform(patch("/api/rental-requests/{id}/reject", id)
+                            .with(csrf()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("REJECTED"));
         }
@@ -291,7 +303,8 @@ class RentalRequestControllerTest {
             when(rentalRequestService.reject(id))
                     .thenThrow(new RentalRequestNotFoundException(id));
 
-            mockMvc.perform(patch("/api/rental-requests/{id}/reject", id))
+            mockMvc.perform(patch("/api/rental-requests/{id}/reject", id)
+                            .with(csrf()))
                     .andExpect(status().isNotFound());
         }
     }
@@ -308,7 +321,8 @@ class RentalRequestControllerTest {
             when(rentalRequestService.cancel(id))
                     .thenReturn(sampleRequestResponse(RentalRequestStatus.CANCELED));
 
-            mockMvc.perform(patch("/api/rental-requests/{id}/cancel", id))
+            mockMvc.perform(patch("/api/rental-requests/{id}/cancel", id)
+                            .with(csrf()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("CANCELED"));
         }
@@ -321,7 +335,8 @@ class RentalRequestControllerTest {
             when(rentalRequestService.cancel(id))
                     .thenThrow(new RentalConflictException("not pending"));
 
-            mockMvc.perform(patch("/api/rental-requests/{id}/cancel", id))
+            mockMvc.perform(patch("/api/rental-requests/{id}/cancel", id)
+                            .with(csrf()))
                     .andExpect(status().isConflict());
         }
     }

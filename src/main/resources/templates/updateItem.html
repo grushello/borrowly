@@ -7,66 +7,67 @@
     <link rel="stylesheet" th:href="@{/css/createItem/createOrUpdateItemForm.css}">
 </head>
 <body>
-    <nav th:replace="~{fragments/general/nav :: nav}">
-    </nav>
-    <main>
-        <div class="create-update-item-form-container">
-            <h1>Update this item listing</h1>
+<nav th:replace="~{fragments/general/nav :: nav}">
+</nav>
+<main>
+    <div class="create-update-item-form-container">
+        <h1>Update this item listing</h1>
 
-            <form id="updateItemForm" th:attr="data-item-id=${item.id}">
+        <form id="updateItemForm" th:attr="data-item-id=${item.id}">
 
-                <div class="form-group">
-                    <label for="title">Title</label>
-                    <input type="text" id="title" name="title" th:value="${item.title}" required />
-                    <div class="error-message" id="error-title"></div>
-                </div>
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" th:value="${item.title}" required />
+                <div class="error-message" id="error-title"></div>
+            </div>
 
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" rows="4" th:text="${item.description}" required></textarea>
-                    <div class="error-message" id="error-description"></div>
-                </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="4" th:text="${item.description}" required></textarea>
+                <div class="error-message" id="error-description"></div>
+            </div>
 
-                <div class="form-group">
-                    <label for="condition">Condition</label>
-                    <select id="condition" name="condition" required>
-                        <option value="">-- Select condition --</option>
+            <div class="form-group">
+                <label for="condition">Condition</label>
+                <select id="condition" name="condition" required>
+                    <option value="">-- Select condition --</option>
 
-                        <option th:each="cond : ${conditions}"
-                                th:value="${cond}"
-                                th:text="${cond}"
-                                th:selected="${cond == item?.condition}">
-                        </option>
-                    </select>
-                    <div class="error-message" id="error-condition"></div>
-                </div>
+                    <option th:each="cond : ${conditions}"
+                            th:value="${cond}"
+                            th:text="${cond}"
+                            th:selected="${cond == item?.condition}">
+                    </option>
+                </select>
+                <div class="error-message" id="error-condition"></div>
+            </div>
 
-                <div class="form-group">
-                    <label for="pricePerDay">Price Per Day (€)</label>
-                    <input type="number" step="0.01" id="pricePerDay" name="pricePerDay" th:value="${item.pricePerDay}" required />
-                    <div class="error-message" id="error-pricePerDay"></div>
-                </div>
+            <div class="form-group">
+                <label for="pricePerDay">Price Per Day (€)</label>
+                <input type="number" step="0.01" id="pricePerDay" name="pricePerDay" th:value="${item.pricePerDay}" required />
+                <div class="error-message" id="error-pricePerDay"></div>
+            </div>
 
-                <div class="form-group">
-                    <label for="depositAmount">Deposit Amount (€)</label>
-                    <input type="number" step="0.01" id="depositAmount" name="depositAmount" th:value="${item.depositAmount}" required />
-                    <div class="error-message" id="error-depositAmount"></div>
-                </div>
+            <div class="form-group">
+                <label for="depositAmount">Deposit Amount (€)</label>
+                <input type="number" step="0.01" id="depositAmount" name="depositAmount" th:value="${item.depositAmount}" required />
+                <div class="error-message" id="error-depositAmount"></div>
+            </div>
 
-                <div class="form-group">
-                    <label for="finePerDay">Fine Per Day (€)</label>
-                    <input type="number" step="0.01" id="finePerDay" name="finePerDay" th:value="${item.finePerDay}" required />
-                    <div class="error-message" id="error-finePerDay"></div>
-                </div>
+            <div class="form-group">
+                <label for="finePerDay">Fine Per Day (€)</label>
+                <input type="number" step="0.01" id="finePerDay" name="finePerDay" th:value="${item.finePerDay}" required />
+                <div class="error-message" id="error-finePerDay"></div>
+            </div>
 
-                <button type="submit" id="submitBtn">Update Listing</button>
-            </form>
-        </div>
+            <button type="submit" id="submitBtn">Update Listing</button>
+        </form>
+    </div>
 
-    </main>
-    <footer th:replace="~{fragments/general/footer :: footer}">
-    </footer>
+</main>
+<footer th:replace="~{fragments/general/footer :: footer}">
+</footer>
 </body>
+<script src="/js/csrf.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('updateItemForm');
@@ -89,7 +90,7 @@
             data.depositAmount = parseFloat(data.depositAmount);
             data.finePerDay = parseFloat(data.finePerDay);
 
-            fetch('/api/items/'+ id, {
+            csrfFetch('/api/items/'+ id, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -112,7 +113,7 @@
 
         function handleValidationErrors(errors) {
             Object.entries(errors.fields).forEach(([field, message]) => {
-                 const errorDiv = document.getElementById('error-' + field);
+                const errorDiv = document.getElementById('error-' + field);
                 const inputField = document.getElementById(field);
 
                 if (errorDiv) {

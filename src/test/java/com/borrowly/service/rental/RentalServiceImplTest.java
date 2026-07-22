@@ -79,6 +79,7 @@ class RentalServiceImplTest {
     void setUp() {
         owner = User.register("Olivia", "Owner", "owner@test.com", "hash");
         borrower = User.register("Ben", "Borrower", "borrower@test.com", "hash");
+        borrower.addBalance(new BigDecimal("100.00"));
 
         item = Item.builder()
                 .title("Bosch Drill")
@@ -244,6 +245,42 @@ class RentalServiceImplTest {
     }
 
     @Test
+    @DisplayName("a fine the balance cannot fully cover is topped up from the deposit")
+    void returnLateFineSplitsAcrossBalanceThenDeposit() {
+        ReflectionTestUtils.setField(borrower, "currentBalance", new BigDecimal("1.00"));
+        rental = rentalEndingOn(LocalDate.now().minusDays(2)); // fine 2.00 x 2 = 4.00
+
+        when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
+        when(currentUserProvider.getCurrentUser()).thenReturn(owner);
+
+        rentalService.returnRental(rental.getId());
+
+        // 1.00 comes off the balance, the remaining 3.00 off the deposit, so 47.00 is refunded
+        verify(transactionService).chargeFine(borrower, new BigDecimal("1.00"), rental);
+        verify(transactionService).payoutFine(owner, new BigDecimal("4.00"), rental);
+        verify(transactionService).returnDeposit(borrower, new BigDecimal("47.00"), rental);
+        verify(transactionService).payoutRent(owner, new BigDecimal("25.00"), rental);
+    }
+
+    @Test
+    @DisplayName("a fine beyond balance and deposit is capped, and the owner absorbs the rest")
+    void returnLateFineBeyondBalanceAndDepositIsWrittenOff() {
+        ReflectionTestUtils.setField(borrower, "currentBalance", BigDecimal.ZERO);
+        rental = rentalEndingOn(LocalDate.now().minusDays(26)); // fine 2.00 x 26 = 52.00 > 50.00 deposit
+
+        when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
+        when(currentUserProvider.getCurrentUser()).thenReturn(owner);
+
+        rentalService.returnRental(rental.getId());
+
+        // nothing on the balance, the whole 50.00 deposit goes to the owner, the extra 2.00 is written off
+        verify(transactionService, never()).chargeFine(any(), any(), any());
+        verify(transactionService).payoutFine(owner, new BigDecimal("50.00"), rental);
+        verify(transactionService, never()).returnDeposit(any(), any(), any());
+        verify(transactionService).payoutRent(owner, new BigDecimal("25.00"), rental);
+    }
+
+    @Test
     @DisplayName("an overdue rental can still be returned")
     void returnOverdueStatusRental() {
         rental = rentalEndingOn(LocalDate.now().minusDays(1));
@@ -304,8 +341,32 @@ class RentalServiceImplTest {
                 isNull());
 
         assertThat(recipients.getAllValues()).containsExactly(borrower, owner);
-        assertThat(messages.getAllValues().getFirst()).contains("Deposit returned: 50.00", "Fine charged: 4.00");
-        assertThat(messages.getAllValues().get(1)).contains("Payout: 25.00", "Fine credited: 4.00");
+        assertThat(messages.getAllValues().get(0))
+                .contains("fine charged: 4.00", "Deposit returned in full: 50.00");
+        assertThat(messages.getAllValues().get(1))
+                .contains("Payout: 25.00", "late fine of 4.00");
+    }
+
+    @Test
+    @DisplayName("when the fine outruns the deposit, the messages say so")
+    void returnNotifiesWhenFineExceedsDeposit() {
+        ReflectionTestUtils.setField(borrower, "currentBalance", BigDecimal.ZERO);
+        rental = rentalEndingOn(LocalDate.now().minusDays(26)); // fine 52.00 > 50.00 deposit
+
+        when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
+        when(currentUserProvider.getCurrentUser()).thenReturn(owner);
+
+        rentalService.returnRental(rental.getId());
+
+        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
+        verify(notificationService, times(2))
+                .send(any(), eq(NotificationType.ITEM_RETURNED), messages.capture(), eq(rental), isNull());
+
+        // only the 50.00 deposit was collected, the extra 2.00 is written off
+        assertThat(messages.getAllValues().get(0))
+                .contains("fine of 50.00", "nothing was returned");
+        assertThat(messages.getAllValues().get(1))
+                .contains("50.00 of the 52.00 fine", "could not cover the rest");
     }
 
     @Test

@@ -3,12 +3,7 @@ package com.borrowly.service.rentalrequest;
 import com.borrowly.dto.request.CreateRentalRequest;
 import com.borrowly.dto.response.RentalRequestResponse;
 import com.borrowly.dto.response.RentalResponse;
-import com.borrowly.exception.ForbiddenActionException;
-import com.borrowly.exception.InsufficientBalanceException;
-import com.borrowly.exception.ItemNotFoundException;
-import com.borrowly.exception.RentalConflictException;
-import com.borrowly.exception.RentalRequestNotFoundException;
-import com.borrowly.exception.SelfRentalException;
+import com.borrowly.exception.*;
 import com.borrowly.mapper.RentalMapper;
 import com.borrowly.mapper.RentalRequestMapper;
 import com.borrowly.model.item.Item;
@@ -74,6 +69,12 @@ public class RentalRequestServiceImpl implements RentalRequestService {
         if (Objects.equals(borrower.getId(), item.getOwner().getId())) {
             throw new SelfRentalException();
         }
+
+        if (rentalRequestRepository.existsByItemIdAndBorrowerIdAndStatusIn(
+                item.getId(), borrower.getId(), List.of(RentalRequestStatus.PENDING))) {
+            throw new DuplicateRentalRequestException();
+        }
+
 
         LocalDate startDate = request.startDate();
         LocalDate endDate = request.endDate();
@@ -204,8 +205,14 @@ public class RentalRequestServiceImpl implements RentalRequestService {
                 .status(RentalStatus.ACTIVE)
                 .build();
 
-        transactionService.holdDeposit(borrower, depositAmount, rental);
-        transactionService.chargeRent(borrower, totalPrice, rental);
+
+        if (depositAmount.signum() > 0){
+            transactionService.holdDeposit(borrower, depositAmount, rental);
+        }
+
+        if (totalPrice.signum() > 0){
+            transactionService.chargeRent(borrower, totalPrice, rental);
+        }
 
         rentalRepository.save(rental);
 

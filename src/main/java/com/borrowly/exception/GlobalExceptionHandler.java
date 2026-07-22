@@ -234,4 +234,11 @@ public class GlobalExceptionHandler {
                 .body(baseBody(HttpStatus.BAD_REQUEST, "File size exceeds the 5 MB limit"));
     }
 
+    @ExceptionHandler(DuplicateRentalRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateRentalRequest(DuplicateRentalRequestException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
 }
