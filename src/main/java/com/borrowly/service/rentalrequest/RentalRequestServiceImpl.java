@@ -207,8 +207,14 @@ public class RentalRequestServiceImpl implements RentalRequestService {
                 .status(RentalStatus.ACTIVE)
                 .build();
 
-        transactionService.holdDeposit(borrower, depositAmount, rental);
-        transactionService.chargeRent(borrower, totalPrice, rental);
+
+        if (depositAmount.signum() > 0){
+            transactionService.holdDeposit(borrower, depositAmount, rental);
+        }
+
+        if (totalPrice.signum() > 0){
+            transactionService.chargeRent(borrower, totalPrice, rental);
+        }
 
         rentalRepository.save(rental);
 
