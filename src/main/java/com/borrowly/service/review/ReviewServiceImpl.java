@@ -47,7 +47,7 @@ public class ReviewServiceImpl implements ReviewService {
             throw new AccessDeniedException("Only the borrower can review this rental");
         }
 
-        if (reviewRepository.existsByRental_Id(rental.getId())) {
+        if (reviewRepository.existsByRentalId(rental.getId())) {
             throw new ReviewAlreadyExistsException(rental.getId());
         }
 

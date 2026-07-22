@@ -316,7 +316,7 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
             persistReview(rental, borrower, 5);
             flushAndClear();
 
-            assertThat(reviewRepository.existsByRental_Id(rental.getId())).isTrue();
+            assertThat(reviewRepository.existsByRentalId(rental.getId())).isTrue();
         }
 
         @Test
@@ -325,13 +325,13 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
             Rental rental = persistRental(item, borrower);
             flushAndClear();
 
-            assertThat(reviewRepository.existsByRental_Id(rental.getId())).isFalse();
+            assertThat(reviewRepository.existsByRentalId(rental.getId())).isFalse();
         }
 
         @Test
         @DisplayName("false for a rental that does not exist")
         void falseForUnknownRental() {
-            assertThat(reviewRepository.existsByRental_Id(UUID.randomUUID())).isFalse();
+            assertThat(reviewRepository.existsByRentalId(UUID.randomUUID())).isFalse();
         }
 
         @Test
@@ -341,7 +341,7 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
             persistReview(rental, borrower, 5);
             flushAndClear();
 
-            assertThat(reviewRepository.existsByRental_Id(rental.getId()))
+            assertThat(reviewRepository.existsByRentalId(rental.getId()))
                     .as("the service checks this instead of catching a constraint violation")
                     .isTrue();
 

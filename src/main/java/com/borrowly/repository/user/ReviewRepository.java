@@ -31,7 +31,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
             """)
     Double averageRatingByItemId(@Param("itemId") UUID itemId);
 
-    boolean existsByRental_Id(UUID rentalId);
+    boolean existsByRentalId(UUID rentalId);
 
     List<Review> findByRentalItemOwner(User owner);
 

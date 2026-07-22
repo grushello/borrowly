@@ -83,7 +83,7 @@ class ReviewServiceTest {
 
         when(rentalRepository.findById(returnedRentalId)).thenReturn(Optional.of(returnedRental));
         when(currentUserProvider.getCurrentUser()).thenReturn(borrower);
-        when(reviewRepository.existsByRental_Id(returnedRentalId)).thenReturn(false);
+        when(reviewRepository.existsByRentalId(returnedRentalId)).thenReturn(false);
         when(reviewRepository.save(any(Review.class))).thenAnswer(inv -> inv.getArgument(0));
         when(reviewMapper.toResponse(any(Review.class))).thenReturn(expected);
 
@@ -147,7 +147,7 @@ class ReviewServiceTest {
         CreateReviewRequest request = new CreateReviewRequest(returnedRentalId, 2, null);
         when(rentalRepository.findById(returnedRentalId)).thenReturn(Optional.of(returnedRental));
         when(currentUserProvider.getCurrentUser()).thenReturn(borrower);
-        when(reviewRepository.existsByRental_Id(returnedRentalId)).thenReturn(true);
+        when(reviewRepository.existsByRentalId(returnedRentalId)).thenReturn(true);
 
         assertThatThrownBy(() -> reviewService.createReview(request))
                 .isInstanceOf(ReviewAlreadyExistsException.class);
