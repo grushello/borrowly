@@ -14,8 +14,8 @@ jobs:
     runs-on: self-hosted
     env:
       COMPOSE_PROJECT: borrowly
-      DB_PORT: "3300"
-      APP_PORT: "3301"
+      DB_PORT: "3301"
+      APP_PORT: "3300"
     steps:
       - name: Checkout the selected branch
         uses: actions/checkout@v4
