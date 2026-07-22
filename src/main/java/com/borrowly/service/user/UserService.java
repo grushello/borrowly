@@ -1,6 +1,7 @@
 package com.borrowly.service.user;
 
 import com.borrowly.dto.request.UpdateUserRequest;
+import com.borrowly.dto.response.UserProfileResponse;
 import com.borrowly.dto.response.UserResponse;
 import com.borrowly.dto.response.UserSummaryResponse;
 import org.springframework.data.domain.Page;
@@ -16,9 +17,11 @@ public interface UserService {
 
     UserResponse enableUser(UUID id);
 
-    UserResponse getProfile();
+    UserResponse getAccountInfo();
 
-    UserResponse updateProfile(UpdateUserRequest request);
+    UserResponse updateAccountInfo(UpdateUserRequest request);
 
     UserSummaryResponse getUserSummary(UUID id);
+
+    UserProfileResponse getUserProfile(UUID id);
 }

@@ -1,17 +1,17 @@
 package com.borrowly.mapper;
 
 import com.borrowly.dto.request.UpdateUserRequest;
-import com.borrowly.dto.response.UserResponse;
-import com.borrowly.dto.response.UserSummaryResponse;
+import com.borrowly.dto.response.*;
 import com.borrowly.model.user.User;
 import com.borrowly.model.user.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class UserMapperTest {
@@ -72,5 +72,55 @@ class UserMapperTest {
         assertThat(user.getCurrentBalance()).isEqualByComparingTo(BigDecimal.ZERO);
         assertEquals(Boolean.TRUE, user.getEnabled());
         assertEquals("mario@example.com", user.getEmail());
+    }
+    @Test
+    void toProfile_MapsAllFields() {
+        User user = User.register(
+                "Mario",
+                "Rossi",
+                "mario@example.com",
+                "TOP_SECRET_HASH"
+        );
+
+        ItemSummaryResponse item =
+                new ItemSummaryResponse(
+                        UUID.randomUUID(),
+                        "Bike",
+                        BigDecimal.TEN,
+                        null,
+                        null,
+                        "Mario Rossi",
+                        null
+                );
+
+        ReviewResponse review =
+                new ReviewResponse(
+                        UUID.randomUUID(),
+                        null,
+                        null,
+                        5,
+                        "Excellent",
+                        UUID.randomUUID(),
+                        user.getCreatedAt()
+                );
+
+        UserProfileResponse profile = mapper.toProfile(
+                user,
+                List.of(item),
+                List.of(review),
+                4.8,
+                12L
+        );
+
+        assertEquals(user.getId(), profile.id());
+        assertEquals("Mario", profile.firstName());
+        assertEquals("Rossi", profile.lastName());
+        assertEquals(user.getCreatedAt(), profile.createdAt());
+
+        assertThat(profile.items()).containsExactly(item);
+        assertThat(profile.reviews()).containsExactly(review);
+
+        assertEquals(4.8, profile.averageRating());
+        assertEquals(12L, profile.reviewCount());
     }
 }

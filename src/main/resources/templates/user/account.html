@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>
+        Account settings
+    </title>
+    <link rel="stylesheet"
+          th:href="@{/css/main.css}">
+
+    <link rel="stylesheet"
+          th:href="@{/css/user/account.css}">
+</head>
+
+<body>
+<nav th:replace="~{fragments/general/nav :: nav}">
+</nav>
+<main class="account-page-container">
+    <div class="account-card">
+        <div class="account-header">
+            <div class="account-avatar">
+                <span th:text="${account.firstName.charAt(0)}">
+                    A
+                </span>
+            </div>
+            <div>
+                <h1>
+                    Account settings
+                </h1>
+                <p>
+                    Update your personal information
+                </p>
+            </div>
+        </div>
+        <form id="account-form"
+              class="account-form">
+            <div class="form-group">
+
+                <label>
+                    First name
+                </label>
+
+                <input id="firstName"
+                       type="text"
+                       th:value="${account.firstName}">
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Last name
+                </label>
+
+                <input id="lastName"
+                       type="text"
+                       th:value="${account.lastName}">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Email
+                </label>
+
+                <input id="email"
+                       type="email"
+                       th:value="${account.email}"
+                       disabled>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Phone
+                </label>
+
+                <input id="phone"
+                       type="text"
+                       th:value="${account.phone}">
+
+            </div>
+
+            <button type="submit"
+                    class="btn-save">
+
+                Save changes
+
+            </button>
+
+        </form>
+
+    </div>
+
+</main>
+
+
+<footer th:replace="~{fragments/general/footer :: footer}">
+</footer>
+
+
+<script src="/js/csrf.js"></script>
+
+<script>
+
+    document
+        .getElementById("account-form")
+        .addEventListener("submit", function(event){
+            event.preventDefault();
+
+            csrfFetch("/api/users/me",
+                {
+                    method: "PATCH",
+                    headers:
+                        {
+                            "Content-Type": "application/json"
+                        },
+                    body: JSON.stringify({
+
+                        firstName:
+                        document.getElementById("firstName").value,
+
+                        lastName:
+                        document.getElementById("lastName").value,
+
+                        phone:
+                        document.getElementById("phone").value
+                    })
+                })
+
+                .then(response => {
+
+                    if (!response.ok) {
+
+                        return response.text()
+                            .then(error => {
+                                throw new Error(error);
+                            });
+                    }
+
+                    return response.json();
+                })
+                .then(account => {
+                    window.location.href =
+                        "/user/" + account.id;
+                })
+                .catch(error => {
+                    console.error(error);
+
+                    alert(
+                        "Failed to update account"
+                    );
+                });
+        });
+</script>
+
+
+
+</body>
+
+</html>
