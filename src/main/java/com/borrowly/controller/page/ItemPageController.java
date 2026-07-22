@@ -2,11 +2,17 @@ package com.borrowly.controller.page;
 
 import com.borrowly.dto.response.ItemImageResponse;
 import com.borrowly.dto.response.ItemResponse;
+import com.borrowly.dto.response.RentalRequestResponse;
+import com.borrowly.model.rental.RentalRequestStatus;
+import com.borrowly.model.rental.RentalStatus;
 import com.borrowly.security.CurrentUserProvider;
 import com.borrowly.service.favorite.FavoriteService;
 import com.borrowly.service.item.ItemImageService;
 import com.borrowly.service.item.ItemService;
+import com.borrowly.service.rental.RentalService;
+import com.borrowly.service.rentalrequest.RentalRequestService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Controller
@@ -26,6 +33,7 @@ public class ItemPageController {
     private final FavoriteService favoriteService;
     private final CurrentUserProvider currentUserProvider;
     private final ItemImageService itemImageService;
+    private final RentalRequestService rentalRequestService;
 
     @GetMapping("/item/{id}")
     public String getItemDetail(@PathVariable("id") UUID id, Model model, Principal principal) {
@@ -43,10 +51,19 @@ public class ItemPageController {
 
         List<ItemImageResponse> imagesMetadata = itemImageService.listMetadata(id);
 
+        Optional<UUID> pendingRequestIdOpt = rentalRequestService.getPendingRentalRequestId(item.id(), currentUserProvider.getCurrentUser().getId());
+
         model.addAttribute("isFavorite", isFavorite);
         model.addAttribute("item", item);
         model.addAttribute("isOwner", isOwner);
         model.addAttribute("images", imagesMetadata);
+
+        if (pendingRequestIdOpt.isPresent()) {
+            model.addAttribute("itemRentalRequestPendingForUser", true);
+            model.addAttribute("pendingRentalRequestId", pendingRequestIdOpt.get());
+        } else {
+            model.addAttribute("itemRentalRequestPendingForUser", false);
+        }
         return "item";
     }
 }

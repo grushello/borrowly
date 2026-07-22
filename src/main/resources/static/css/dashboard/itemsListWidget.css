@@ -49,10 +49,10 @@
     position: absolute;
     top: 8px;
     right: 8px;
-    background: rgb(255 255 255 / 0);
+    background: rgb(245 245 245);
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;

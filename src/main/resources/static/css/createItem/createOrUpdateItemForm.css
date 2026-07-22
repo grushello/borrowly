@@ -79,7 +79,7 @@ form {
     color: #e63946;
     font-size: 0.85rem;
     margin-top: 6px;
-    display: none; /* Nascosto di default, mostrato da JS */
+    display: none;
     font-weight: 500;
 }
 

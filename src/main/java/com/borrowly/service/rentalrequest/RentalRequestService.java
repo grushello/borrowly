@@ -7,6 +7,7 @@ import com.borrowly.model.rental.RentalRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface RentalRequestService {
@@ -22,4 +23,6 @@ public interface RentalRequestService {
     RentalRequestResponse reject(UUID requestId);
 
     RentalRequestResponse cancel(UUID requestId);
+
+    Optional<UUID> getPendingRentalRequestId(UUID itemId, UUID borrowerId);
 }

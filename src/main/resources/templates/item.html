@@ -1,111 +1,135 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <meta charset="UTF-8">
-  <title th:text="${item.title}">Item details</title>
+    <meta charset="UTF-8">
+    <title th:text="${item.title}">Item details</title>
   <link rel="stylesheet" th:href="@{/css/main.css}">
   <link rel="stylesheet" th:href="@{/css/itemPage/itemPage.css}">
   <link rel="stylesheet" th:href="@{/css/review/review.css}">
 </head>
 <body>
-<nav th:replace="~{fragments/general/nav :: nav}">
-</nav>
-<main class="item-page-container" th:attr="data-item-id=${item.id}" id="main-content">
+    <nav th:replace="~{fragments/general/nav :: nav}">
+    </nav>
+    <main class="item-page-container" th:attr="data-item-id=${item.id}" id="main-content">
 
-  <div class="item-gallery">
+      <div class="item-gallery">
 
-    <th:block th:if="${not #lists.isEmpty(images)}">
+        <th:block th:if="${not #lists.isEmpty(images)}">
 
-      <div class="main-image-wrapper">
-        <img th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${item.id}, imageId=${images[0].id})}"
-             alt="Main image"
-             class="main-image">
-      </div>
+          <div class="main-image-wrapper">
+            <img th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${item.id}, imageId=${images[0].id})}"
+                 alt="Main image"
+                 class="main-image">
+          </div>
 
-      <div class="thumbnail-list">
-        <div th:each="image : ${images}" class="thumbnail-wrapper">
+          <div class="thumbnail-list">
+            <div th:each="image : ${images}" class="thumbnail-wrapper">
 
-          <img th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${item.id}, imageId=${image.id})}"
-               alt="Thumbnail"
-               class="thumbnail">
+              <img th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${item.id}, imageId=${image.id})}"
+                   alt="Thumbnail"
+                   class="thumbnail">
 
-          <button class="delete-image-btn"
-                  th:data-image-id="${image.id}"
-                  title="Delete image">
-            &times;
-          </button>
+              <button class="delete-image-btn"
+                      th:data-image-id="${image.id}"
+                      title="Delete image" th:if="${isOwner}" sec:authorize="isAuthenticated()">
+                &times;
+              </button>
 
+            </div>
+          </div>
+
+        </th:block>
+
+        <div th:if="${#lists.isEmpty(images)}" class="main-image-wrapper">
+          <img src="/images/placeholder.jpg" alt="No image available" class="main-image">
         </div>
+
       </div>
 
-    </th:block>
+      <div class="item-info">
 
-    <div th:if="${#lists.isEmpty(images)}" class="main-image-wrapper">
-      <img src="/images/placeholder.jpg" alt="No image available" class="main-image">
-    </div>
+        <span class="category-badge" th:text="${item.category.name}">Category placeholder</span>
+        <h1 class="item-title" th:text="${item.title}">Title placeholder</h1>
 
-  </div>
-
-  <div class="item-info">
-
-    <span class="category-badge" th:text="${item.category.name}">Category placeholder</span>
-    <h1 class="item-title" th:text="${item.title}">Title placeholder</h1>
-
-    <div class="item-meta">
+        <div class="item-meta">
             <span class="rating">
                 ⭐ <strong th:text="${item.averageRating != null ? #numbers.formatDecimal(item.averageRating, 1, 1) : 'N/A'}">N/A</strong>
                 <span class="review-count" th:text="'(' + ${item.reviewCount} + ' reviews)'">(0 reviews)</span>
             </span>
-      <span class="meta-divider">•</span>
-      <span class="condition" th:text="'Condition: ' + ${item.condition}">Condition: PLACEHOLDER</span>
-    </div>
+          <span class="meta-divider">•</span>
+          <span class="condition" th:text="'Condition: ' + ${item.condition}">Condition: PLACEHOLDER</span>
+        </div>
 
-    <div class="item-description">
-      <h3>Description</h3>
-      <p th:text="${item.description}">Description placeholder</p>
-    </div>
+        <div class="item-description">
+          <h3>Description</h3>
+          <p th:text="${item.description}">Description placeholder</p>
+        </div>
 
-    <div class="booking-card">
-      <div class="price-header">
-        <span class="daily-price" th:text="${item.pricePerDay} + ' €'">€ 0.00</span>
-        <span class="price-suffix">/ day</span>
-      </div>
+        <div class="booking-card">
+          <div class="price-header">
+            <span class="daily-price" th:text="${item.pricePerDay} + ' €'">€ 0.00</span>
+            <span class="price-suffix">/ day</span>
+          </div>
 
-      <ul class="price-details">
-        <li>
-          <span>Deposit required:</span>
-          <strong th:text="${item.depositAmount} + ' €'">€ 0.00</strong>
-        </li>
-        <li sec:authorize="isAuthenticated()" th:unless="${isOwner}">
-          <button id="favorite-btn"
-                  th:data-item-id="${item.id}"
-                  th:data-is-favorite="${isFavorite}"
-                  th:text="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}"
-                  th:class="${isFavorite ? 'btn-remove-fav' : 'btn-add-fav'}">
-            Add to favorites
+          <ul class="price-details">
+            <li>
+              <span>Deposit required:</span>
+              <strong th:text="${item.depositAmount} + ' €'">€ 0.00</strong>
+            </li>
+            <li sec:authorize="isAuthenticated()" th:unless="${isOwner}">
+              <button id="favorite-btn"
+                      th:data-item-id="${item.id}"
+                      th:data-is-favorite="${isFavorite}"
+                      th:text="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}"
+                      th:class="${isFavorite ? 'btn-remove-fav' : 'btn-add-fav'}">
+                Add to favorites
+              </button>
+            </li>
+          </ul>
+
+          <button sec:authorize="isAnonymous()"
+                  class="btn-book-disabled"
+                  disabled>
+            Request (Login required)
           </button>
-        </li>
-      </ul>
 
-      <button sec:authorize="isAnonymous()"
-              class="btn-book-disabled"
-              disabled>
-        Rent now (Login required)
-      </button>
+          <div sec:authorize="isAuthenticated()">
+            <div th:if="${isOwner}" class="owner-badge">
+              <span>You are the owner of this item</span>
+              <div class="owner-actions">
+                <a th:href="@{/update/{id}(id=${item.id})}" class="btn btn-edit">Edit Listing</a>
+                <button id="archive-btn"
+                        class="btn btn-danger"
+                        th:disabled="${item.itemStatus.name() == 'RENTED'}"
+                        th:text="${item.itemStatus.name() == 'ARCHIVED' ? 'Unarchive' : (item.itemStatus.name() == 'RENTED' ? 'Cannot archive while rented' : 'Archive')}">
+                  Archive
+                </button>
+              </div>
+            </div>
+            <div th:unless="${isOwner}" class="booking-section">
+              <div id="booking-error" class="alert-error" style="display: none;"></div>
 
-      <div sec:authorize="isAuthenticated()">
-        <div th:if="${isOwner}" class="owner-badge">
-          <span>You are the owner of this item</span>
-          <div class="owner-actions">
-            <a th:href="@{/update/{id}(id=${item.id})}" class="btn btn-edit">Edit Listing</a>
-            <button id="archive-btn"
-                    class="btn btn-danger"
-                    th:disabled="${item.itemStatus.name() == 'RENTED'}"
-                    th:text="${item.itemStatus.name() == 'ARCHIVED' ? 'Unarchive' : (item.itemStatus.name() == 'RENTED' ? 'Cannot archive while rented' : 'Archive')}">
-              Archive
-            </button>
+              <div class="date-pickers" th:unless="${itemRentalRequestPendingForUser}">
+                <div class="input-group">
+                  <label for="start-date">Start Date:</label>
+                  <input type="date" id="start-date" required>
+                </div>
+                <div class="input-group">
+                  <label for="end-date">End Date:</label>
+                  <input type="date" id="end-date" required>
+                </div>
+              </div>
+
+              <span th:if="${itemRentalRequestPendingForUser}">You have already requested this item</span>
+              <button th:unless="${itemRentalRequestPendingForUser}" id="request-btn" class="btn-book">Request</button>
+              <button th:if="${itemRentalRequestPendingForUser != null && pendingRentalRequestId != null}"
+                      id="request-btn-already-requested"
+                      class="btn-book"
+                      th:data-rental-request-id="${pendingRentalRequestId}">Cancel request</button>
+            </div>
 
           </div>
+
         </div>
         <button th:unless="${isOwner}"
                 class="btn-book">
@@ -163,8 +187,8 @@
   </section>
 </main>
 
-<footer th:replace="~{fragments/general/footer :: footer}">
-</footer>
+  <footer th:replace="~{fragments/general/footer :: footer}">
+  </footer>
 
 </body>
 <script src="/js/csrf.js"></script>
@@ -391,10 +415,9 @@
       });
     });
 
-    const favBtn = document.getElementById('favorite-btn');
     const archiveBtn = document.getElementById('archive-btn');
 
-    archiveBtn.addEventListener('click', (event) => {
+    if (archiveBtn) archiveBtn.addEventListener('click', (event) => {
       event.stopPropagation();
 
       const itemId = document.getElementById("main-content").getAttribute('data-item-id');
@@ -421,10 +444,9 @@
       });
     })
 
+    const favBtn = document.getElementById('favorite-btn');
 
-    if (!favBtn) return;
-
-    favBtn.addEventListener('click', function() {
+    if (favBtn) favBtn.addEventListener('click', function() {
       const itemId = document.getElementById("main-content").getAttribute('data-item-id');
       const isFavorite = this.getAttribute('data-is-favorite') === 'true';
 
@@ -458,7 +480,119 @@
               });
     });
 
+    const requestBtn = document.getElementById('request-btn');
 
+    if (requestBtn) {
+      requestBtn.addEventListener('click', function(event) {
+        const startDateInput = document.getElementById('start-date').value;
+        const endDateInput = document.getElementById('end-date').value;
+        const itemId = document.getElementById("main-content").getAttribute('data-item-id');
+
+        if (!startDateInput || !endDateInput) {
+          alert("Please select both start and end dates.");
+          return;
+        }
+
+        if (new Date(endDateInput) <= new Date(startDateInput)) {
+          alert("End date must be after start date.");
+          return;
+        }
+
+        const payload = {
+          itemId: itemId,
+          startDate: startDateInput,
+          endDate: endDateInput
+        };
+
+        requestBtn.disabled = true;
+        requestBtn.textContent = "Sending...";
+
+        csrfFetch('/api/rental-requests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+                .then(async response => {
+                  if (response.ok) {
+                    alert("Request sent successfully!");
+                    window.location.href = "/rental-requests";
+                  } else {
+                    const errorData = await response.json();
+                    const errorBox = document.getElementById('booking-error');
+                    if (errorBox) errorBox.style.display = 'none';
+
+                    if (errorBox) {
+                      errorBox.textContent = errorData.message || "There was an error with the request...";
+                      console.log(errorData)
+
+                      if (errorData.fields) {
+                        const fieldErrors = Object.entries(errorData.fields)
+                                .map(([field, msg]) => `${field}: ${msg}`)
+                                .join(" | ");
+                        errorBox.textContent += " - " + fieldErrors;
+                      }
+
+                      errorBox.style.display = 'block';
+                    } else {
+                      alert(errorData.message || "Error during the request");
+                    }
+                  }
+                })
+                .catch(error => {
+                  console.error("Error:", error);
+                  alert("Network error.");
+                })
+                .finally(() => {
+                  requestBtn.disabled = false;
+                  requestBtn.textContent = "Request";
+                });
+      });
+    }
+
+    const cancelBtn = document.getElementById("request-btn-already-requested");
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        if (!confirm("Are you sure you want to cancel this request?")) {
+          return;
+        }
+
+        const rentalRequestId = cancelBtn.getAttribute("data-rental-request-id");
+
+        const originalText = cancelBtn.textContent;
+        cancelBtn.disabled = true;
+        cancelBtn.textContent = "Cancelling...";
+
+        try {
+          const response = await csrfFetch(`/api/rental-requests/${rentalRequestId}/cancel`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert("There was an error. Try again later.");
+            restoreButton();
+          }
+        } catch (error) {
+          console.error("Network error:", error);
+          alert("Connection refused. Try again later.");
+          restoreButton();
+        }
+
+        function restoreButton() {
+          cancelBtn.disabled = false;
+          cancelBtn.textContent = originalText;
+        }
+      });
+    }
   });
 </script>
 </html>

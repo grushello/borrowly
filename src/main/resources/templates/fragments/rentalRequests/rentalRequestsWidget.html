@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div class="rental-requests-inner-container" th:fragment="rentalRequestsWidget(requestsList, incomingOrOutgoing)">
+        <h2 th:text="|Pending requests (${incomingOrOutgoing})|">Pending Requests (incomingOrOutgoing)</h2>
+
+        <div th:if="${requestsList.isEmpty()}" class="empty-state">
+            <p>You currently have no pending rental requests.</p>
+        </div>
+
+        <div th:unless="${requestsList.isEmpty()}">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Requester</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="request : ${requestsList.content}">
+                        <td th:text="${request.item.title}">Item Title</td>
+                        <td th:text="${request.borrower.firstName + ' ' + request.borrower.lastName}">First name Last name</td>
+                        <td th:text="${request.startDate}">01/08/2026</td>
+                        <td th:text="${request.endDate}">10/08/2026</td>
+
+                        <td th:if="${incomingOrOutgoing == 'Incoming'}" class="actions">
+                            <button type="submit" class="btn btn-success approve-btn" th:data-id="${request.id}">Approve</button>
+                            <button class="btn btn-danger reject-btn" th:data-id="${request.id}">Reject</button>
+                        </td>
+
+                        <td th:if="${incomingOrOutgoing == 'Outgoing'}" class="actions">
+                            <button class="btn btn-danger" th:data-id="${request.id}" id="cancel-request-button">Cancel</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination" th:if="${requestsList.totalPages > 1 && incomingOrOutgoing == 'Incoming'}">
+                <a th:if="${requestsList.hasPrevious()}"
+                   th:href="@{/rental-requests(incomingPage=${requestsList.number - 1}, outgoingPage=${pendingOutgoing.number})}"
+                   class="btn-pagination">Previous</a>
+
+                <a th:if="${requestsList.hasNext()}"
+                   th:href="@{/rental-requests(incomingPage=${requestsList.number + 1}, outgoingPage=${pendingOutgoing.number})}"
+                   class="btn-pagination">Next</a>
+            </div>
+
+            <div class="pagination" th:if="${requestsList.totalPages > 1 && incomingOrOutgoing == 'Outgoing'}">
+                <a th:if="${requestsList.hasPrevious()}"
+                   th:href="@{/rental-requests(incomingPage=${pendingIncoming.number}, outgoingPage=${requestsList.number - 1})}"
+                   class="btn-pagination">Previous</a>
+
+                <a th:if="${requestsList.hasNext()}"
+                   th:href="@{/rental-requests(incomingPage=${pendingIncoming.number}, outgoingPage=${requestsList.number + 1})}"
+                   class="btn-pagination">Next</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
