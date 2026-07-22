@@ -41,30 +41,30 @@ jobs:
           echo "Wrote .env: profile=prod, DB_PORT=${DB_PORT}, APP_PORT=${APP_PORT}"
 
       - name: Build image and start containers
-        run: docker compose -p "$COMPOSE_PROJECT" up -d --build --remove-orphans
+        run: docker compose -f docker-compose.yml -p "$COMPOSE_PROJECT" up -d --build --remove-orphans
 
       - name: Wait for the app to finish starting
         run: |
           for i in $(seq 1 60); do
-            if docker compose -p "$COMPOSE_PROJECT" logs app 2>&1 | grep -Eq "Started .* in [0-9]"; then
+            if docker compose -f docker-compose.yml -p "$COMPOSE_PROJECT" logs app 2>&1 | grep -Eq "Started .* in [0-9]"; then
               echo "App started successfully."
-              docker compose -p "$COMPOSE_PROJECT" ps
+              docker compose -f docker-compose.yml -p "$COMPOSE_PROJECT" ps
               exit 0
             fi
-            CID="$(docker compose -p "$COMPOSE_PROJECT" ps -q app)"
+            CID="$(docker compose -f docker-compose.yml -p "$COMPOSE_PROJECT" ps -q app)"
             STATE="$(docker inspect -f '{{.State.Status}}' "$CID" 2>/dev/null || echo missing)"
             if [ "$STATE" != "running" ] && [ "$STATE" != "created" ]; then
               echo "App container is not running (state: $STATE)."
-              docker compose -p "$COMPOSE_PROJECT" logs app || true
+              docker compose -f docker-compose.yml -p "$COMPOSE_PROJECT" logs app || true
               exit 1
             fi
             echo "Attempt $i: waiting for Spring Boot startup (state: $STATE)..."
             sleep 3
           done
           echo "App did not report a successful start in time."
-          docker compose -p "$COMPOSE_PROJECT" logs app || true
+          docker compose -f docker-compose.yml -p "$COMPOSE_PROJECT" logs app || true
           exit 1
 
       - name: Show recent app logs
         if: always()
-        run: docker compose -p "$COMPOSE_PROJECT" logs --tail 50 app || true
+        run: docker compose -f docker-compose.yml -p "$COMPOSE_PROJECT" logs --tail 50 app || true
