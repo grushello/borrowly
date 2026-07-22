@@ -10,8 +10,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
@@ -23,39 +30,37 @@ public class RentalRequestController {
     private final RentalRequestService rentalRequestService;
 
     @PostMapping
-    public ResponseEntity<RentalRequestResponse> create(
-            @Valid @RequestBody CreateRentalRequest request) {
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(rentalRequestService.create(request));
+    @ResponseStatus(HttpStatus.CREATED)
+    public RentalRequestResponse create(@Valid @RequestBody CreateRentalRequest request) {
+        return rentalRequestService.create(request);
     }
 
     @GetMapping("/incoming")
-    public ResponseEntity<Page<RentalRequestResponse>> getIncoming(
+    public Page<RentalRequestResponse> getIncoming(
             @RequestParam(required = false) RentalRequestStatus status,
             Pageable pageable) {
-        return ResponseEntity.ok(rentalRequestService.getIncoming(status, pageable));
+        return rentalRequestService.getIncoming(status, pageable);
     }
 
     @GetMapping("/outgoing")
-    public ResponseEntity<Page<RentalRequestResponse>> getOutgoing(
+    public Page<RentalRequestResponse> getOutgoing(
             @RequestParam(required = false) RentalRequestStatus status,
             Pageable pageable) {
-        return ResponseEntity.ok(rentalRequestService.getOutgoing(status, pageable));
+        return rentalRequestService.getOutgoing(status, pageable);
     }
 
     @PatchMapping("/{id}/approve")
-    public ResponseEntity<RentalResponse> approve(@PathVariable UUID id) {
-        return ResponseEntity.ok(rentalRequestService.approve(id));
+    public RentalResponse approve(@PathVariable UUID id) {
+        return rentalRequestService.approve(id);
     }
 
     @PatchMapping("/{id}/reject")
-    public ResponseEntity<RentalRequestResponse> reject(@PathVariable UUID id) {
-        return ResponseEntity.ok(rentalRequestService.reject(id));
+    public RentalRequestResponse reject(@PathVariable UUID id) {
+        return rentalRequestService.reject(id);
     }
 
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<RentalRequestResponse> cancel(@PathVariable UUID id) {
-        return ResponseEntity.ok(rentalRequestService.cancel(id));
+    public RentalRequestResponse cancel(@PathVariable UUID id) {
+        return rentalRequestService.cancel(id);
     }
 }
