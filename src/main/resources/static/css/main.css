@@ -63,6 +63,7 @@ nav {
     background-color: darkslategray;
     color: whitesmoke;
     padding: 1rem;
+    max-height: 2rem;
 }
 
 nav a {
@@ -72,7 +73,7 @@ nav a {
 
 .nav-fragment {
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 input {
@@ -102,6 +103,8 @@ footer {
     justify-content: center;
     margin-top: 40px;
     margin-bottom: 40px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .pagination-list {
@@ -276,4 +279,10 @@ footer {
     border-color: #80bdff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     background-color: #fff;
+}
+
+.navbar form {
+    margin: 0;
+    display: flex;
+    align-items: center;
 }

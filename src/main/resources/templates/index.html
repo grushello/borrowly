@@ -49,19 +49,15 @@
 
             <th:block th:each="item, iterStat : ${itemPage.content}">
                 <li th:replace="~{fragments/catalog/catalogCard :: catalogCard(
-            name = ${item.title},
-            condition = ${item.condition},
-            index = ${iterStat.count},
-            pricePerDay = ${item.pricePerDay},
-            id = ${item.id},
+            item = ${item}
         )}">
                 </li>
-
             </th:block>
 
         </ul>
-<!--            <nav th:replace="~{fragments/general/paginationContainer :: paginationContainer}">-->
-<!--            </nav>-->
+
+        <div th:replace="~{fragments/general/paginationContainer :: paginationContainer}">
+        </div>
     </main>
 
     <footer th:replace="~{fragments/general/footer :: footer}">

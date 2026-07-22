@@ -6,11 +6,12 @@
     <title>Navbar</title>
 </head>
 <body>
-    <nav th:fragment="nav">
+    <nav th:fragment="nav" class="navbar">
         <div class="nav-fragment">
             <a href="/">Catalog</a>
             <a sec:authorize="isAuthenticated()" href="/dashboard">My Dashboard</a>
-            <a sec:authorize="isAuthenticated()" href="/createItem">Create item</a>
+            <a sec:authorize="isAuthenticated()" href="/createItem">Create a listing</a>
+            <a sec:authorize="isAuthenticated()" href="/rental-requests">Rental requests</a>
             <a sec:authorize="isAuthenticated()" href="/profile">Profile</a>
         </div>
         <div class="nav-fragment">

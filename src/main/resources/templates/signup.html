@@ -48,6 +48,7 @@
     <footer th:replace="~{fragments/general/footer :: footer}">
     </footer>
     </body>
+<script src="/js/csrf.js"></script>
     <script>
         document.getElementById('signup-form').addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -61,7 +62,7 @@
             }
 
             try {
-                const response = await fetch('/api/auth/signup', {
+                const response = await csrfFetch('/api/auth/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

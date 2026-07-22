@@ -7,6 +7,7 @@
     <link rel="stylesheet" th:href="@{/css/dashboard/dashboard.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard/itemsListWidget.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard/financialSummaryWidget.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard/transactionsWidget.css}">
 </head>
 <body>
     <nav th:replace="~{fragments/general/nav :: nav}">
@@ -15,9 +16,13 @@
     <h1 th:text="|${user.firstName} ${user.lastName}|">User name</h1>
 
     <main class="dashboard-grid">
-        <div th:replace="~{fragments/dashboard/activeRentalsWidget :: activeRentalsWidget}">...</div>
+        <div th:replace="~{fragments/dashboard/activeRentalsWidget :: activeRentalsWidget(activeRentals=${activeRentalsAsBorrower}, role='Borrower')}">...</div>
+
+        <div th:replace="~{fragments/dashboard/activeRentalsWidget :: activeRentalsWidget(activeRentals=${activeRentalsAsOwner}, role='Owner')}">...</div>
 
         <div th:replace="~{fragments/dashboard/financialSummaryWidget :: financialSummaryWidget}">...</div>
+
+        <div th:replace="~{fragments/dashboard/transactionsWidget :: transactionsWidget}">...</div>
 
         <div th:replace="~{fragments/dashboard/favoritesWidget :: favoritesWidget}">...</div>
 
@@ -28,4 +33,29 @@
     </footer>
 
 </body>
+<script src="/js/csrf.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const returnItemButtons  = document.querySelectorAll('.return-item-button');
+        if (returnItemButtons) returnItemButtons.forEach(returnItemButton => {
+            returnItemButton.addEventListener('click', (e) => {
+                const rentalId = e.target.getAttribute('data-rental-id');
+                const url = `/api/rentals/${rentalId}/return`;
+                console.log(url)
+                csrfFetch(url, {
+                    method: 'PATCH'})
+                    .then(async res => {
+                        if (res.ok) {
+                            alert('Item returned correctly.');
+                            window.location.reload();
+                        } else {
+                            const error = await res.json();
+                            console.log(error.message)
+                            alert(error.message);
+                        }
+                })
+            })
+        })
+    })
+</script>
 </html>

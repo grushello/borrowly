@@ -15,7 +15,13 @@
         <a th:each="item : ${userItemListings}" th:href="@{/item/{id}(id=${item.id})}" class="item-card">
 
             <div class="item-image-wrapper">
-                <!--                <img th:src="${fav.item.primaryImage}" th:alt="${fav.item.title}" class="fav-image">-->
+                <img th:if="${item.primaryImageId != null}"
+                     th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${item.id}, imageId=${item.primaryImageId})}"
+                     th:alt="${item.title}" class="item-image">
+                <img th:unless="${item.primaryImageId != null}"
+                     th:src="@{/images/placeholder.jpg}"
+                     th:alt="${item.title}" class="item-image">
+
                 <span class="item-icon" th:switch="${item.itemStatus.name()}">
                     <span th:case="'ACTIVE'">🟢</span>
                     <span th:case="'RENTED'">🤝</span>
