@@ -1,11 +1,14 @@
 package com.borrowly.repository.user;
 
 import com.borrowly.model.user.User;
+import com.borrowly.model.user.UserRole;
 import com.borrowly.support.AbstractPostgresTest;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
@@ -142,5 +145,32 @@ class UserRepositoryTest extends AbstractPostgresTest {
                 Exception.class,
                 () -> userRepository.saveAndFlush(second)
         );
+    }
+
+    @Test
+    @DisplayName("countByRole counts only users with the given role")
+    void countByRoleCountsAdmins() {
+        User admin = User.register("Ada", "Admin", "count-admin@test.com", "hash");
+        ReflectionTestUtils.setField(admin, "role", UserRole.ADMIN);
+        User regular = User.register("Rita", "Regular", "count-user@test.com", "hash");
+
+        userRepository.save(admin);
+        userRepository.saveAndFlush(regular);
+
+        assertEquals(1, userRepository.countByRole(UserRole.ADMIN));
+        assertEquals(1, userRepository.countByRole(UserRole.USER));
+    }
+
+    @Test
+    @DisplayName("countByEnabledFalse counts only disabled accounts")
+    void countByEnabledFalseCountsDisabled() {
+        User enabled = User.register("Eve", "Enabled", "count-enabled@test.com", "hash");
+        User disabled = User.register("Dan", "Disabled", "count-disabled@test.com", "hash");
+        disabled.setEnabled(false);
+
+        userRepository.save(enabled);
+        userRepository.saveAndFlush(disabled);
+
+        assertEquals(1, userRepository.countByEnabledFalse());
     }
 }

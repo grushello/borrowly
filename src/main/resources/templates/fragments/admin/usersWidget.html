@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Users</title>
+</head>
+<body>
+<div th:fragment="usersWidget" class="widget admin-users">
+    <div class="widget-header">
+        <h2>Users</h2>
+        <span class="widget-count" th:text="|${stats.totalUsers} total|">0 total</span>
+    </div>
+
+    <div id="user-error" class="admin-error"></div>
+
+    <div class="table-scroll">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th class="col-actions">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${usersPage.content}" th:attr="data-user-id=${user.id}">
+                <td>
+                    <a class="table-link" th:href="@{/user/{id}(id=${user.id})}"
+                       th:text="|${user.firstName} ${user.lastName}|">Name</a>
+                </td>
+                <td th:text="${user.email}">email</td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${user.role.name() == 'ADMIN'} ? 'badge-admin' : 'badge-user'"
+                          th:text="${user.role}">USER</span>
+                </td>
+                <td>
+                    <span class="badge status-badge"
+                          th:classappend="${user.enabled} ? 'badge-enabled' : 'badge-disabled'"
+                          th:text="${user.enabled} ? 'Enabled' : 'Disabled'">Enabled</span>
+                </td>
+                <td class="col-actions">
+                    <button type="button" class="btn-small btn-toggle-user"
+                            th:attr="data-enabled=${user.enabled}"
+                            th:classappend="${user.enabled} ? 'btn-danger' : ''"
+                            th:text="${user.enabled} ? 'Disable' : 'Enable'">Disable</button>
+                </td>
+            </tr>
+            <tr th:if="${usersPage.isEmpty()}">
+                <td colspan="5" class="empty-state">No users found</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <nav class="pagination-container" th:if="${usersPage.totalPages > 1}">
+        <ul class="pagination-list">
+            <li class="page-item" th:classappend="${!usersPage.hasPrevious()} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/admin(usersPage=${usersPage.number - 1}, itemsPage=${itemsPage.number})}">
+                    &laquo; Prev
+                </a>
+            </li>
+            <li class="page-item"
+                th:each="i : ${#numbers.sequence(0, usersPage.totalPages - 1)}"
+                th:classappend="${i == usersPage.number} ? 'active'">
+                <a class="page-link"
+                   th:href="@{/admin(usersPage=${i}, itemsPage=${itemsPage.number})}"
+                   th:text="${i + 1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${!usersPage.hasNext()} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/admin(usersPage=${usersPage.number + 1}, itemsPage=${itemsPage.number})}">
+                    Next &raquo;
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>

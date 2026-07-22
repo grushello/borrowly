@@ -9,6 +9,7 @@ import com.borrowly.support.AbstractPostgresTest;
 import jakarta.persistence.EntityManager;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -324,5 +325,33 @@ class ItemRepositoryTest extends AbstractPostgresTest {
 
         assertThat(result.getContent())
                 .hasSize(5);
+    }
+
+    @Test
+    @DisplayName("findAllForAdmin returns items of every status")
+    void findAllForAdminReturnsAllStatuses() {
+        itemRepository.save(createItem("AdminDrill", owner, category, BigDecimal.valueOf(20), ItemStatus.ACTIVE));
+        itemRepository.save(createItem("AdminSaw", owner, category, BigDecimal.valueOf(20), ItemStatus.RENTED));
+        itemRepository.save(createItem("AdminSander", owner, category, BigDecimal.valueOf(20), ItemStatus.ARCHIVED));
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Item> page = itemRepository.findAllForAdmin(PageRequest.of(0, 50));
+
+        assertThat(page.getContent())
+                .extracting(Item::getTitle)
+                .contains("AdminDrill", "AdminSaw", "AdminSander");
+    }
+
+    @Test
+    @DisplayName("countByStatus counts only the requested status")
+    void countByStatusCountsPerStatus() {
+        itemRepository.save(createItem("CountA", owner, category, BigDecimal.valueOf(20), ItemStatus.ACTIVE));
+        itemRepository.save(createItem("CountB", owner, category, BigDecimal.valueOf(20), ItemStatus.ACTIVE));
+        itemRepository.save(createItem("CountC", owner, category, BigDecimal.valueOf(20), ItemStatus.ARCHIVED));
+        entityManager.flush();
+
+        assertThat(itemRepository.countByStatus(ItemStatus.ACTIVE)).isEqualTo(2);
+        assertThat(itemRepository.countByStatus(ItemStatus.ARCHIVED)).isEqualTo(1);
     }
 }

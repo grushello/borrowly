@@ -31,4 +31,6 @@ public interface ItemService {
 
     ItemResponse archive(UUID id);
     ItemResponse unarchive(UUID id);
+
+    Page<ItemSummaryResponse> adminListItems(Pageable pageable);
 }

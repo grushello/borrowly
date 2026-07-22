@@ -13,6 +13,7 @@
             <a sec:authorize="isAuthenticated()" href="/createItem">Create a listing</a>
             <a sec:authorize="isAuthenticated()" href="/rental-requests">Rental requests</a>
             <a sec:authorize="isAuthenticated()" href="/profile">Profile</a>
+            <a sec:authorize="hasRole('ADMIN')" href="/admin">Admin</a>
         </div>
         <div class="nav-fragment">
             <a sec:authorize="isAnonymous()" href="/signin">Sign in</a>
@@ -45,10 +46,19 @@
                     </div>
                 </div>
             </div>
-            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
-                <button type="submit" class="btn-logout">Logout</button>
-            </form>
+            <button sec:authorize="isAuthenticated()" type="button"
+                    class="btn-logout" onclick="borrowlyLogout()">Logout</button>
         </div>
+        <script th:inline="none">
+            function borrowlyLogout() {
+                fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'same-origin'
+                }).finally(function () {
+                    window.location.href = '/';
+                });
+            }
+        </script>
     </nav>
 
 </body>

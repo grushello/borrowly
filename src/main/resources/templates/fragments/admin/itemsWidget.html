@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Item listings</title>
+</head>
+<body>
+<div th:fragment="itemsWidget" class="widget admin-items">
+    <div class="widget-header">
+        <h2>Item listings</h2>
+        <span class="widget-count" th:text="|${stats.totalItems} total|">0 total</span>
+    </div>
+
+    <div class="table-scroll">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th>Owner</th>
+                <th>Price / day</th>
+                <th>Condition</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${itemsPage.content}">
+                <td>
+                    <a class="table-link" th:href="@{/item/{id}(id=${item.id})}"
+                       th:text="${item.title}">Title</a>
+                </td>
+                <td th:text="${item.ownerName}">Owner</td>
+                <td th:text="|€ ${item.pricePerDay}|">€ 0</td>
+                <td th:text="${item.condition}">GOOD</td>
+                <td>
+                    <span th:switch="${item.itemStatus.name()}">
+                        <span th:case="'ACTIVE'" class="badge badge-enabled">Active</span>
+                        <span th:case="'RENTED'" class="badge badge-rented">Rented</span>
+                        <span th:case="'ARCHIVED'" class="badge badge-disabled">Archived</span>
+                        <span th:case="*" class="badge" th:text="${item.itemStatus}">?</span>
+                    </span>
+                </td>
+            </tr>
+            <tr th:if="${itemsPage.isEmpty()}">
+                <td colspan="5" class="empty-state">No item listings found</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <nav class="pagination-container" th:if="${itemsPage.totalPages > 1}">
+        <ul class="pagination-list">
+            <li class="page-item" th:classappend="${!itemsPage.hasPrevious()} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/admin(usersPage=${usersPage.number}, itemsPage=${itemsPage.number - 1})}">
+                    &laquo; Prev
+                </a>
+            </li>
+            <li class="page-item"
+                th:each="i : ${#numbers.sequence(0, itemsPage.totalPages - 1)}"
+                th:classappend="${i == itemsPage.number} ? 'active'">
+                <a class="page-link"
+                   th:href="@{/admin(usersPage=${usersPage.number}, itemsPage=${i})}"
+                   th:text="${i + 1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${!itemsPage.hasNext()} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/admin(usersPage=${usersPage.number}, itemsPage=${itemsPage.number + 1})}">
+                    Next &raquo;
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>
