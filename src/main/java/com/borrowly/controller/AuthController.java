@@ -50,6 +50,13 @@ public class AuthController {
                 .body(response);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, expireJwtCookie().toString())
+                .build();
+    }
+
     private ResponseCookie createJwtCookie(String token) {
         return ResponseCookie.from(JWT_COOKIE_NAME, token)
                 .httpOnly(true)                             // not readable from JS (anti-XSS)
@@ -57,6 +64,16 @@ public class AuthController {
                 .path("/")                                  // valid site-wide
                 .maxAge(Duration.ofSeconds(cookieMaxAgeSeconds))
                 .sameSite("Strict")                         // anti-CSRF
+                .build();
+    }
+
+    private ResponseCookie expireJwtCookie() {
+        return ResponseCookie.from(JWT_COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Strict")
                 .build();
     }
 }

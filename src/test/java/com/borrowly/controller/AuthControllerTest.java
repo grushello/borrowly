@@ -29,7 +29,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -183,6 +185,39 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(
                                 new LoginRequest("not-an-email", "s3cur3P@ss!"))))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("POST /api/auth/logout returns 204 and expires the jwt cookie")
+    void logoutExpiresJwtCookie() throws Exception {
+        mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isNoContent())
+                .andExpect(cookie().exists("jwt_token"))
+                .andExpect(cookie().value("jwt_token", ""))
+                .andExpect(cookie().maxAge("jwt_token", 0))
+                .andExpect(cookie().path("jwt_token", "/"))
+                .andExpect(cookie().httpOnly("jwt_token", true));
+    }
+
+    @Test
+    @DisplayName("logout succeeds without a CSRF token (the original 403 regression)")
+    void logoutDoesNotRequireCsrfToken() throws Exception {
+        mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("the security chain creates no HTTP session (stays stateless)")
+    void securityChainIsStateless() throws Exception {
+        when(authService.login(any()))
+                .thenReturn(new AuthResponse("jwt-token", "alice@example.com", UserRole.USER));
+
+        mockMvc.perform(post("/api/auth/signin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new LoginRequest("alice@example.com", "s3cur3P@ss!"))))
+                .andExpect(request().sessionAttributeDoesNotExist(
+                        "SPRING_SECURITY_CONTEXT"));
     }
 
     @Test

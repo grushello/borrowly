@@ -6,21 +6,28 @@
     <title>Navbar</title>
 </head>
 <body>
-    <nav th:fragment="nav" class="navbar">
-        <div class="nav-fragment">
-            <a href="/">Catalog</a>
-            <a sec:authorize="isAuthenticated()" href="/dashboard">My Dashboard</a>
-            <a sec:authorize="isAuthenticated()" href="/createItem">Create a listing</a>
-            <a sec:authorize="isAuthenticated()" href="/rental-requests">Rental requests</a>
-            <a sec:authorize="isAuthenticated()" href="/profile">Profile</a>
-        </div>
-        <div class="nav-fragment">
-            <a sec:authorize="isAnonymous()" href="/signin">Sign in</a>
-            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
-                <button type="submit" class="btn-logout">Logout</button>
-            </form>
-        </div>
-    </nav>
-
+<nav th:fragment="nav">
+    <div class="nav-fragment">
+        <a href="/">Catalog</a>
+        <a sec:authorize="isAuthenticated()" href="/dashboard">My Dashboard</a>
+        <a sec:authorize="isAuthenticated()" href="/createItem">Create item</a>
+        <a sec:authorize="isAuthenticated()" href="/profile">Profile</a>
+    </div>
+    <div class="nav-fragment">
+        <a sec:authorize="isAnonymous()" href="/signin">Sign in</a>
+        <button sec:authorize="isAuthenticated()" type="button"
+                class="btn-logout" onclick="borrowlyLogout()">Logout</button>
+    </div>
+    <script th:inline="none">
+        function borrowlyLogout() {
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'same-origin'
+            }).finally(function () {
+                window.location.href = '/';
+            });
+        }
+    </script>
+</nav>
 </body>
 </html>
