@@ -32,9 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -296,6 +294,15 @@ public class RentalRequestServiceImpl implements RentalRequestService {
 
         log.info("Canceled rental request '{}'", rentalRequest.getId());
         return rentalRequestMapper.toResponse(rentalRequest);
+    }
+
+    public Optional<UUID> getPendingRentalRequestId(UUID itemId, UUID borrowerId) {
+        List<RentalRequestStatus> activeStatuses = List.of(
+                RentalRequestStatus.PENDING
+        );
+
+        return rentalRequestRepository.findFirstByItemIdAndBorrowerIdAndStatusIn(itemId, borrowerId, activeStatuses)
+                .map(RentalRequest::getId);
     }
 
     // All rental-request notifications carry a rental context link (often null) and never a

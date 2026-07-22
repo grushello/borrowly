@@ -16,11 +16,19 @@
     </div>
     <div class="nav-fragment">
         <a sec:authorize="isAnonymous()" href="/signin">Sign in</a>
-        <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
-            <button type="submit" class="btn-logout">Logout</button>
-        </form>
+        <button sec:authorize="isAuthenticated()" type="button"
+                class="btn-logout" onclick="borrowlyLogout()">Logout</button>
     </div>
+    <script th:inline="none">
+        function borrowlyLogout() {
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'same-origin'
+            }).finally(function () {
+                window.location.href = '/';
+            });
+        }
+    </script>
 </nav>
-
 </body>
 </html>

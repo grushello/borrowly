@@ -7,7 +7,7 @@
 // RULE: use csrfFetch() for any POST/PUT/PATCH/DELETE.
 // Plain fetch() on those will be rejected with 403.
 
-const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS', 'TRACE']);
+let SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS', 'TRACE']);
 
 function readCookie(name) {
     const prefix = `${name}=`;

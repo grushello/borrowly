@@ -5,31 +5,34 @@
     <title>Active rentals widget</title>
 </head>
 <body>
-<div th:fragment="activeRentalsWidget" class="widget active-rentals-widget">
+<div th:fragment="activeRentalsWidget(activeRentals, role)" class="widget active-rentals-widget">
     <div class="widget-header">
-        <h2>Active rentals</h2>
-        <a href="/" class="link-view-all">See history</a>
+        <h2 th:text="|Active rentals (${role}) |">Active rentals (role) </h2>
     </div>
 
     <ul class="rental-list">
 
         <li th:each="rental : ${activeRentals}" class="rental-item">
 
-            <img th:src="${rental.item.primaryImage}" th:alt="${rental.item.title}" class="rental-thumb">
+            <img th:if="${rental.item.primaryImageId != null}"
+                 th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${rental.item.id}, imageId=${rental.item.primaryImageId})}"
+                 th:alt="${rental.item.title}" class="item-thumbnail">
+
+            <img th:unless="${rental.item.primaryImageId != null}"
+                 th:src="@{/images/placeholder.jpg}"
+                 alt="No image"
+                 class="item-thumbnail" />
 
             <div class="rental-info">
                 <h4 th:text="${rental.item.title}">Fishing rod</h4>
 
                 <p class="due-date">
-                    Due date: <strong th:text="${#temporals.format(rental.returnDate, 'dd MMM yyyy')}">18 Lug 2026</strong>
+                    Due date: <strong th:text="${#temporals.format(rental.endDate, 'dd MMM yyyy')}">18 Lug 2026</strong>
                 </p>
+
             </div>
 
-            <span class="status-badge"
-                  th:classappend="${rental.daysLeft <= 1} ? 'badge-danger' : 'badge-success'"
-                  th:text="${rental.daysLeft <= 1} ? 'In expiration' : 'Regular'">
-                  Regolare
-            </span>
+            <button th:if="${role == 'Owner'}" class="return-item-button" th:data-rental-id="${rental.id}">Confirm return</button>
 
         </li>
 

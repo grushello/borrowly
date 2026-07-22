@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title th:text="${profile.firstName + ' ' + profile.lastName}">
@@ -10,6 +11,8 @@
           th:href="@{/css/main.css}">
     <link rel="stylesheet"
           th:href="@{/css/user/profile.css}">
+    <link rel="stylesheet"
+          th:href="@{/css/review/review.css}">
 </head>
 
 <body>
@@ -76,35 +79,48 @@
         </p>
 
     </section>
-    <section class="profile-section">
-        <h2>
-            Reviews
-        </h2>
-        <div th:if="${profile.reviews != null and !profile.reviews.isEmpty()}">
-            <div th:each="review : ${profile.reviews}"
-                 class="review-card">
-                <p class="review-comment"
-                   th:text="${review.comment}">
-
-                    Comment
-
-                </p>
-
-                <span class="review-rating">
-
-                Rating:
-
-                <strong th:text="${review.rating}">
-                    5
-                </strong>
+    <section class="profile-section reviews-section">
+        <div class="reviews-header">
+            <h2>Reviews</h2>
+            <span class="reviews-summary">
+                ⭐ <strong th:text="${profile.averageRating != null ? #numbers.formatDecimal(profile.averageRating, 1, 1) : 'N/A'}">N/A</strong>
+                <span th:text="'· ' + ${profile.reviewCount} + ' reviews'">· 0 reviews</span>
             </span>
+        </div>
+
+        <div sec:authorize="isAuthenticated()" th:unless="${isOwner}"
+             th:if="${profile.items != null and !profile.items.isEmpty()}">
+            <div th:replace="~{fragments/review/reviewForm :: reviewForm(${T(String).join(',', profile.items.![id.toString()])})}"></div>
+        </div>
+
+        <div th:if="${profile.reviews != null and !profile.reviews.isEmpty()}">
+            <div th:each="review : ${profile.reviews}" class="review-card">
+                <div class="review-card-header">
+                    <a th:href="@{/user/{id}(id=${review.reviewer.id})}" class="review-author">
+                        <div class="review-avatar">
+                            <span th:text="${review.reviewer.firstName.charAt(0)}">A</span>
+                        </div>
+                        <div class="review-author-info">
+                            <strong class="review-author-name"
+                                    th:text="${review.reviewer.firstName + ' ' + review.reviewer.lastName}">Name</strong>
+                            <span class="review-date"
+                                  th:text="${#temporals.format(review.createdAt, 'MMM d, yyyy')}">Jan 1, 2025</span>
+                        </div>
+                    </a>
+                    <div class="review-stars">
+                        <span th:each="i : ${#numbers.sequence(1, 5)}"
+                              th:text="${i <= review.rating ? '★' : '☆'}">★</span>
+                    </div>
+                </div>
+                <p th:if="${review.comment != null and !review.comment.isEmpty()}"
+                   class="review-comment"
+                   th:text="${review.comment}">Comment</p>
             </div>
         </div>
+
         <p class="empty-message"
            th:if="${profile.reviews == null or profile.reviews.isEmpty()}">
-
             This user has no reviews yet.
-
         </p>
     </section>
 </main>
@@ -114,4 +130,6 @@
 </footer>
 
 </body>
+<script src="/js/csrf.js"></script>
+<script th:replace="~{fragments/review/reviewForm :: reviewFormScript}"></script>
 </html>
