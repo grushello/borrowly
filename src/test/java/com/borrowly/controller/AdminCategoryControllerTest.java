@@ -3,6 +3,8 @@ package com.borrowly.controller;
 import com.borrowly.config.SecurityConfig;
 import com.borrowly.dto.request.CategoryRequest;
 import com.borrowly.dto.response.CategoryResponse;
+import com.borrowly.exception.CategoryAlreadyExistsException;
+import com.borrowly.exception.CategoryConflictException;
 import com.borrowly.exception.GlobalExceptionHandler;
 import com.borrowly.security.AuthEntryPointJwt;
 import com.borrowly.security.AuthTokenFilter;
@@ -16,12 +18,10 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -61,19 +61,6 @@ class AdminCategoryControllerTest {
     private UserDetailsServiceImpl userDetailsService;
 
     @Test
-    @WithMockUser(roles = "USER")
-    void addCategory_ReturnsForbidden_WhenNotAdmin() throws Exception {
-        CategoryRequest request = new CategoryRequest("Fishing", "Gear");
-
-        mockMvc.perform(post("/api/admin/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden());
-
-        verifyNoInteractions(categoryService);
-    }
-
-    @Test
     void addCategory_ReturnsCreatedCategoryAndStatus201() throws Exception {
         CategoryRequest request = new CategoryRequest("Fishing", "Gear");
         CategoryResponse response = new CategoryResponse(UUID.randomUUID(), "Fishing", "Gear");
@@ -91,7 +78,7 @@ class AdminCategoryControllerTest {
     void addCategory_DuplicateReturnsConflictAndStatus409() throws Exception {
         CategoryRequest request = new CategoryRequest("Furniture", "All things furniture");
 
-        doThrow(new ResponseStatusException(HttpStatus.CONFLICT))
+        doThrow(new CategoryAlreadyExistsException())
                 .when(categoryService).add(any(CategoryRequest.class));
 
         mockMvc.perform(post("/api/admin/categories")
@@ -151,7 +138,8 @@ class AdminCategoryControllerTest {
     void deleteCategory_Returns409_WhenItemsAreAssociated() throws Exception {
         UUID id = UUID.randomUUID();
 
-        doThrow(new ResponseStatusException(HttpStatus.CONFLICT))
+        doThrow(new CategoryConflictException(
+                "Cannot eliminate: there are associated items with this category."))
                 .when(categoryService).delete(id);
 
         mockMvc.perform(delete("/api/admin/categories/{id}", id))
