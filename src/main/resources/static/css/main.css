@@ -103,6 +103,8 @@ footer {
     justify-content: center;
     margin-top: 40px;
     margin-bottom: 40px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .pagination-list {
