@@ -334,4 +334,10 @@ public class ItemServiceImpl implements ItemService {
                 reviewCount
         );
     }
+
+    @Override
+    public Page<ItemSummaryResponse> adminListItems(Pageable pageable) {
+        return itemRepository.findAllForAdmin(pageable)
+                .map(itemMapper::toSummary);
+    }
 }

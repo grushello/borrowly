@@ -6,20 +6,21 @@
     <title>Navbar</title>
 </head>
 <body>
-    <nav th:fragment="nav">
-        <div class="nav-fragment">
-            <a href="/">Catalog</a>
-            <a sec:authorize="isAuthenticated()" href="/dashboard">My Dashboard</a>
-            <a sec:authorize="isAuthenticated()" href="/createItem">Create item</a>
-            <a sec:authorize="isAuthenticated()" href="/profile">Profile</a>
-        </div>
-        <div class="nav-fragment">
-            <a sec:authorize="isAnonymous()" href="/signin">Sign in</a>
-            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
-                <button type="submit" class="btn-logout">Logout</button>
-            </form>
-        </div>
-    </nav>
+<nav th:fragment="nav">
+    <div class="nav-fragment">
+        <a href="/">Catalog</a>
+        <a sec:authorize="isAuthenticated()" href="/dashboard">My Dashboard</a>
+        <a sec:authorize="isAuthenticated()" href="/createItem">Create item</a>
+        <a sec:authorize="isAuthenticated()" href="/profile">Profile</a>
+        <a sec:authorize="hasRole('ADMIN')" href="/admin">Admin</a>
+    </div>
+    <div class="nav-fragment">
+        <a sec:authorize="isAnonymous()" href="/signin">Sign in</a>
+        <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-logout">Logout</button>
+        </form>
+    </div>
+</nav>
 
 </body>
 </html>
