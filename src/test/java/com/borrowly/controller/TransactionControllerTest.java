@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -175,7 +176,7 @@ class TransactionControllerTest {
         @DisplayName("returns 200 with paginated history")
         void historyHappyPath() throws Exception {
             TransactionResponse tx = sampleResponse(TransactionType.TOP_UP, new BigDecimal("10.00"));
-            when(transactionService.getHistory(any(), eq(0), eq(20)))
+            when(transactionService.getHistory(any(), any(Pageable.class)))
                     .thenReturn(new PageImpl<>(List.of(tx)));
 
             mockMvc.perform(get("/api/transactions"))

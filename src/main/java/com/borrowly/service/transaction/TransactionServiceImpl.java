@@ -17,7 +17,6 @@ import com.borrowly.security.CurrentUserProvider;
 import com.borrowly.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -89,9 +88,8 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<TransactionResponse> getHistory(List<TransactionType> types, int page, int size) {
+    public Page<TransactionResponse> getHistory(List<TransactionType> types, Pageable pageable) {
         User user = currentUserProvider.getCurrentUser();
-        Pageable pageable = PageRequest.of(page, size);
 
         Page<Transaction> transactions = (types == null || types.isEmpty())
                 ? transactionRepository.findByUserIdOrderByCreatedAtDesc(user.getId(), pageable)
