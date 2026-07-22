@@ -11,12 +11,14 @@ import com.borrowly.repository.item.CategoryRepository;
 import com.borrowly.repository.item.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
+@Transactional(readOnly = true)
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
@@ -33,6 +35,7 @@ public class CategoryService {
                 .orElseThrow(() -> new CategoryNotFoundException(id));
     }
 
+    @Transactional
     public CategoryResponse add(CategoryRequest categoryRequest) {
         if (categoryRepository.existsByNameIgnoreCase(categoryRequest.name())) {
             throw new CategoryAlreadyExistsException();
@@ -41,12 +44,14 @@ public class CategoryService {
         return categoryMapper.toResponse(categoryRepository.save(category));
     }
 
+    @Transactional
     public CategoryResponse update(UUID id, CategoryRequest categoryRequest) {
         Category category = categoryRepository.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
         categoryMapper.updateEntity(category, categoryRequest);
         return categoryMapper.toResponse(categoryRepository.save(category));
     }
 
+    @Transactional
     public void delete(UUID id) {
         if (itemRepository.existsByCategoryId(id)) {
             throw new CategoryConflictException(

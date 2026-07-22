@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -25,7 +26,7 @@ import java.util.UUID;
 public class FavoriteController {
 
     private final FavoriteService favoriteService;
-
+    
     @PostMapping("/{itemId}")
     public ResponseEntity<FavoriteResponse> addFavorite(@PathVariable UUID itemId) {
         FavoriteResult result = favoriteService.addFavorite(itemId);
@@ -34,15 +35,15 @@ public class FavoriteController {
     }
 
     @DeleteMapping("/{itemId}")
-    public ResponseEntity<Void> removeFavorite(@PathVariable UUID itemId) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeFavorite(@PathVariable UUID itemId) {
         favoriteService.removeFavorite(itemId);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<Page<FavoriteResponse>> listFavorites(
+    public Page<FavoriteResponse> listFavorites(
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
-        return ResponseEntity.ok(favoriteService.listForCurrentUser(pageable));
+        return favoriteService.listForCurrentUser(pageable);
     }
 }
