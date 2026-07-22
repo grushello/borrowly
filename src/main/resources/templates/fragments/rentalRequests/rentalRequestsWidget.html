@@ -5,7 +5,7 @@
     <title>Title</title>
 </head>
 <body>
-    <div th:fragment="rentalRequestsWidget(requestsList, incomingOrOutgoing)">
+    <div class="rental-requests-inner-container" th:fragment="rentalRequestsWidget(requestsList, incomingOrOutgoing)">
         <h2 th:text="|Pending requests (${incomingOrOutgoing})|">Pending Requests (incomingOrOutgoing)</h2>
 
         <div th:if="${requestsList.isEmpty()}" class="empty-state">
@@ -42,14 +42,24 @@
                 </tbody>
             </table>
 
-            <div class="pagination" th:if="${requestsList.totalPages > 1}">
+            <div class="pagination" th:if="${requestsList.totalPages > 1 && incomingOrOutgoing == 'Incoming'}">
                 <a th:if="${requestsList.hasPrevious()}"
-                   th:href="@{/rental-requests(page=${requestsList.number - 1})}">&laquo; Previous</a>
-
-                <span th:text="|Page ${pending.number + 1} of ${requestsList.totalPages}|">Page 1 of 5</span>
+                   th:href="@{/rental-requests(incomingPage=${requestsList.number - 1}, outgoingPage=${pendingOutgoing.number})}"
+                   class="btn-pagination">Previous</a>
 
                 <a th:if="${requestsList.hasNext()}"
-                   th:href="@{/rental-requests(page=${requestsList.number + 1})}">Next &raquo;</a>
+                   th:href="@{/rental-requests(incomingPage=${requestsList.number + 1}, outgoingPage=${pendingOutgoing.number})}"
+                   class="btn-pagination">Next</a>
+            </div>
+
+            <div class="pagination" th:if="${requestsList.totalPages > 1 && incomingOrOutgoing == 'Outgoing'}">
+                <a th:if="${requestsList.hasPrevious()}"
+                   th:href="@{/rental-requests(incomingPage=${pendingIncoming.number}, outgoingPage=${requestsList.number - 1})}"
+                   class="btn-pagination">Previous</a>
+
+                <a th:if="${requestsList.hasNext()}"
+                   th:href="@{/rental-requests(incomingPage=${pendingIncoming.number}, outgoingPage=${requestsList.number + 1})}"
+                   class="btn-pagination">Next</a>
             </div>
         </div>
     </div>
