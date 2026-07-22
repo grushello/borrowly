@@ -1,0 +1,70 @@
+name: Deploy
+
+# Manual only: Actions -> Deploy -> Run workflow -> pick the branch -> Run.
+# The branch you pick is the code that gets deployed (it must contain this file).
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-borrowly
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    env:
+      COMPOSE_PROJECT: borrowly
+      DB_PORT: "3300"
+      APP_PORT: "3301"
+    steps:
+      - name: Checkout the selected branch
+        uses: actions/checkout@v4
+
+      - name: Write .env from secrets (prod profile)
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          umask 077
+          {
+            echo "SPRING_PROFILES_ACTIVE=prod"
+            echo "DB_PORT=${DB_PORT}"
+            echo "APP_PORT=${APP_PORT}"
+            echo "POSTGRES_DB=${POSTGRES_DB}"
+            echo "POSTGRES_USER=${POSTGRES_USER}"
+            echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
+            echo "JWT_SECRET=${JWT_SECRET}"
+            echo "JWT_EXPIRATION=86400000"
+          } > .env
+          echo "Wrote .env: profile=prod, DB_PORT=${DB_PORT}, APP_PORT=${APP_PORT}"
+
+      - name: Build image and start containers
+        run: docker compose -p "$COMPOSE_PROJECT" up -d --build --remove-orphans
+
+      - name: Wait for the app to finish starting
+        run: |
+          for i in $(seq 1 60); do
+            if docker compose -p "$COMPOSE_PROJECT" logs app 2>&1 | grep -Eq "Started .* in [0-9]"; then
+              echo "App started successfully."
+              docker compose -p "$COMPOSE_PROJECT" ps
+              exit 0
+            fi
+            CID="$(docker compose -p "$COMPOSE_PROJECT" ps -q app)"
+            STATE="$(docker inspect -f '{{.State.Status}}' "$CID" 2>/dev/null || echo missing)"
+            if [ "$STATE" != "running" ] && [ "$STATE" != "created" ]; then
+              echo "App container is not running (state: $STATE)."
+              docker compose -p "$COMPOSE_PROJECT" logs app || true
+              exit 1
+            fi
+            echo "Attempt $i: waiting for Spring Boot startup (state: $STATE)..."
+            sleep 3
+          done
+          echo "App did not report a successful start in time."
+          docker compose -p "$COMPOSE_PROJECT" logs app || true
+          exit 1
+
+      - name: Show recent app logs
+        if: always()
+        run: docker compose -p "$COMPOSE_PROJECT" logs --tail 50 app || true
