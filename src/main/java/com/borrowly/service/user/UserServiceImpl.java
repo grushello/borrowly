@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
 
         User user = getUserOrThrow(id);
 
-        List<ItemSummaryResponse> items = itemRepository.findByOwner_Id(
+        List<ItemSummaryResponse> items = itemRepository.findByOwnerId(
                 user.getId(), Pageable.unpaged())
                 .stream()
                 .map(itemMapper::toSummary)

@@ -297,7 +297,7 @@ class UserServiceImplTest {
 
 
         // Items
-        when(itemRepository.findByOwner_Id(
+        when(itemRepository.findByOwnerId(
                 eq(id),
                 any(Pageable.class)
         ))
@@ -381,7 +381,7 @@ class UserServiceImplTest {
 
 
         verify(itemRepository)
-                .findByOwner_Id(
+                .findByOwnerId(
                         eq(id),
                         any(Pageable.class)
                 );

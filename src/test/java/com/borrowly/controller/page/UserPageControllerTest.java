@@ -3,13 +3,14 @@ package com.borrowly.controller.page;
 import com.borrowly.config.SecurityConfig;
 import com.borrowly.dto.response.UserProfileResponse;
 import com.borrowly.dto.response.UserResponse;
+import com.borrowly.exception.GlobalExceptionHandler;
 import com.borrowly.model.user.User;
 import com.borrowly.model.user.UserRole;
 import com.borrowly.security.AuthEntryPointJwt;
 import com.borrowly.security.AuthTokenFilter;
 import com.borrowly.security.CurrentUserProvider;
 import com.borrowly.security.JwtUtil;
-import com.borrowly.service.UserDetailsServiceImpl;
+import com.borrowly.service.auth.UserDetailsServiceImpl;
 import com.borrowly.service.user.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({
         SecurityConfig.class,
         AuthTokenFilter.class,
-        AuthEntryPointJwt.class
+        AuthEntryPointJwt.class,
+        GlobalExceptionHandler.class
 })
 class UserPageControllerTest {
 
@@ -54,11 +56,8 @@ class UserPageControllerTest {
     @MockitoBean
     private JwtUtil jwtUtil;
 
-
     @MockitoBean
     private UserDetailsServiceImpl userDetailsService;
-
-
 
     private final UUID USER_ID = UUID.randomUUID();
 
