@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -74,4 +75,10 @@ public interface RentalRequestRepository extends JpaRepository<RentalRequest, UU
                                                          @Param("status") RentalRequestStatus status,
                                                          @Param("startDate") LocalDate startDate,
                                                          @Param("endDate") LocalDate endDate);
+
+    Optional<RentalRequest> findFirstByItemIdAndBorrowerIdAndStatusIn(
+            UUID itemId,
+            UUID borrowerId,
+            Collection<RentalRequestStatus> statuses
+    );
 }
