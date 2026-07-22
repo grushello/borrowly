@@ -257,10 +257,9 @@
       });
     });
 
-    const favBtn = document.getElementById('favorite-btn');
     const archiveBtn = document.getElementById('archive-btn');
 
-    archiveBtn.addEventListener('click', (event) => {
+    if (archiveBtn) archiveBtn.addEventListener('click', (event) => {
       event.stopPropagation();
 
       const itemId = document.getElementById("main-content").getAttribute('data-item-id');
@@ -271,7 +270,7 @@
 
       event.target.disabled = true;
 
-      fetch(url, {
+      csrfFetch(url, {
         method: method,
       }).then(response => {
         if (response.ok) {
@@ -287,10 +286,9 @@
       });
     })
 
+    const favBtn = document.getElementById('favorite-btn');
 
-    if (!favBtn) return;
-
-    favBtn.addEventListener('click', function() {
+    if (favBtn) favBtn.addEventListener('click', function() {
       const itemId = document.getElementById("main-content").getAttribute('data-item-id');
       const isFavorite = this.getAttribute('data-is-favorite') === 'true';
 
@@ -323,6 +321,120 @@
                 favBtn.disabled = false;
               });
     });
+
+    const requestBtn = document.getElementById('request-btn');
+
+    if (requestBtn) {
+      requestBtn.addEventListener('click', function(event) {
+        const startDateInput = document.getElementById('start-date').value;
+        const endDateInput = document.getElementById('end-date').value;
+        const itemId = document.getElementById("main-content").getAttribute('data-item-id');
+
+        if (!startDateInput || !endDateInput) {
+          alert("Please select both start and end dates.");
+          return;
+        }
+
+        if (new Date(endDateInput) <= new Date(startDateInput)) {
+          alert("End date must be after start date.");
+          return;
+        }
+
+        const payload = {
+          itemId: itemId,
+          startDate: startDateInput,
+          endDate: endDateInput
+        };
+
+        requestBtn.disabled = true;
+        requestBtn.textContent = "Sending...";
+
+        csrfFetch('/api/rental-requests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+                .then(async response => {
+                  if (response.ok) {
+                    alert("Request sent successfully!");
+                    window.location.href = "/rental-requests";
+                  } else {
+                    const errorData = await response.json();
+                    const errorBox = document.getElementById('booking-error');
+                    if (errorBox) errorBox.style.display = 'none';
+
+                    if (errorBox) {
+                      errorBox.textContent = errorData.message || "There was an error with the request...";
+                      console.log(errorData)
+
+                      if (errorData.fields) {
+                        const fieldErrors = Object.entries(errorData.fields)
+                                .map(([field, msg]) => `${field}: ${msg}`)
+                                .join(" | ");
+                        errorBox.textContent += " - " + fieldErrors;
+                      }
+
+                      errorBox.style.display = 'block';
+                    } else {
+                      alert(errorData.message || "Error during the request");
+                    }
+                  }
+                })
+                .catch(error => {
+                  console.error("Error:", error);
+                  alert("Network error.");
+                })
+                .finally(() => {
+                  requestBtn.disabled = false;
+                  requestBtn.textContent = "Request";
+                });
+      });
+    }
+
+    const cancelBtn = document.getElementById("request-btn-already-requested");
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        if (!confirm("Are you sure you want to cancel this request?")) {
+          return;
+        }
+
+        const rentalRequestId = cancelBtn.getAttribute("data-rental-request-id");
+
+        const originalText = cancelBtn.textContent;
+        cancelBtn.disabled = true;
+        cancelBtn.textContent = "Cancelling...";
+
+        try {
+          const response = await csrfFetch(`/api/rental-requests/${rentalRequestId}/cancel`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert("There was an error. Try again later.");
+            restoreButton();
+          }
+        } catch (error) {
+          console.error("Network error:", error);
+          alert("Connection refused. Try again later.");
+          restoreButton();
+        }
+
+        function restoreButton() {
+          cancelBtn.disabled = false;
+          cancelBtn.textContent = originalText;
+        }
+      });
+    }
   });
 </script>
 </html>
