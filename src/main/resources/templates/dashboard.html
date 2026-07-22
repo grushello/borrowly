@@ -33,6 +33,7 @@
     </footer>
 
 </body>
+<script src="/js/csrf.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const returnItemButtons  = document.querySelectorAll('.return-item-button');
@@ -41,7 +42,7 @@
                 const rentalId = e.target.getAttribute('data-rental-id');
                 const url = `/api/rentals/${rentalId}/return`;
                 console.log(url)
-                fetch(url, {
+                csrfFetch(url, {
                     method: 'PATCH'})
                     .then(async res => {
                         if (res.ok) {
