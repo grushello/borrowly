@@ -35,6 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @WebMvcTest(ReviewController.class)
 @Import({SecurityConfig.class, AuthTokenFilter.class, AuthEntryPointJwt.class,
@@ -87,6 +88,7 @@ class ReviewControllerTest {
         when(reviewService.createReview(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/reviews")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -103,6 +105,7 @@ class ReviewControllerTest {
                 """.formatted(UUID.randomUUID());
 
         mockMvc.perform(post("/api/reviews")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest());
@@ -119,6 +122,7 @@ class ReviewControllerTest {
                 """.formatted(UUID.randomUUID());
 
         mockMvc.perform(post("/api/reviews")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest());
@@ -138,6 +142,7 @@ class ReviewControllerTest {
         when(reviewService.createReview(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/reviews")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -156,6 +161,7 @@ class ReviewControllerTest {
         when(reviewService.createReview(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/reviews")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -168,6 +174,7 @@ class ReviewControllerTest {
         CreateReviewRequest request = new CreateReviewRequest(UUID.randomUUID(), 3, null);
 
         mockMvc.perform(post("/api/reviews")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
