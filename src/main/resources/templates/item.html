@@ -105,9 +105,14 @@
             </button>
 
           </div>
-
+        </div>
+        <button th:unless="${isOwner}"
+                class="btn-book">
+          Rent now
+        </button>
         </div>
       </div>
+  </div>
 
       <a th:href="@{/user/{id}(id=${item.owner.id})}" class="owner-profile">
       <div class="owner-avatar">
@@ -133,6 +138,7 @@
 <footer th:replace="~{fragments/general/footer :: footer}">
 </footer>
 
+</body>
 <script src="/js/csrf.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -305,5 +311,4 @@
 
   });
 </script>
-</body>
 </html>
