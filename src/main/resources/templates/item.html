@@ -108,7 +108,7 @@
             <div th:unless="${isOwner}" class="booking-section">
               <div id="booking-error" class="alert-error" style="display: none;"></div>
 
-              <div class="date-pickers">
+              <div class="date-pickers" th:unless="${itemRentalRequestPendingForUser}">
                 <div class="input-group">
                   <label for="start-date">Start Date:</label>
                   <input type="date" id="start-date" required>
@@ -119,7 +119,12 @@
                 </div>
               </div>
 
-              <button id="request-btn" class="btn-book">Request</button>
+              <span th:if="${itemRentalRequestPendingForUser}">You have already requested this item</span>
+              <button th:unless="${itemRentalRequestPendingForUser}" id="request-btn" class="btn-book">Request</button>
+              <button th:if="${itemRentalRequestPendingForUser != null && pendingRentalRequestId != null}"
+                      id="request-btn-already-requested"
+                      class="btn-book"
+                      th:data-rental-request-id="${pendingRentalRequestId}">Cancel request</button>
             </div>
 
           </div>
@@ -319,7 +324,7 @@
                 .then(async response => {
                   if (response.ok) {
                     alert("Request sent successfully!");
-                    window.location.href = "/dashboard";
+                    window.location.href = "/rental-requests";
                   } else {
                     const errorData = await response.json();
                     const errorBox = document.getElementById('booking-error');
@@ -350,6 +355,51 @@
                   requestBtn.disabled = false;
                   requestBtn.textContent = "Request";
                 });
+      });
+    }
+
+    const cancelBtn = document.getElementById("request-btn-already-requested");
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        if (!confirm("Are you sure you want to cancel this request?")) {
+          return;
+        }
+
+        const rentalRequestId = cancelBtn.getAttribute("data-rental-request-id");
+
+        const originalText = cancelBtn.textContent;
+        cancelBtn.disabled = true;
+        cancelBtn.textContent = "Cancelling...";
+
+        try {
+          const response = await fetch(`/api/rental-requests/${rentalRequestId}/cancel`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              // Nota: Pass the token here if it's needed
+              // 'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+            }
+          });
+
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert("There was an error. Try again later.");
+            restoreButton();
+          }
+        } catch (error) {
+          console.error("Errore di rete:", error);
+          alert("Connection refused. Try again later.");
+          restoreButton();
+        }
+
+        function restoreButton() {
+          cancelBtn.disabled = false;
+          cancelBtn.textContent = originalText;
+        }
       });
     }
 
