@@ -9,49 +9,10 @@
 <body>
   <nav th:replace="~{fragments/general/nav :: nav}">
   </nav>
-  <main id="main-content">
-    <h2>Pending Requests</h2>
+  <main>
+    <div th:replace="~{fragments/rentalRequests/rentalRequestsWidget :: rentalRequestsWidget(requestsList = ${pendingIncoming}, incomingOrOutgoing = 'Incoming')}"></div>
+    <div th:replace="~{fragments/rentalRequests/rentalRequestsWidget :: rentalRequestsWidget(requestsList = ${pendingOutgoing}, incomingOrOutgoing = 'Outgoing')}"></div>
 
-    <div th:if="${pending.isEmpty()}" class="empty-state">
-      <p>You currently have no pending rental requests.</p>
-    </div>
-
-    <div th:unless="${pending.isEmpty()}">
-      <table class="table">
-        <thead>
-        <tr>
-          <th>Item</th>
-          <th>Requester</th>
-          <th>Start</th>
-          <th>End</th>
-          <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="request : ${pending.content}">
-          <td th:text="${request.item.title}">Item Title</td>
-          <td th:text="${request.borrower.firstName + ' ' + request.borrower.lastName}">First name Last name</td>
-          <td th:text="${request.startDate}">01/08/2026</td>
-          <td th:text="${request.endDate}">10/08/2026</td>
-
-          <td class="actions">
-              <button type="submit" class="btn btn-success approve-btn" th:data-id="${request.id}">Approve</button>
-              <button class="btn btn-danger reject-btn" th:data-id="${request.id}">Reject</button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-
-      <div class="pagination" th:if="${pending.totalPages > 1}">
-        <a th:if="${pending.hasPrevious()}"
-           th:href="@{/rental-requests(page=${pending.number - 1})}">&laquo; Previous</a>
-
-        <span th:text="|Page ${pending.number + 1} of ${pending.totalPages}|">Page 1 of 5</span>
-
-        <a th:if="${pending.hasNext()}"
-           th:href="@{/rental-requests(page=${pending.number + 1})}">Next &raquo;</a>
-      </div>
-    </div>
   </main>
   <footer th:replace="~{fragments/general/footer :: footer}">
   </footer>
@@ -60,8 +21,6 @@
   document.addEventListener("DOMContentLoaded", function() {
     const approveButtons = document.querySelectorAll('.approve-btn');
     const rejectButtons = document.querySelectorAll('.reject-btn');
-    console.log(approveButtons);
-    console.log(rejectButtons);
 
     function handleRequestAction(button, action) {
       const requestId = button.getAttribute('data-id');
@@ -111,6 +70,50 @@
       });
     });
 
+    const cancelBtn = document.getElementById("cancel-request-button");
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        if (!confirm("Are you sure you want to cancel this request?")) {
+          return;
+        }
+
+        const rentalRequestId = cancelBtn.getAttribute("data-id");
+
+        const originalText = cancelBtn.textContent;
+        cancelBtn.disabled = true;
+        cancelBtn.textContent = "Cancelling...";
+
+        try {
+          const response = await fetch(`/api/rental-requests/${rentalRequestId}/cancel`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              // Nota: Pass the token here if it's needed
+              // 'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+            }
+          });
+
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert("There was an error. Try again later.");
+            restoreButton();
+          }
+        } catch (error) {
+          console.error("Network error", error);
+          alert("Connection refused. Try again later.");
+          restoreButton();
+        }
+
+        function restoreButton() {
+          cancelBtn.disabled = false;
+          cancelBtn.textContent = originalText;
+        }
+      });
+    }
   });
 </script>
 </html>
