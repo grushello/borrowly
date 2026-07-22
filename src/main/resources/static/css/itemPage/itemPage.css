@@ -379,3 +379,22 @@
     background-color: #93c5fd;
     cursor: not-allowed;
 }
+
+#request-btn-already-requested {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #f87171;
+    transition: all 0.2s ease-in-out;
+}
+
+#request-btn-already-requested:hover {
+    background-color: #ef4444;
+    color: white;
+}
+
+#request-btn-already-requested:disabled {
+    background-color: #e5e7eb;
+    color: #9ca3af;
+    border-color: #d1d5db;
+    cursor: not-allowed;
+}
