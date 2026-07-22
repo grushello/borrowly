@@ -19,15 +19,19 @@ function readCookie(name) {
 function csrfFetch(input, init = {}) {
     const method = (init.method || 'GET').toUpperCase();
 
+    init = { credentials: 'same-origin', ...init };
+
     if (!SAFE_METHODS.has(method)) {
         const token = readCookie('XSRF-TOKEN');
-        if (token) {
-            const headers = new Headers(init.headers || {});
-            if (!headers.has('X-XSRF-TOKEN')) {
-                headers.set('X-XSRF-TOKEN', token);
-            }
-            init = { ...init, headers };
+        if (!token) {
+            console.error('csrfFetch: XSRF-TOKEN cookie missing; request not sent.');
+            return Promise.reject(new Error('Missing CSRF token'));
         }
+        const headers = new Headers(init.headers || {});
+        if (!headers.has('X-XSRF-TOKEN')) {
+            headers.set('X-XSRF-TOKEN', token);
+        }
+        init = { ...init, headers };
     }
     return fetch(input, init);
 }
