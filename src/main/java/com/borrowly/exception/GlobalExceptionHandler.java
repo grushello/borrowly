@@ -10,6 +10,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.Instant;
@@ -30,6 +31,15 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = baseBody(HttpStatus.BAD_REQUEST, "Validation failed");
         body.put("fields", fields);
         return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex) {
+        String message = "Invalid value for parameter '" + ex.getName() + "'";
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(baseBody(HttpStatus.BAD_REQUEST, message));
     }
 
     @ExceptionHandler(AuthenticationException.class)
