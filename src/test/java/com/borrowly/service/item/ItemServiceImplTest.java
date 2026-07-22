@@ -2,6 +2,7 @@ package com.borrowly.service.item;
 
 import com.borrowly.dto.request.CreateItemRequest;
 import com.borrowly.dto.request.UpdateItemRequest;
+import com.borrowly.dto.response.ItemSummaryResponse;
 import com.borrowly.exception.CategoryNotFoundException;
 import com.borrowly.exception.ItemHasActiveRentalException;
 import com.borrowly.exception.ItemNotFoundException;
@@ -20,6 +21,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.math.BigDecimal;
@@ -569,5 +575,49 @@ class ItemServiceImplTest {
         assertThatThrownBy(() ->
                 itemService.unarchive(missingId))
                 .isInstanceOf(ItemNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("adminListItems delegates to the unfiltered admin query")
+    void adminListItemsUsesAdminQuery() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Item item = Item.builder().title("Drill").build();
+        ItemSummaryResponse summary = new ItemSummaryResponse(
+                UUID.randomUUID(), "Drill", BigDecimal.TEN,
+                ItemCondition.GOOD, ItemStatus.ARCHIVED, "Jane Owner", null);
+
+        when(itemRepository.findAllForAdmin(pageable))
+                .thenReturn(new PageImpl<>(java.util.List.of(item), pageable, 1));
+        when(itemMapper.toSummary(item)).thenReturn(summary);
+
+        Page<ItemSummaryResponse> result = itemService.adminListItems(pageable);
+
+        assertThat(result.getContent()).containsExactly(summary);
+        verify(itemRepository).findAllForAdmin(pageable);
+    }
+
+    @Test
+    @DisplayName("adminListItems does not apply the ACTIVE-only catalog specification")
+    void adminListItemsDoesNotUseSpecification() {
+        Pageable pageable = PageRequest.of(0, 10);
+        when(itemRepository.findAllForAdmin(pageable))
+                .thenReturn(new PageImpl<>(java.util.List.of(), pageable, 0));
+
+        itemService.adminListItems(pageable);
+
+        verify(itemRepository, never()).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("adminListItems propagates paging metadata")
+    void adminListItemsPropagatesPaging() {
+        Pageable pageable = PageRequest.of(2, 5);
+        when(itemRepository.findAllForAdmin(pageable))
+                .thenReturn(new PageImpl<>(java.util.List.of(), pageable, 42));
+
+        Page<ItemSummaryResponse> result = itemService.adminListItems(pageable);
+
+        assertThat(result.getTotalElements()).isEqualTo(42);
+        assertThat(result.getNumber()).isEqualTo(2);
     }
 }

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Stats</title>
+</head>
+<body>
+<div th:fragment="statsWidget" class="widget admin-stats">
+    <div class="widget-header">
+        <h2>Overview</h2>
+    </div>
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <span class="stat-icon">&#128101;</span>
+            <span class="stat-value" th:text="${stats.totalUsers}">0</span>
+            <span class="stat-label">Users</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">&#128737;</span>
+            <span class="stat-value" th:text="${stats.adminUsers}">0</span>
+            <span class="stat-label">Admins</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">&#128683;</span>
+            <span class="stat-value" th:text="${stats.disabledUsers}">0</span>
+            <span class="stat-label">Disabled users</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">&#128230;</span>
+            <span class="stat-value" th:text="${stats.totalItems}">0</span>
+            <span class="stat-label">Item listings</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">&#129309;</span>
+            <span class="stat-value" th:text="${stats.rentedItems}">0</span>
+            <span class="stat-label">Currently rented</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">&#127991;</span>
+            <span class="stat-value" th:text="${stats.totalCategories}">0</span>
+            <span class="stat-label">Categories</span>
+        </div>
+
+    </div>
+
+    <p class="stats-breakdown">
+        <span th:text="|Active: ${stats.activeItems}|">Active: 0</span>
+        &middot;
+        <span th:text="|Rented: ${stats.rentedItems}|">Rented: 0</span>
+        &middot;
+        <span th:text="|Archived: ${stats.archivedItems}|">Archived: 0</span>
+    </p>
+</div>
+</body>
+</html>

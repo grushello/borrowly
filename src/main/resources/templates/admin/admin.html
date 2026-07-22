@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin panel</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/admin.css}">
+</head>
+<body>
+<nav th:replace="~{fragments/general/nav :: nav}">
+</nav>
+
+<h1>Admin panel</h1>
+
+<main class="admin-main">
+
+    <div th:replace="~{fragments/admin/statsWidget :: statsWidget}">...</div>
+
+    <div th:replace="~{fragments/admin/categoriesWidget :: categoriesWidget}">...</div>
+
+    <div class="admin-grid">
+        <div th:replace="~{fragments/admin/usersWidget :: usersWidget}">...</div>
+
+        <div th:replace="~{fragments/admin/itemsWidget :: itemsWidget}">...</div>
+    </div>
+
+</main>
+
+<footer th:insert="~{fragments/general/footer :: footer}">
+</footer>
+
+<script src="/js/csrf.js"></script>
+<script src="/js/admin/admin.js"></script>
+</body>
+</html>
