@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 
 @WebMvcTest(ItemController.class)
@@ -77,6 +78,7 @@ class ItemControllerTest {
 
 
         mockMvc.perform(post("/api/items")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
@@ -93,6 +95,7 @@ class ItemControllerTest {
 
 
         mockMvc.perform(post("/api/items")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isUnauthorized());
@@ -118,6 +121,7 @@ class ItemControllerTest {
 
 
         mockMvc.perform(post("/api/items")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -174,6 +178,7 @@ class ItemControllerTest {
 
 
         mockMvc.perform(patch("/api/items/" + id)
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
@@ -190,6 +195,7 @@ class ItemControllerTest {
 
 
         mockMvc.perform(patch("/api/items/" + UUID.randomUUID())
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isUnauthorized());
@@ -209,7 +215,8 @@ class ItemControllerTest {
                 .thenReturn(mock(ItemResponse.class));
 
 
-        mockMvc.perform(delete("/api/items/" + id))
+        mockMvc.perform(delete("/api/items/" + id)
+                        .with(csrf()))
                 .andExpect(status().isOk());
 
 
@@ -223,7 +230,8 @@ class ItemControllerTest {
     void archiveWithoutAuthReturns401() throws Exception {
 
 
-        mockMvc.perform(delete("/api/items/" + UUID.randomUUID()))
+        mockMvc.perform(delete("/api/items/" + UUID.randomUUID())
+                        .with(csrf()))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -236,7 +244,8 @@ class ItemControllerTest {
         when(itemService.unarchive(id))
                 .thenReturn(mock(ItemResponse.class));
 
-        mockMvc.perform(patch("/api/items/" + id + "/unarchive"))
+        mockMvc.perform(patch("/api/items/" + id + "/unarchive")
+                        .with(csrf()))
                 .andExpect(status().isOk());
 
         verify(itemService)
@@ -247,7 +256,8 @@ class ItemControllerTest {
     @Test
     void unarchiveWithoutAuthReturns401() throws Exception {
 
-        mockMvc.perform(patch("/api/items/" + UUID.randomUUID() + "/unarchive"))
+        mockMvc.perform(patch("/api/items/" + UUID.randomUUID() + "/unarchive")
+                        .with(csrf()))
                 .andExpect(status().isUnauthorized());
     }
 }

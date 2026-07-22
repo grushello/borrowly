@@ -36,6 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @WebMvcTest(UserController.class)
 @Import({SecurityConfig.class, AuthTokenFilter.class, AuthEntryPointJwt.class,
@@ -92,6 +93,7 @@ class UserControllerTest {
     @DisplayName("PATCH /api/users/me without auth returns 401")
     void patchMeUnauthenticatedReturns401() throws Exception {
         mockMvc.perform(patch("/api/users/me")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isUnauthorized());
@@ -106,6 +108,7 @@ class UserControllerTest {
         UpdateUserRequest request = new UpdateUserRequest(null, null, "not-a-phone");
 
         mockMvc.perform(patch("/api/users/me")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -127,6 +130,7 @@ class UserControllerTest {
         UpdateUserRequest request = new UpdateUserRequest("Bob", null, null);
 
         mockMvc.perform(patch("/api/users/me")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

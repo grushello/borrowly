@@ -1,143 +1,144 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <title th:text="${item.title}">Item details</title>
+  <meta charset="UTF-8">
+  <title th:text="${item.title}">Item details</title>
   <link rel="stylesheet" th:href="@{/css/main.css}">
   <link rel="stylesheet" th:href="@{/css/itemPage/itemPage.css}">
 </head>
 <body>
-    <nav th:replace="~{fragments/general/nav :: nav}">
-    </nav>
-    <main class="item-page-container" th:attr="data-item-id=${item.id}" id="main-content">
+<nav th:replace="~{fragments/general/nav :: nav}">
+</nav>
+<main class="item-page-container" th:attr="data-item-id=${item.id}" id="main-content">
 
-      <div class="item-gallery">
+  <div class="item-gallery">
 
-        <th:block th:if="${not #lists.isEmpty(images)}">
+    <th:block th:if="${not #lists.isEmpty(images)}">
 
-          <div class="main-image-wrapper">
-            <img th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${item.id}, imageId=${images[0].id})}"
-                 alt="Main image"
-                 class="main-image">
-          </div>
-
-          <div class="thumbnail-list">
-            <div th:each="image : ${images}" class="thumbnail-wrapper">
-
-              <img th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${item.id}, imageId=${image.id})}"
-                   alt="Thumbnail"
-                   class="thumbnail">
-
-              <button class="delete-image-btn"
-                      th:data-image-id="${image.id}"
-                      title="Delete image">
-                &times;
-              </button>
-
-            </div>
-          </div>
-
-        </th:block>
-
-        <div th:if="${#lists.isEmpty(images)}" class="main-image-wrapper">
-          <img src="/images/placeholder.jpg" alt="No image available" class="main-image">
-        </div>
-
+      <div class="main-image-wrapper">
+        <img th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${item.id}, imageId=${images[0].id})}"
+             alt="Main image"
+             class="main-image">
       </div>
 
-      <div class="item-info">
+      <div class="thumbnail-list">
+        <div th:each="image : ${images}" class="thumbnail-wrapper">
 
-        <span class="category-badge" th:text="${item.category.name}">Category placeholder</span>
-        <h1 class="item-title" th:text="${item.title}">Title placeholder</h1>
+          <img th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${item.id}, imageId=${image.id})}"
+               alt="Thumbnail"
+               class="thumbnail">
 
-        <div class="item-meta">
+          <button class="delete-image-btn"
+                  th:data-image-id="${image.id}"
+                  title="Delete image">
+            &times;
+          </button>
+
+        </div>
+      </div>
+
+    </th:block>
+
+    <div th:if="${#lists.isEmpty(images)}" class="main-image-wrapper">
+      <img src="/images/placeholder.jpg" alt="No image available" class="main-image">
+    </div>
+
+  </div>
+
+  <div class="item-info">
+
+    <span class="category-badge" th:text="${item.category.name}">Category placeholder</span>
+    <h1 class="item-title" th:text="${item.title}">Title placeholder</h1>
+
+    <div class="item-meta">
             <span class="rating">
                 ⭐ <strong>4.8</strong>
                 <span class="review-count">(14 reviews)</span>
             </span>
-          <span class="meta-divider">•</span>
-          <span class="condition" th:text="'Condition: ' + ${item.condition}">Condition: PLACEHOLDER</span>
-        </div>
+      <span class="meta-divider">•</span>
+      <span class="condition" th:text="'Condition: ' + ${item.condition}">Condition: PLACEHOLDER</span>
+    </div>
 
-        <div class="item-description">
-          <h3>Description</h3>
-          <p th:text="${item.description}">Description placeholder</p>
-        </div>
+    <div class="item-description">
+      <h3>Description</h3>
+      <p th:text="${item.description}">Description placeholder</p>
+    </div>
 
-        <div class="booking-card">
-          <div class="price-header">
-            <span class="daily-price" th:text="${item.pricePerDay} + ' €'">€ 0.00</span>
-            <span class="price-suffix">/ day</span>
-          </div>
+    <div class="booking-card">
+      <div class="price-header">
+        <span class="daily-price" th:text="${item.pricePerDay} + ' €'">€ 0.00</span>
+        <span class="price-suffix">/ day</span>
+      </div>
 
-          <ul class="price-details">
-            <li>
-              <span>Deposit required:</span>
-              <strong th:text="${item.depositAmount} + ' €'">€ 0.00</strong>
-            </li>
-            <li sec:authorize="isAuthenticated()" th:unless="${isOwner}">
-              <button id="favorite-btn"
-                      th:data-item-id="${item.id}"
-                      th:data-is-favorite="${isFavorite}"
-                      th:text="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}"
-                      th:class="${isFavorite ? 'btn-remove-fav' : 'btn-add-fav'}">
-                Add to favorites
-              </button>
-            </li>
-          </ul>
-
-          <button sec:authorize="isAnonymous()"
-                  class="btn-book-disabled"
-                  disabled>
-            Rent now (Login required)
+      <ul class="price-details">
+        <li>
+          <span>Deposit required:</span>
+          <strong th:text="${item.depositAmount} + ' €'">€ 0.00</strong>
+        </li>
+        <li sec:authorize="isAuthenticated()" th:unless="${isOwner}">
+          <button id="favorite-btn"
+                  th:data-item-id="${item.id}"
+                  th:data-is-favorite="${isFavorite}"
+                  th:text="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}"
+                  th:class="${isFavorite ? 'btn-remove-fav' : 'btn-add-fav'}">
+            Add to favorites
           </button>
+        </li>
+      </ul>
 
-          <div sec:authorize="isAuthenticated()">
-            <div th:if="${isOwner}" class="owner-badge">
-              <span>You are the owner of this item</span>
-              <div class="owner-actions">
-                <a th:href="@{/update/{id}(id=${item.id})}" class="btn btn-edit">Edit Listing</a>
-                <button id="archive-btn"
-                        class="btn btn-danger"
-                        th:disabled="${item.itemStatus.name() == 'RENTED'}"
-                        th:text="${item.itemStatus.name() == 'ARCHIVED' ? 'Unarchive' : (item.itemStatus.name() == 'RENTED' ? 'Cannot archive while rented' : 'Archive')}">
-                  Archive
-                </button>
-              </div>
-            </div>
-            <button th:unless="${isOwner}"
-                    class="btn-book">
-              Rent now
+      <button sec:authorize="isAnonymous()"
+              class="btn-book-disabled"
+              disabled>
+        Rent now (Login required)
+      </button>
+
+      <div sec:authorize="isAuthenticated()">
+        <div th:if="${isOwner}" class="owner-badge">
+          <span>You are the owner of this item</span>
+          <div class="owner-actions">
+            <a th:href="@{/update/{id}(id=${item.id})}" class="btn btn-edit">Edit Listing</a>
+            <button id="archive-btn"
+                    class="btn btn-danger"
+                    th:disabled="${item.itemStatus.name() == 'RENTED'}"
+                    th:text="${item.itemStatus.name() == 'ARCHIVED' ? 'Unarchive' : (item.itemStatus.name() == 'RENTED' ? 'Cannot archive while rented' : 'Archive')}">
+              Archive
             </button>
-
-          </div>
-
-        </div>
-
-        <div class="owner-profile">
-          <div class="owner-avatar">
-            <span th:text="${item.owner.firstName.charAt(0)}">A</span>
-          </div>
-          <div class="owner-details">
-            <span class="owner-label">Owner</span>
-            <strong th:if="${!isOwner}" th:text="${item.owner.firstName} + ' ' + ${item.owner.lastName}">Owner</strong>
-            <strong th:if="${isOwner}" th:text="'You'">Owner</strong>
           </div>
         </div>
+        <button th:unless="${isOwner}"
+                class="btn-book">
+          Rent now
+        </button>
 
       </div>
 
-      <div class="upload-section">
-        <label for="image-upload">Add an image:</label>
-        <input type="file" id="image-upload" name="file" accept="image/*">
-        <button id="upload-btn" type="button">Upload an image</button>
-      </div>
-  </main>
+    </div>
 
-  <footer th:replace="~{fragments/general/footer :: footer}">
-  </footer>
+    <div class="owner-profile">
+      <div class="owner-avatar">
+        <span th:text="${item.owner.firstName.charAt(0)}">A</span>
+      </div>
+      <div class="owner-details">
+        <span class="owner-label">Owner</span>
+        <strong th:if="${!isOwner}" th:text="${item.owner.firstName} + ' ' + ${item.owner.lastName}">Owner</strong>
+        <strong th:if="${isOwner}" th:text="'You'">Owner</strong>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="upload-section">
+    <label for="image-upload">Add an image:</label>
+    <input type="file" id="image-upload" name="file" accept="image/*">
+    <button id="upload-btn" type="button">Upload an image</button>
+  </div>
+</main>
+
+<footer th:replace="~{fragments/general/footer :: footer}">
+</footer>
 
 </body>
+<script src="/js/csrf.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const uploadBtn = document.getElementById('upload-btn');
@@ -162,7 +163,7 @@
         const formData = new FormData();
         formData.append('file', file);
 
-        fetch(uploadUrl, {
+        csrfFetch(uploadUrl, {
           method: 'POST',
           body: formData
         })
@@ -219,7 +220,7 @@
 
         event.target.disabled = true;
 
-        fetch(deleteUrl, {
+        csrfFetch(deleteUrl, {
           method: 'DELETE'
         })
                 .then(response => {
@@ -253,7 +254,7 @@
 
       event.target.disabled = true;
 
-      fetch(url, {
+      csrfFetch(url, {
         method: method,
       }).then(response => {
         if (response.ok) {
@@ -282,7 +283,7 @@
 
       favBtn.disabled = true;
 
-      fetch(url, {
+      csrfFetch(url, {
         method: method,
       })
               .then(response => {

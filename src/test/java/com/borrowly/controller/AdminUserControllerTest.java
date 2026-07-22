@@ -35,6 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @WebMvcTest(AdminUserController.class)
 @Import({SecurityConfig.class, AuthTokenFilter.class, AuthEntryPointJwt.class,
@@ -100,7 +101,8 @@ class AdminUserControllerTest {
         UUID id = UUID.randomUUID();
         when(userService.disableUser(id)).thenReturn(userResponse(id, false));
 
-        mockMvc.perform(patch("/api/admin/users/{id}/disable", id))
+        mockMvc.perform(patch("/api/admin/users/{id}/disable", id)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.enabled").value(false));
 
@@ -114,7 +116,8 @@ class AdminUserControllerTest {
         UUID id = UUID.randomUUID();
         when(userService.enableUser(id)).thenReturn(userResponse(id, true));
 
-        mockMvc.perform(patch("/api/admin/users/{id}/enable", id))
+        mockMvc.perform(patch("/api/admin/users/{id}/enable", id)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.enabled").value(true));
 
@@ -125,7 +128,8 @@ class AdminUserControllerTest {
     @WithMockUser(roles = "USER")
     @DisplayName("PATCH /api/admin/users/{id}/disable as USER returns 403")
     void disableUserAsUserReturns403() throws Exception {
-        mockMvc.perform(patch("/api/admin/users/{id}/disable", UUID.randomUUID()))
+        mockMvc.perform(patch("/api/admin/users/{id}/disable", UUID.randomUUID())
+                        .with(csrf()))
                 .andExpect(status().isForbidden());
 
         verify(userService, never()).disableUser(any());
@@ -138,7 +142,8 @@ class AdminUserControllerTest {
         UUID id = UUID.randomUUID();
         when(userService.disableUser(id)).thenThrow(new CannotDisableSelfException());
 
-        mockMvc.perform(patch("/api/admin/users/{id}/disable", id))
+        mockMvc.perform(patch("/api/admin/users/{id}/disable", id)
+                        .with(csrf()))
                 .andExpect(status().isConflict());
     }
 
@@ -149,7 +154,8 @@ class AdminUserControllerTest {
         UUID id = UUID.randomUUID();
         when(userService.disableUser(id)).thenThrow(new UserNotFoundException(id));
 
-        mockMvc.perform(patch("/api/admin/users/{id}/disable", id))
+        mockMvc.perform(patch("/api/admin/users/{id}/disable", id)
+                        .with(csrf()))
                 .andExpect(status().isNotFound());
     }
 
@@ -160,7 +166,8 @@ class AdminUserControllerTest {
         UUID id = UUID.randomUUID();
         when(userService.enableUser(id)).thenThrow(new UserNotFoundException(id));
 
-        mockMvc.perform(patch("/api/admin/users/{id}/enable", id))
+        mockMvc.perform(patch("/api/admin/users/{id}/enable", id)
+                        .with(csrf()))
                 .andExpect(status().isNotFound());
     }
 }

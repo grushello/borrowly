@@ -40,6 +40,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @WebMvcTest(RentalController.class)
 @Import({SecurityConfig.class, AuthTokenFilter.class, AuthEntryPointJwt.class,
@@ -163,7 +164,8 @@ class RentalControllerTest {
         UUID id = UUID.randomUUID();
         when(rentalService.returnRental(id)).thenReturn(rentalResponse(id));
 
-        mockMvc.perform(patch("/api/rentals/{id}/return", id))
+        mockMvc.perform(patch("/api/rentals/{id}/return", id)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id.toString()))
                 .andExpect(jsonPath("$.status").value("RETURNED"))
@@ -175,7 +177,8 @@ class RentalControllerTest {
     @Test
     @DisplayName("confirming a return without authentication returns 401")
     void returnUnauthenticatedReturns401() throws Exception {
-        mockMvc.perform(patch("/api/rentals/{id}/return", UUID.randomUUID()))
+        mockMvc.perform(patch("/api/rentals/{id}/return", UUID.randomUUID())
+                        .with(csrf()))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -187,7 +190,8 @@ class RentalControllerTest {
         when(rentalService.returnRental(id))
                 .thenThrow(new RentalNotReturnableException(id, RentalStatus.RETURNED));
 
-        mockMvc.perform(patch("/api/rentals/{id}/return", id))
+        mockMvc.perform(patch("/api/rentals/{id}/return", id)
+                        .with(csrf()))
                 .andExpect(status().isConflict());
     }
 
@@ -198,7 +202,8 @@ class RentalControllerTest {
         UUID id = UUID.randomUUID();
         when(rentalService.returnRental(id)).thenThrow(new AccessDeniedException("nope"));
 
-        mockMvc.perform(patch("/api/rentals/{id}/return", id))
+        mockMvc.perform(patch("/api/rentals/{id}/return", id)
+                        .with(csrf()))
                 .andExpect(status().isForbidden());
     }
 }
