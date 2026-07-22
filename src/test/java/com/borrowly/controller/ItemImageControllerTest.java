@@ -31,6 +31,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @WebMvcTest(ItemImageController.class)
 @Import({SecurityConfig.class, AuthTokenFilter.class, AuthEntryPointJwt.class,
@@ -66,7 +67,8 @@ class ItemImageControllerTest {
         );
         when(itemImageService.upload(eq(itemId), any())).thenReturn(response);
 
-        mockMvc.perform(multipart("/api/items/{itemId}/images", itemId).file(file))
+        mockMvc.perform(multipart("/api/items/{itemId}/images", itemId).file(file)
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.fileName").value("photo.jpg"))
                 .andExpect(jsonPath("$.primary").value(true));
@@ -81,7 +83,8 @@ class ItemImageControllerTest {
         when(itemImageService.upload(eq(itemId), any()))
                 .thenThrow(new InvalidImageException("Unsupported content type. Allowed: JPEG, PNG, WebP"));
 
-        mockMvc.perform(multipart("/api/items/{itemId}/images", itemId).file(file))
+        mockMvc.perform(multipart("/api/items/{itemId}/images", itemId).file(file)
+                        .with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Unsupported content type. Allowed: JPEG, PNG, WebP"));
     }
@@ -95,7 +98,8 @@ class ItemImageControllerTest {
         when(itemImageService.upload(eq(itemId), any()))
                 .thenThrow(new InvalidImageException("File size exceeds the 5 MB limit"));
 
-        mockMvc.perform(multipart("/api/items/{itemId}/images", itemId).file(file))
+        mockMvc.perform(multipart("/api/items/{itemId}/images", itemId).file(file)
+                        .with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("File size exceeds the 5 MB limit"));
     }
@@ -133,7 +137,8 @@ class ItemImageControllerTest {
     void deleteReturns204() throws Exception {
         UUID imageId = UUID.randomUUID();
 
-        mockMvc.perform(delete("/api/items/{itemId}/images/{imageId}", itemId, imageId))
+        mockMvc.perform(delete("/api/items/{itemId}/images/{imageId}", itemId, imageId)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
     }
 }

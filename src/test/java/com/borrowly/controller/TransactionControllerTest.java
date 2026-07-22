@@ -37,6 +37,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @WebMvcTest(TransactionController.class)
 @Import({SecurityConfig.class, AuthTokenFilter.class, AuthEntryPointJwt.class,
@@ -74,6 +75,7 @@ class TransactionControllerTest {
                     .thenReturn(sampleResponse(TransactionType.TOP_UP, new BigDecimal("50.00")));
 
             mockMvc.perform(post("/api/transactions/top-up")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"amount\": 50.00}"))
                     .andExpect(status().isCreated())
@@ -87,6 +89,7 @@ class TransactionControllerTest {
         @DisplayName("rejects invalid amounts with 400")
         void topUpRejectsInvalidAmount(String body) throws Exception {
             mockMvc.perform(post("/api/transactions/top-up")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body))
                     .andExpect(status().isBadRequest());
@@ -98,6 +101,7 @@ class TransactionControllerTest {
         @DisplayName("returns 401 without authentication")
         void topUpRequiresAuth() throws Exception {
             mockMvc.perform(post("/api/transactions/top-up")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"amount\": 50.00}"))
                     .andExpect(status().isUnauthorized());
@@ -116,6 +120,7 @@ class TransactionControllerTest {
                     .thenReturn(sampleResponse(TransactionType.WITHDRAWAL, new BigDecimal("30.00")));
 
             mockMvc.perform(post("/api/transactions/withdraw")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"amount\": 30.00}"))
                     .andExpect(status().isCreated())
@@ -130,6 +135,7 @@ class TransactionControllerTest {
                     .thenThrow(new InsufficientBalanceException("Insufficient balance"));
 
             mockMvc.perform(post("/api/transactions/withdraw")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"amount\": 9999.00}"))
                     .andExpect(status().isBadRequest());
@@ -141,6 +147,7 @@ class TransactionControllerTest {
         @DisplayName("rejects invalid amounts with 400")
         void withdrawRejectsInvalidAmount(String body) throws Exception {
             mockMvc.perform(post("/api/transactions/withdraw")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body))
                     .andExpect(status().isBadRequest());
@@ -152,6 +159,7 @@ class TransactionControllerTest {
         @DisplayName("returns 401 without authentication")
         void withdrawRequiresAuth() throws Exception {
             mockMvc.perform(post("/api/transactions/withdraw")
+                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"amount\": 30.00}"))
                     .andExpect(status().isUnauthorized());
