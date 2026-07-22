@@ -1,10 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <title>Your notifications - Borrowly</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="stylesheet" th:href="@{/css/notificationsPage/main.css}">
 </head>
 <body>
-$END$
+
+<nav th:replace="~{fragments/general/nav :: nav}">
+</nav>
+<main class="notifications-page-container">
+  <h2>All notifications</h2>
+
+  <div th:if="${notificationsPage.isEmpty()}" class="empty-state">
+    <p>You don't have any notification yet</p>
+  </div>
+
+  <div th:unless="${notificationsPage.isEmpty()}" class="notifications-full-list">
+    <div th:each="notif : ${notificationsPage.content}" class="notification-full-item">
+      <div class="notif-content" th:text="${notif.message}">Test message</div>
+      <div class="notif-date" th:text="${#temporals.format(notif.createdAt, 'dd MMMM yyyy, HH:mm')}">Date</div>
+    </div>
+  </div>
+
+  <div class="pagination-controls" th:if="${notificationsPage.totalPages > 1}">
+
+    <a th:classappend="${!notificationsPage.hasPrevious()} ? 'disabled' : ''"
+       th:href="@{/notifications(page=${notificationsPage.number - 1}, size=${notificationsPage.size})}">
+      &laquo; Previous
+    </a>
+
+    <span class="page-indicator"
+          th:text="'Pagina ' + (${notificationsPage.number + 1}) + ' di ' + ${notificationsPage.totalPages}">
+        </span>
+
+    <a th:classappend="${!notificationsPage.hasNext()} ? 'disabled' : ''"
+       th:href="@{/notifications(page=${notificationsPage.number + 1}, size=${notificationsPage.size})}">
+      Next &raquo;
+    </a>
+
+  </div>
+</main>
+<footer th:replace="~{fragments/general/footer :: footer}">
+</footer>
+
 </body>
 </html>
