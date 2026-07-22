@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -39,7 +40,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse disableUser(UUID id) {
         User target = getUserOrThrow(id);
 
-        if (target.getId().equals(currentUserProvider.getCurrentUser().getId())) {
+        if (Objects.equals(target.getId(), currentUserProvider.getCurrentUser().getId())) {
             throw new CannotDisableSelfException();
         }
 
