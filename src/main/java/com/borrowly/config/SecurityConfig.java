@@ -42,7 +42,7 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .csrfTokenRequestHandler(eagerCsrfTokenRequestHandler())
                         .ignoringRequestMatchers("/api/auth/**")
                 )
                 .exceptionHandling(ex ->
@@ -78,24 +78,13 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(csrfCookieEmitterFilter(), CsrfFilter.class)
                 .build();
     }
 
-    private OncePerRequestFilter csrfCookieEmitterFilter() {
-        return new OncePerRequestFilter() {
-            @Override
-            protected void doFilterInternal(HttpServletRequest request,
-                                            HttpServletResponse response,
-                                            FilterChain filterChain)
-                    throws ServletException, IOException {
-                CsrfToken token = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
-                if (token != null) {
-                    token.getToken();
-                }
-                filterChain.doFilter(request, response);
-            }
-        };
+    private CsrfTokenRequestAttributeHandler eagerCsrfTokenRequestHandler() {
+        CsrfTokenRequestAttributeHandler handler = new CsrfTokenRequestAttributeHandler();
+        handler.setCsrfRequestAttributeName(null);
+        return handler;
     }
 
     @Bean
