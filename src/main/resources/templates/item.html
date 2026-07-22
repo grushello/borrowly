@@ -103,18 +103,17 @@
                     th:text="${item.itemStatus.name() == 'ARCHIVED' ? 'Unarchive' : (item.itemStatus.name() == 'RENTED' ? 'Cannot archive while rented' : 'Archive')}">
               Archive
             </button>
+
           </div>
         </div>
         <button th:unless="${isOwner}"
                 class="btn-book">
           Rent now
         </button>
-
+        </div>
       </div>
 
-    </div>
-
-    <div class="owner-profile">
+      <a th:href="@{/user/{id}(id=${item.owner.id})}" class="owner-profile">
       <div class="owner-avatar">
         <span th:text="${item.owner.firstName.charAt(0)}">A</span>
       </div>
@@ -123,6 +122,7 @@
         <strong th:if="${!isOwner}" th:text="${item.owner.firstName} + ' ' + ${item.owner.lastName}">Owner</strong>
         <strong th:if="${isOwner}" th:text="'You'">Owner</strong>
       </div>
+      </a>
     </div>
 
   </div>
