@@ -1,12 +1,15 @@
 package com.borrowly.service.user;
 
 import com.borrowly.dto.request.UpdateUserRequest;
-import com.borrowly.dto.response.UserResponse;
-import com.borrowly.dto.response.UserSummaryResponse;
+import com.borrowly.dto.response.*;
 import com.borrowly.exception.CannotDisableSelfException;
 import com.borrowly.exception.UserNotFoundException;
+import com.borrowly.mapper.ItemMapper;
+import com.borrowly.mapper.ReviewMapper;
 import com.borrowly.mapper.UserMapper;
 import com.borrowly.model.user.User;
+import com.borrowly.repository.item.ItemRepository;
+import com.borrowly.repository.user.ReviewRepository;
 import com.borrowly.repository.user.UserRepository;
 import com.borrowly.security.CurrentUserProvider;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -25,8 +29,12 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
     private final UserMapper userMapper;
+    private final ReviewMapper reviewMapper;
+    private final ItemMapper itemMapper;
     private final CurrentUserProvider currentUserProvider;
+    private final ItemRepository itemRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -60,14 +68,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponse getProfile() {
+    public UserResponse getAccountInfo() {
         User user = currentUserProvider.getCurrentUser();
         return userMapper.toResponse(user);
     }
 
     @Override
     @Transactional
-    public UserResponse updateProfile(UpdateUserRequest request) {
+    public UserResponse updateAccountInfo(UpdateUserRequest request) {
         User user = currentUserProvider.getCurrentUser();
         userMapper.updateEntity(user, request);
         return userMapper.toResponse(user);
@@ -85,7 +93,37 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
 
-    public UserResponse getCurrentUser() {
-        return userMapper.toResponse(currentUserProvider.getCurrentUser());
+    @Override
+    @Transactional(readOnly = true)
+    public UserProfileResponse getUserProfile(UUID id) {
+
+        User user = getUserOrThrow(id);
+
+        List<ItemSummaryResponse> items = itemRepository.findByOwnerId(
+                user.getId(), Pageable.unpaged())
+                .stream()
+                .map(itemMapper::toSummary)
+                .toList();
+
+        List<ReviewResponse> reviews = reviewRepository
+                .findByRentalItemOwner(user)
+                .stream()
+                .map(reviewMapper::toResponse)
+                .toList();
+
+        Double averageRating = reviewRepository.averageRatingByRentalItemOwner(user);
+        if (averageRating == null) {
+            averageRating = 0.0;
+        }
+
+        long reviewCount = reviewRepository.countByRentalItemOwner(user);
+
+        return userMapper.toProfile(
+                user,
+                items,
+                reviews,
+                averageRating,
+                reviewCount
+        );
     }
 }
