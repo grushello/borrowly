@@ -16,16 +16,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 @RequiredArgsConstructor
 public class RentalRequestsPageController {
-
-    private final RentalService rentalService;
+    
     private final RentalRequestService rentalRequestService;
 
     @GetMapping("/rental-requests")
     public String getRequests(Model model) {
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "startDate"));
 
-        Page<RentalRequestResponse> pendingRentalRequests = rentalRequestService.getIncoming(RentalRequestStatus.PENDING, pageable);
-        model.addAttribute("pending", pendingRentalRequests);
+
+        Page<RentalRequestResponse> pendingIncomingRentalRequests = rentalRequestService.getIncoming(RentalRequestStatus.PENDING, pageable);
+        Page<RentalRequestResponse> pendingOutgoingRentalRequests = rentalRequestService.getOutgoing(RentalRequestStatus.PENDING, pageable);
+
+        model.addAttribute("pendingIncoming", pendingIncomingRentalRequests);
+        model.addAttribute("pendingOutgoing", pendingOutgoingRentalRequests);
+
         return "rental-requests";
     }
 
