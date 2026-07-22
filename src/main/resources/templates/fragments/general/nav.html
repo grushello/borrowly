@@ -6,7 +6,7 @@
     <title>Navbar</title>
 </head>
 <body>
-    <nav th:fragment="nav">
+    <nav th:fragment="nav" class="navbar">
         <div class="nav-fragment">
             <a href="/">Catalog</a>
             <a sec:authorize="isAuthenticated()" href="/dashboard">My Dashboard</a>
