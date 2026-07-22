@@ -358,4 +358,43 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
                     .isThrownBy(() -> entityManager.flush());
         }
     }
+    @Nested
+    @DisplayName("findByRentalItemOwner")
+    class FindByRentalItemOwner {
+
+        @Test
+        @DisplayName("returns only reviews for the owner's items")
+        void returnsOwnersReviews() {
+
+            persistReviewFor(item, borrower, 5);
+            persistReviewFor(otherItem, otherBorrower, 4);
+
+            User otherOwner = persistUser("other-owner@borrowly.test");
+            Item foreignItem = persistItem(otherOwner, "Lawn mower");
+            persistReviewFor(foreignItem, borrower, 1);
+
+            flushAndClear();
+
+            List<Review> reviews =
+                    reviewRepository.findByRentalItemOwner(owner);
+
+            assertThat(reviews)
+                    .hasSize(2);
+
+            assertThat(reviews)
+                    .extracting(review -> review.getRental().getItem().getOwner().getId())
+                    .containsOnly(owner.getId());
+        }
+
+        @Test
+        @DisplayName("returns an empty list when the owner has no reviewed items")
+        void emptyWhenNoReviews() {
+
+            User newOwner = persistUser("new-owner@borrowly.test");
+            flushAndClear();
+
+            assertThat(reviewRepository.findByRentalItemOwner(newOwner))
+                    .isEmpty();
+        }
+    }
 }

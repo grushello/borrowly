@@ -83,4 +83,65 @@ class SecurityContextCurrentUserProviderTest {
                 new UsernamePasswordAuthenticationToken(
                         email, null, List.of(new SimpleGrantedAuthority("ROLE_USER"))));
     }
+
+    @Test
+    @DisplayName("getCurrentUserOptional returns the persisted user when authenticated")
+    void getCurrentUserOptionalReturnsUser() {
+        authenticateAs("alice@example.com");
+
+        User alice = User.register(
+                "Alice",
+                "Smith",
+                "alice@example.com",
+                "hashed"
+        );
+
+        when(userRepository.findByEmailIgnoreCase("alice@example.com"))
+                .thenReturn(Optional.of(alice));
+
+        Optional<User> result = provider.getCurrentUserOptional();
+
+        assertThat(result)
+                .isPresent()
+                .contains(alice);
+    }
+
+    @Test
+    @DisplayName("getCurrentUserOptional returns empty when there is no authentication")
+    void getCurrentUserOptionalReturnsEmptyWhenNoAuthentication() {
+        SecurityContextHolder.clearContext();
+
+        Optional<User> result = provider.getCurrentUserOptional();
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getCurrentUserOptional returns empty for anonymous user")
+    void getCurrentUserOptionalReturnsEmptyForAnonymous() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new AnonymousAuthenticationToken(
+                        "key",
+                        "anonymousUser",
+                        List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS"))
+                )
+        );
+
+        Optional<User> result = provider.getCurrentUserOptional();
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getCurrentUserOptional returns empty when authenticated user is not persisted")
+    void getCurrentUserOptionalReturnsEmptyWhenUserNotFound() {
+        authenticateAs("ghost@example.com");
+
+        when(userRepository.findByEmailIgnoreCase("ghost@example.com"))
+                .thenReturn(Optional.empty());
+
+        Optional<User> result = provider.getCurrentUserOptional();
+
+        assertThat(result).isEmpty();
+    }
 }

@@ -12,6 +12,7 @@ import com.borrowly.security.AuthTokenFilter;
 import com.borrowly.security.JwtUtil;
 import com.borrowly.service.UserDetailsServiceImpl;
 import com.borrowly.service.user.UserService;
+import com.borrowly.dto.response.UserProfileResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -132,6 +133,38 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstName").value("Bob"))
                 .andExpect(jsonPath("$.lastName").value("Smith"));
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("GET /api/users/{id}/profile returns user profile")
+    void getUserProfileReturnsProfile() throws Exception {
+
+        UUID id = UUID.randomUUID();
+
+        UserProfileResponse profile =
+                new UserProfileResponse(
+                        id,
+                        "Alice",
+                        "Smith",
+                        FIXED_TIME,
+                        java.util.List.of(),
+                        java.util.List.of(),
+                        5.0,
+                        1
+                );
+
+
+        when(userService.getUserProfile(id))
+                .thenReturn(profile);
+
+
+        mockMvc.perform(get("/api/users/{id}/profile", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value("Alice"))
+                .andExpect(jsonPath("$.lastName").value("Smith"))
+                .andExpect(jsonPath("$.averageRating").value(5.0))
+                .andExpect(jsonPath("$.reviewCount").value(1));
     }
 
     @Test

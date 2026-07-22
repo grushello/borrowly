@@ -1,42 +1,25 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org">
-
-
 <head>
-
     <meta charset="UTF-8">
-
     <title th:text="${profile.firstName + ' ' + profile.lastName}">
         User Profile
     </title>
-
-
     <link rel="stylesheet"
           th:href="@{/css/main.css}">
-
     <link rel="stylesheet"
           th:href="@{/css/user/profile.css}">
-
 </head>
 
-
-
 <body>
-
-
 <nav th:replace="~{fragments/general/nav :: nav}">
 </nav>
 
 
-
-
 <main class="profile-container">
 
-
-
     <section class="profile-header">
-
 
         <div class="avatar">
 
@@ -47,127 +30,65 @@
         </div>
 
 
-
-
         <div>
-
             <h1 th:text="${profile.firstName + ' ' + profile.lastName}">
                 John Smith
             </h1>
 
-
-
             <div class="profile-rating">
-
                 ⭐
-
                 <span th:text="${profile.averageRating ?: 0}">
                     0
                 </span>
-
-
                 (
-
                 <span th:text="${profile.reviewCount}">
                     0
                 </span>
-
                 reviews)
-
             </div>
-
-
         </div>
-
-
-
-
         <a th:if="${isOwner}"
            th:href="@{/account}"
            class="btn">
-
             Edit account
-
         </a>
-
-
-
     </section>
-
-
-
-
-
-
-
     <section class="profile-section">
-
-
         <h2>
             Items
         </h2>
-
-
         <ul class="profile-items"
             th:if="${profile.items != null and !profile.items.isEmpty()}">
-
-
             <li th:each="item : ${profile.items}">
 
                 <a th:href="@{/item/{id}(id=${item.id})}"
                    th:text="${item.title}">
 
                     Item name
-
                 </a>
-
             </li>
-
-
         </ul>
-
-
 
         <p class="empty-message"
            th:if="${profile.items == null or profile.items.isEmpty()}">
 
             This user has no items yet.
-
         </p>
 
-
     </section>
-
-
-
-
-
-
-
     <section class="profile-section">
-
-
         <h2>
             Reviews
         </h2>
-
-
-
         <div th:if="${profile.reviews != null and !profile.reviews.isEmpty()}">
-
-
             <div th:each="review : ${profile.reviews}"
                  class="review-card">
-
-
                 <p class="review-comment"
                    th:text="${review.comment}">
 
                     Comment
 
                 </p>
-
-
 
                 <span class="review-rating">
 
@@ -176,43 +97,21 @@
                 <strong th:text="${review.rating}">
                     5
                 </strong>
-
             </span>
-
-
             </div>
-
-
         </div>
-
-
-
-
         <p class="empty-message"
            th:if="${profile.reviews == null or profile.reviews.isEmpty()}">
 
             This user has no reviews yet.
 
         </p>
-
-
     </section>
-
-
-
-
 </main>
-
-
-
 
 
 <footer th:replace="~{fragments/general/footer :: footer}">
 </footer>
 
-
-
 </body>
-
-
 </html>
