@@ -46,10 +46,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
     @EntityGraph(attributePaths = {
             "reviewer",
-            "rental",
-            "rental.item",
-            "rental.item.owner",
-            "rental.item.primaryImage"
+            "rental.item.owner"
     })
     List<Review> findByRentalItemOwner(User owner);
 
