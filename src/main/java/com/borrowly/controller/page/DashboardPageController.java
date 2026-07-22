@@ -33,7 +33,7 @@ public class DashboardPageController {
 
         Page<FavoriteResponse> favoritesPage = favoriteService.listForCurrentUser(widgetPageable);
         Page<ItemSummaryResponse> itemsPage = itemService.getCurrentUserItems(widgetPageable);
-        UserResponse userResponse = userService.getProfile();
+        UserResponse userResponse = userService.getAccountInfo();
 
         Pageable activeRentalPageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "endDate"));
 

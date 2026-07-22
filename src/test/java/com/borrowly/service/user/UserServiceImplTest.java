@@ -1,12 +1,17 @@
 package com.borrowly.service.user;
 
 import com.borrowly.dto.request.UpdateUserRequest;
-import com.borrowly.dto.response.UserResponse;
-import com.borrowly.dto.response.UserSummaryResponse;
+import com.borrowly.dto.response.*;
 import com.borrowly.exception.CannotDisableSelfException;
 import com.borrowly.exception.UserNotFoundException;
+import com.borrowly.mapper.ItemMapper;
+import com.borrowly.mapper.ReviewMapper;
 import com.borrowly.mapper.UserMapper;
+import com.borrowly.model.item.Item;
+import com.borrowly.model.user.Review;
 import com.borrowly.model.user.User;
+import com.borrowly.repository.item.ItemRepository;
+import com.borrowly.repository.user.ReviewRepository;
 import com.borrowly.repository.user.UserRepository;
 import com.borrowly.security.CurrentUserProvider;
 import org.junit.jupiter.api.DisplayName;
@@ -30,9 +35,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -41,7 +44,19 @@ class UserServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
+    private ReviewRepository reviewRepository;
+
+    @Mock
+    private ItemRepository itemRepository;
+
+    @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private ItemMapper itemMapper;
+
+    @Mock
+    private ReviewMapper reviewMapper;
 
     @Mock
     private CurrentUserProvider currentUserProvider;
@@ -168,12 +183,12 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("getProfile returns the authenticated user's full profile")
-    void getProfileReturnsCurrentUser() {
+    void getAccountInfoReturnsCurrentUser() {
         User user = userWithId(UUID.randomUUID());
         when(currentUserProvider.getCurrentUser()).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(responseFor(user));
 
-        UserResponse result = userService.getProfile();
+        UserResponse result = userService.getAccountInfo();
 
         assertThat(result.email()).isEqualTo("alice@example.com");
         verify(currentUserProvider).getCurrentUser();
@@ -182,14 +197,14 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("updateProfile applies only provided fields, leaves others untouched")
-    void updateProfilePartialFields() {
+    void updateAccountInfoPartialFields() {
         User user = userWithId(UUID.randomUUID());
         user.setPhone("+37061234567");
         when(currentUserProvider.getCurrentUser()).thenReturn(user);
         when(userMapper.toResponse(user)).thenReturn(responseFor(user));
 
         UpdateUserRequest request = new UpdateUserRequest("Bob", null, null);
-        userService.updateProfile(request);
+        userService.updateAccountInfo(request);
 
         verify(userMapper).updateEntity(user, request);
         verify(userMapper).toResponse(user);
@@ -221,5 +236,176 @@ class UserServiceImplTest {
                 .isInstanceOf(UserNotFoundException.class);
 
         verify(userMapper, never()).toSummary(any());
+    }
+
+    @Test
+    @DisplayName("getUserProfile returns reviews and items")
+    void getUserProfileReturnsReviews() {
+
+        UUID id = UUID.randomUUID();
+
+        User user = userWithId(id);
+
+
+        // Review setup
+        Review reviewEntity = mock(Review.class);
+
+        ReviewResponse reviewResponse =
+                new ReviewResponse(
+                        UUID.randomUUID(),
+                        null,
+                        null,
+                        5,
+                        "Great item",
+                        UUID.randomUUID(),
+                        LocalDateTime.now()
+                );
+
+
+        // Item setup
+        Item item = mock(Item.class);
+
+        ItemSummaryResponse itemResponse =
+                new ItemSummaryResponse(
+                        UUID.randomUUID(),
+                        "Bike",
+                        BigDecimal.TWO,
+                        null,
+                        null,
+                        "Alice Smith",
+                        null
+                );
+
+
+        // Final profile response from UserMapper
+        UserProfileResponse profileResponse =
+                new UserProfileResponse(
+                        id,
+                        "Alice",
+                        "Smith",
+                        LocalDateTime.now(),
+                        List.of(itemResponse),
+                        List.of(reviewResponse),
+                        5.0,
+                        1
+                );
+
+
+        // User exists
+        when(userRepository.findById(id))
+                .thenReturn(Optional.of(user));
+
+
+        // Items
+        when(itemRepository.findByOwnerId(
+                eq(id),
+                any(Pageable.class)
+        ))
+                .thenReturn(new PageImpl<>(List.of(item)));
+
+
+        when(itemMapper.toSummary(item))
+                .thenReturn(itemResponse);
+
+
+
+        // Reviews
+        when(reviewRepository.findByRentalItemOwner(user))
+                .thenReturn(List.of(reviewEntity));
+
+
+        when(reviewMapper.toResponse(reviewEntity))
+                .thenReturn(reviewResponse);
+
+
+
+        // Rating data
+        when(reviewRepository.averageRatingByRentalItemOwner(user))
+                .thenReturn(5.0);
+
+
+        when(reviewRepository.countByRentalItemOwner(user))
+                .thenReturn(1L);
+
+
+
+        // User mapper
+        when(userMapper.toProfile(
+                eq(user),
+                any(List.class),
+                any(List.class),
+                eq(5.0),
+                eq(1L)
+        ))
+                .thenReturn(profileResponse);
+
+
+
+        // Execute
+        UserProfileResponse result =
+                userService.getUserProfile(id);
+
+
+
+        // Assertions
+        assertThat(result)
+                .isNotNull();
+
+
+        assertThat(result.items())
+                .hasSize(1);
+
+        assertThat(result.items().get(0).title())
+                .isEqualTo("Bike");
+
+
+        assertThat(result.reviews())
+                .hasSize(1);
+
+        assertThat(result.reviews().get(0).rating())
+                .isEqualTo(5);
+
+
+        assertThat(result.averageRating())
+                .isEqualTo(5.0);
+
+
+        assertThat(result.reviewCount())
+                .isEqualTo(1);
+
+
+
+        // Verify calls
+        verify(userRepository)
+                .findById(id);
+
+
+        verify(itemRepository)
+                .findByOwnerId(
+                        eq(id),
+                        any(Pageable.class)
+                );
+
+
+        verify(itemMapper)
+                .toSummary(item);
+
+
+        verify(reviewRepository)
+                .findByRentalItemOwner(user);
+
+
+        verify(reviewMapper)
+                .toResponse(reviewEntity);
+
+
+        verify(userMapper)
+                .toProfile(
+                        eq(user),
+                        any(List.class),
+                        any(List.class),
+                        eq(5.0),
+                        eq(1L)
+                );
     }
 }
