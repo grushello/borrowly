@@ -10,6 +10,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.Instant;
@@ -30,6 +31,15 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = baseBody(HttpStatus.BAD_REQUEST, "Validation failed");
         body.put("fields", fields);
         return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex) {
+        String message = "Invalid value for parameter '" + ex.getName() + "'";
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(baseBody(HttpStatus.BAD_REQUEST, message));
     }
 
     @ExceptionHandler(AuthenticationException.class)
@@ -88,7 +98,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(CategoryConflictException.class)
-    public ResponseEntity<Map<String, Object>> handleCategoryAlreadyExists(CategoryConflictException ex) {
+    public ResponseEntity<Map<String, Object>> handleCategoryConflict(CategoryConflictException ex) {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
@@ -121,6 +131,21 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(ReviewAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleReviewAlreadyExists(
+            ReviewAlreadyExistsException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
+    @ExceptionHandler(ReviewNotAllowedException.class)
+    public ResponseEntity<Map<String, Object>> handleReviewNotAllowed(ReviewNotAllowedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
     @ExceptionHandler({
             OptimisticLockException.class,
             OptimisticLockingFailureException.class
@@ -138,15 +163,6 @@ public class GlobalExceptionHandler {
             InsufficientBalanceException ex) {
         return ResponseEntity.badRequest()
                 .body(baseBody(HttpStatus.BAD_REQUEST, ex.getMessage()));
-
-    }
-    private Map<String, Object> baseBody(HttpStatus status, String message) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", Instant.now().toString());
-        body.put("status", status.value());
-        body.put("error", status.getReasonPhrase());
-        body.put("message", message);
-        return body;
     }
 
     @ExceptionHandler(UserNotFoundException.class)
@@ -206,6 +222,15 @@ public class GlobalExceptionHandler {
                 .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
     }
 
+    @ExceptionHandler(DuplicateRentalRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateRentalRequest(
+            DuplicateRentalRequestException ex) {
+        log.warn("Duplicate rental request: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+    }
+
     @ExceptionHandler(ImageLimitExceededException.class)
     public ResponseEntity<Map<String, Object>> handleImageLimitExceeded(ImageLimitExceededException ex) {
         return ResponseEntity
@@ -234,11 +259,20 @@ public class GlobalExceptionHandler {
                 .body(baseBody(HttpStatus.BAD_REQUEST, "File size exceeds the 5 MB limit"));
     }
 
-    @ExceptionHandler(DuplicateRentalRequestException.class)
-    public ResponseEntity<Map<String, Object>> handleDuplicateRentalRequest(DuplicateRentalRequestException ex) {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleUnexpected(Exception ex) {
+        log.error("Unhandled exception", ex);
         return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(baseBody(HttpStatus.CONFLICT, ex.getMessage()));
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(baseBody(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred"));
     }
 
+    private Map<String, Object> baseBody(HttpStatus status, String message) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", Instant.now().toString());
+        body.put("status", status.value());
+        body.put("error", status.getReasonPhrase());
+        body.put("message", message);
+        return body;
+    }
 }
