@@ -70,24 +70,13 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(csrfCookieEmitterFilter(), CsrfFilter.class)
                 .build();
     }
 
-    private OncePerRequestFilter csrfCookieEmitterFilter() {
-        return new OncePerRequestFilter() {
-            @Override
-            protected void doFilterInternal(HttpServletRequest request,
-                                            HttpServletResponse response,
-                                            FilterChain filterChain)
-                    throws ServletException, IOException {
-                CsrfToken token = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
-                if (token != null) {
-                    token.getToken();
-                }
-                filterChain.doFilter(request, response);
-            }
-        };
+    private CsrfTokenRequestAttributeHandler eagerCsrfTokenRequestHandler() {
+        CsrfTokenRequestAttributeHandler handler = new CsrfTokenRequestAttributeHandler();
+        handler.setCsrfRequestAttributeName(null);
+        return handler;
     }
 
     @Bean

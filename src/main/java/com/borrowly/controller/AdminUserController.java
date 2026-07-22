@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,19 +25,19 @@ public class AdminUserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<Page<UserResponse>> listUsers(
+    public Page<UserResponse> listUsers(
             @PageableDefault(sort = {"createdAt", "id"}, direction = Sort.Direction.DESC)
             Pageable pageable) {
-        return ResponseEntity.ok(userService.listUsers(pageable));
+        return userService.listUsers(pageable);
     }
 
     @PatchMapping("/{id}/disable")
-    public ResponseEntity<UserResponse> disableUser(@PathVariable UUID id) {
-        return ResponseEntity.ok(userService.disableUser(id));
+    public UserResponse disableUser(@PathVariable UUID id) {
+        return userService.disableUser(id);
     }
 
     @PatchMapping("/{id}/enable")
-    public ResponseEntity<UserResponse> enableUser(@PathVariable UUID id) {
-        return ResponseEntity.ok(userService.enableUser(id));
+    public UserResponse enableUser(@PathVariable UUID id) {
+        return userService.enableUser(id);
     }
 }

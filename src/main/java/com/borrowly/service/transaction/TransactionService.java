@@ -7,6 +7,7 @@ import com.borrowly.model.rental.Rental;
 import com.borrowly.model.transaction.TransactionType;
 import com.borrowly.model.user.User;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -17,7 +18,7 @@ public interface TransactionService {
 
     TransactionResponse withdraw(WithdrawRequest request);
 
-    Page<TransactionResponse> getHistory(List<TransactionType> types, int page, int size);
+    Page<TransactionResponse> getHistory(List<TransactionType> types, Pageable pageable);
 
     void holdDeposit(User borrower, BigDecimal amount, Rental rental);
 
