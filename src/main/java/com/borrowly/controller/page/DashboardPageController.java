@@ -40,7 +40,7 @@ public class DashboardPageController {
         Page<RentalResponse> activeRentalsAsBorrower = rentalService.listAsBorrower(List.of(RentalStatus.ACTIVE), activeRentalPageable);
         Page<RentalResponse> activeRentalsAsOwner = rentalService.listAsOwner(List.of(RentalStatus.ACTIVE), activeRentalPageable);
 
-        Page<TransactionResponse> transactionsPage = transactionService.getHistory(null, 0, 5);
+        Page<TransactionResponse> transactionsPage = transactionService.getHistory(null, widgetPageable);
 
         model.addAttribute("favorites", favoritesPage.getContent());
         model.addAttribute("userItemListings", itemsPage.getContent());
