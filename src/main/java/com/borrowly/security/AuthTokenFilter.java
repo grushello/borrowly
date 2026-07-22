@@ -1,6 +1,6 @@
 package com.borrowly.security;
 
-import com.borrowly.service.UserDetailsServiceImpl;
+import com.borrowly.service.auth.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

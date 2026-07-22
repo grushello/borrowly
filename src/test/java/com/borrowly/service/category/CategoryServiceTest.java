@@ -1,4 +1,4 @@
-package com.borrowly.service;
+package com.borrowly.service.category;
 
 import com.borrowly.dto.request.CategoryRequest;
 import com.borrowly.dto.response.CategoryResponse;
@@ -9,6 +9,7 @@ import com.borrowly.mapper.CategoryMapper;
 import com.borrowly.model.item.Category;
 import com.borrowly.repository.item.CategoryRepository;
 import com.borrowly.repository.item.ItemRepository;
+import com.borrowly.service.item.CategoryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -136,12 +137,12 @@ class CategoryServiceTest {
         UUID id = existingCategory.getId();
 
         assertNotNull(id);
-        when(itemRepository.existsByCategory_Id(id)).thenReturn(false);
+        when(itemRepository.existsByCategoryId(id)).thenReturn(false);
         when(categoryRepository.findById(id)).thenReturn(Optional.of(existingCategory));
 
         categoryService.delete(id);
 
-        verify(itemRepository).existsByCategory_Id(id);
+        verify(itemRepository).existsByCategoryId(id);
         verify(categoryRepository).delete(existingCategory);
     }
 
@@ -149,7 +150,7 @@ class CategoryServiceTest {
     void delete_deleteThrowsExceptionWhenIdNotFound() {
         UUID fakeId = UUID.randomUUID();
 
-        when(itemRepository.existsByCategory_Id(fakeId)).thenReturn(false);
+        when(itemRepository.existsByCategoryId(fakeId)).thenReturn(false);
 
         when(categoryRepository.findById(fakeId)).thenReturn(Optional.empty());
 
@@ -157,7 +158,7 @@ class CategoryServiceTest {
             categoryService.delete(fakeId);
         });
 
-        verify(itemRepository).existsByCategory_Id(fakeId);
+        verify(itemRepository).existsByCategoryId(fakeId);
         verify(categoryRepository).findById(fakeId);
 
         verify(categoryRepository, never()).delete(any());
@@ -166,7 +167,7 @@ class CategoryServiceTest {
     @Test
     void delete_ShouldThrowConflict_WhenItemsAreAssociated() {
         UUID id = UUID.randomUUID();
-        when(itemRepository.existsByCategory_Id(id)).thenReturn(true);
+        when(itemRepository.existsByCategoryId(id)).thenReturn(true);
 
         assertThrows(
                 CategoryConflictException.class,
@@ -174,6 +175,6 @@ class CategoryServiceTest {
         );
 
         verify(categoryRepository, never()).deleteById(any());
-        verify(itemRepository).existsByCategory_Id(id);
+        verify(itemRepository).existsByCategoryId(id);
     }
 }

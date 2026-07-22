@@ -1,6 +1,6 @@
 package com.borrowly.security;
 
-import com.borrowly.service.UserDetailsServiceImpl;
+import com.borrowly.service.auth.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;

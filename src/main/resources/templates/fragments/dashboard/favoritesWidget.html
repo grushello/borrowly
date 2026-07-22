@@ -6,29 +6,28 @@
 </head>
 <body>
 
-<div th:fragment="favoritesWidget" class="widget favorites-list">
+<div th:fragment="favoritesWidget" class="widget user-favorite-items-">
     <div class="widget-header">
         <h2>Your favorites</h2>
-        <a href="/" class="link-view-all">View all</a>
     </div>
 
-    <div class="favorites-scroll-container">
+    <div class="items-scroll-container">
 
-        <a th:each="fav : ${favorites}" th:href="@{/item/{id}(id=${fav.item.id})}" class="favorite-card">
+        <a th:each="fav : ${favorites}" th:href="@{/item/{id}(id=${fav.item.id})}" class="item-card">
 
-            <div class="fav-image-wrapper">
+            <div class="item-image-wrapper">
 <!--                <img th:src="${fav.item.primaryImage}" th:alt="${fav.item.title}" class="fav-image">-->
-                <span class="fav-icon">♥️</span>
+                <span class="item-icon">♥️</span>
             </div>
 
-            <div class="fav-info">
-                <h5 class="fav-title" th:text="${fav.item.title}">Grass cutter</h5>
-                <span class="fav-price" th:text="|€ ${fav.item.pricePerDay}/day|">€ 15/g</span>
+            <div class="item-info">
+                <h5 class="item-title" th:text="${fav.item.title}">Grass cutter</h5>
+                <span class="item-price" th:text="|€ ${fav.item.pricePerDay}/day|">€ 15/g</span>
             </div>
 
         </a>
 
-        <div th:if="${#lists.isEmpty(favorites)}" class="empty-state" id="favorites-empty-state">
+        <div th:if="${#lists.isEmpty(favorites)}" class="empty-state" id="items-empty-state">
             No saved favorite
         </div>
 

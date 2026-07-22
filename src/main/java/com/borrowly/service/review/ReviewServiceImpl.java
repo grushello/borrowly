@@ -65,7 +65,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional(readOnly = true)
     public Page<ReviewResponse> getReviewsByItem(UUID itemId, Pageable pageable) {
         return reviewRepository
-                .findByRental_Item_IdOrderByCreatedAtDesc(itemId, pageable)
+                .findByItemIdOrderByCreatedAtDesc(itemId, pageable)
                 .map(reviewMapper::toResponse);
     }
 }

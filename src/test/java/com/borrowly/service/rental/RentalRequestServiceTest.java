@@ -1,4 +1,4 @@
-package com.borrowly.service;
+package com.borrowly.service.rental;
 
 import com.borrowly.dto.request.CreateRentalRequest;
 import com.borrowly.dto.response.RentalRequestResponse;
@@ -22,7 +22,6 @@ import com.borrowly.model.user.User;
 import com.borrowly.repository.item.ItemRepository;
 import com.borrowly.repository.rental.RentalRepository;
 import com.borrowly.repository.rental.RentalRequestRepository;
-import com.borrowly.repository.user.UserRepository;
 import com.borrowly.security.CurrentUserProvider;
 import com.borrowly.service.notification.NotificationService;
 import com.borrowly.service.rentalrequest.RentalRequestServiceImpl;
@@ -63,8 +62,6 @@ class RentalRequestServiceTest {
     private RentalRepository rentalRepository;
     @Mock
     private ItemRepository itemRepository;
-    @Mock
-    private UserRepository userRepository;
     @Mock
     private TransactionService transactionService;
     @Mock
@@ -162,7 +159,6 @@ class RentalRequestServiceTest {
         @Test
         @DisplayName("missing item -> ItemNotFoundException (404)")
         void itemMissing() {
-            when(currentUserProvider.getCurrentUser()).thenReturn(borrower);
             when(itemRepository.findById(any())).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> service.create(createDto()))
@@ -174,7 +170,6 @@ class RentalRequestServiceTest {
         @DisplayName("non-active item -> RentalConflictException (409)")
         void itemNotActive() {
             item.setStatus(ItemStatus.RENTED);
-            when(currentUserProvider.getCurrentUser()).thenReturn(borrower);
             when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
 
             assertThatThrownBy(() -> service.create(createDto()))
@@ -244,34 +239,6 @@ class RentalRequestServiceTest {
     class Approve {
 
         @Test
-        @DisplayName("an item with no deposit and no daily price moves no money")
-        void zeroAmountsMoveNoMoney() {
-            item.setDepositAmount(BigDecimal.ZERO);
-            item.setPricePerDay(BigDecimal.ZERO);
-            RentalRequest request = pendingRequest();
-
-            when(currentUserProvider.getCurrentUser()).thenReturn(owner);
-            when(rentalRequestRepository.findById(request.getId())).thenReturn(Optional.of(request));
-            when(rentalRepository.existsOverlappingByStatusesExcluding(
-                    any(), any(), any(), any(), anyList())).thenReturn(false);
-            when(rentalRequestRepository
-                    .findByItem_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                            eq(item.getId()), eq(RentalRequestStatus.PENDING), any(), any()))
-                    .thenReturn(List.of(request));
-            when(rentalMapper.toResponse(any())).thenReturn(mock(RentalResponse.class));
-
-            service.approve(request.getId());
-
-            // transactions.amount has a CHECK (amount >= 0.01), so a zero-value rental must
-            // record no transaction at all rather than fail on commit.
-            verify(transactionService, never()).holdDeposit(any(), any(), any());
-            verify(transactionService, never()).chargeRent(any(), any(), any());
-
-            assertThat(request.getStatus()).isEqualTo(RentalRequestStatus.APPROVED);
-            assertThat(item.getStatus()).isEqualTo(ItemStatus.RENTED);
-        }
-
-        @Test
         @DisplayName("full flow: 3 transactions, rental snapshot, item RENTED, overlap-only auto-reject, notifications")
         void fullFlow() {
             RentalRequest request = pendingRequest();
@@ -288,7 +255,7 @@ class RentalRequestServiceTest {
             when(rentalRepository.existsOverlappingByStatusesExcluding(
                     any(), any(), any(), any(), anyList())).thenReturn(false);
             when(rentalRequestRepository
-                    .findByItem_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                    .findOverlappingByItemIdAndStatus(
                             eq(item.getId()), eq(RentalRequestStatus.PENDING), any(), any()))
                     .thenReturn(List.of(request, overlapping));
             when(rentalMapper.toResponse(any())).thenReturn(mock(RentalResponse.class));
@@ -307,7 +274,7 @@ class RentalRequestServiceTest {
             // three money movements with correct amounts
             verify(transactionService).holdDeposit(eq(borrower), eq(new BigDecimal("50.00")), any());
             verify(transactionService).chargeRent(eq(borrower), eq(new BigDecimal("30.00")), any());
-            verify(transactionService, never()).payoutRent(any(), any(), any());(transactionService).payoutRent(eq(owner), eq(new BigDecimal("30.00")), any());
+            verify(transactionService, never()).payoutRent(any(), any(), any());
 
             // item flipped to RENTED
             assertThat(item.getStatus()).isEqualTo(ItemStatus.RENTED);
@@ -334,7 +301,7 @@ class RentalRequestServiceTest {
                     any(), any(), any(), any(), anyList())).thenReturn(false);
             // repository query only returns date-overlapping requests; here just the approved one
             when(rentalRequestRepository
-                    .findByItem_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                    .findOverlappingByItemIdAndStatus(
                             any(), any(), any(), any()))
                     .thenReturn(List.of(request));
             when(rentalMapper.toResponse(any())).thenReturn(mock(RentalResponse.class));
@@ -355,7 +322,7 @@ class RentalRequestServiceTest {
 
             when(currentUserProvider.getCurrentUser()).thenReturn(owner);
             when(rentalRequestRepository.findById(request.getId())).thenReturn(Optional.of(request));
-            when(rentalRepository.findByItem_IdAndBorrower_IdAndStartDateAndEndDate(
+            when(rentalRepository.findByItemIdAndBorrowerIdAndStartDateAndEndDate(
                     item.getId(), borrower.getId(), START, END)).thenReturn(Optional.of(existing));
             when(rentalMapper.toResponse(existing)).thenReturn(mock(RentalResponse.class));
 

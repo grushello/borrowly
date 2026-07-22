@@ -17,12 +17,23 @@ import java.util.UUID;
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
     @EntityGraph(attributePaths = {"reviewer", "rental"})
-    Page<Review> findByRental_Item_IdOrderByCreatedAtDesc(UUID itemId, Pageable pageable);
+    @Query("""
+            select r
+            from Review r
+            where r.rental.item.id = :itemId
+            order by r.createdAt desc
+            """)
+    Page<Review> findByItemIdOrderByCreatedAtDesc(@Param("itemId") UUID itemId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"reviewer", "rental"})
-    Page<Review> findByReviewer_Id(UUID reviewerId, Pageable pageable);
+    Page<Review> findByReviewerId(UUID reviewerId, Pageable pageable);
 
-    long countByRental_Item_Id(UUID itemId);
+    @Query("""
+            select count(r)
+            from Review r
+            where r.rental.item.id = :itemId
+            """)
+    long countByItemId(@Param("itemId") UUID itemId);
 
     @Query("""
             select avg(r.rating)

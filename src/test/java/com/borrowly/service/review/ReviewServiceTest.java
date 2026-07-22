@@ -170,7 +170,7 @@ class ReviewServiceTest {
         ReviewResponse resp1 = new ReviewResponse(r1.getId(), null, null, 5, null, returnedRentalId, null);
         ReviewResponse resp2 = new ReviewResponse(r2.getId(), null, null, 3, null, rental2Id, null);
 
-        when(reviewRepository.findByRental_Item_IdOrderByCreatedAtDesc(itemId, pageable))
+        when(reviewRepository.findByItemIdOrderByCreatedAtDesc(itemId, pageable))
                 .thenReturn(new PageImpl<>(List.of(r1, r2)));
         when(reviewMapper.toResponse(r1)).thenReturn(resp1);
         when(reviewMapper.toResponse(r2)).thenReturn(resp2);

@@ -19,19 +19,35 @@ import java.util.UUID;
 public interface RentalRequestRepository extends JpaRepository<RentalRequest, UUID> {
 
     @EntityGraph(attributePaths = {"item", "item.owner", "borrower"})
-    Page<RentalRequest> findByBorrower_Id(UUID borrowerId, Pageable pageable);
+    Page<RentalRequest> findByBorrowerId(UUID borrowerId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"item", "item.owner", "borrower"})
-    Page<RentalRequest> findByItem_Owner_Id(UUID ownerId, Pageable pageable);
+    Page<RentalRequest> findByBorrowerIdAndStatus(UUID borrowerId,
+                                                  RentalRequestStatus status,
+                                                  Pageable pageable);
 
     @EntityGraph(attributePaths = {"item", "item.owner", "borrower"})
-    Page<RentalRequest> findByItem_Owner_IdAndStatus(UUID ownerId,
-                                                     RentalRequestStatus status,
-                                                     Pageable pageable);
+    @Query("""
+            select rr
+            from RentalRequest rr
+            where rr.item.owner.id = :ownerId
+            """)
+    Page<RentalRequest> findByOwnerId(@Param("ownerId") UUID ownerId, Pageable pageable);
 
-    boolean existsByItem_IdAndBorrower_IdAndStatusIn(UUID itemId,
-                                                     UUID borrowerId,
-                                                     Collection<RentalRequestStatus> statuses);
+    @EntityGraph(attributePaths = {"item", "item.owner", "borrower"})
+    @Query("""
+            select rr
+            from RentalRequest rr
+            where rr.item.owner.id = :ownerId
+              and rr.status = :status
+            """)
+    Page<RentalRequest> findByOwnerIdAndStatus(@Param("ownerId") UUID ownerId,
+                                               @Param("status") RentalRequestStatus status,
+                                               Pageable pageable);
+
+    boolean existsByItemIdAndBorrowerIdAndStatusIn(UUID itemId,
+                                                   UUID borrowerId,
+                                                   Collection<RentalRequestStatus> statuses);
 
     @Query("""
             select case when count(rr) > 0 then true else false end
@@ -46,14 +62,16 @@ public interface RentalRequestRepository extends JpaRepository<RentalRequest, UU
                                       @Param("endDate") LocalDate endDate);
 
     @EntityGraph(attributePaths = {"item", "item.owner", "borrower"})
-    Page<RentalRequest> findByBorrower_IdAndStatus(UUID borrowerId,
-                                                   RentalRequestStatus status,
-                                                   Pageable pageable);
-
-    @EntityGraph(attributePaths = {"item", "item.owner", "borrower"})
-    List<RentalRequest> findByItem_IdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-            UUID itemId,
-            RentalRequestStatus status,
-            LocalDate endDate,
-            LocalDate startDate);
+    @Query("""
+            select rr
+            from RentalRequest rr
+            where rr.item.id = :itemId
+              and rr.status = :status
+              and rr.startDate <= :endDate
+              and rr.endDate   >= :startDate
+            """)
+    List<RentalRequest> findOverlappingByItemIdAndStatus(@Param("itemId") UUID itemId,
+                                                         @Param("status") RentalRequestStatus status,
+                                                         @Param("startDate") LocalDate startDate,
+                                                         @Param("endDate") LocalDate endDate);
 }

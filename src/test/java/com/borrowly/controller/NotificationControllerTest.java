@@ -7,7 +7,7 @@ import com.borrowly.model.notification.NotificationType;
 import com.borrowly.security.AuthEntryPointJwt;
 import com.borrowly.security.AuthTokenFilter;
 import com.borrowly.security.JwtUtil;
-import com.borrowly.service.UserDetailsServiceImpl;
+import com.borrowly.service.auth.UserDetailsServiceImpl;
 import com.borrowly.service.notification.NotificationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

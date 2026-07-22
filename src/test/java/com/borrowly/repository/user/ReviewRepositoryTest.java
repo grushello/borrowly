@@ -108,7 +108,7 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
         return rental;
     }
 
-    private Review persistReview(Rental rental, User reviewer, int rating) {
+    private void persistReview(Rental rental, User reviewer, int rating) {
         Review review = Review.builder()
                 .rental(rental)
                 .reviewer(reviewer)
@@ -116,11 +116,10 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
                 .comment("Rated " + rating)
                 .build();
         entityManager.persist(review);
-        return review;
     }
 
-    private Review persistReviewFor(Item reviewedItem, User reviewer, int rating) {
-        return persistReview(persistRental(reviewedItem, reviewer), reviewer, rating);
+    private void persistReviewFor(Item reviewedItem, User reviewer, int rating) {
+        persistReview(persistRental(reviewedItem, reviewer), reviewer, rating);
     }
 
     private void flushAndClear() {
@@ -129,7 +128,7 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
     }
 
     @Nested
-    @DisplayName("findByRental_Item_IdOrderByCreatedAtDesc")
+    @DisplayName("findByItemIdOrderByCreatedAtDesc")
     class FindByItem {
 
         @Test
@@ -140,7 +139,7 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
             flushAndClear();
 
             Page<Review> page = reviewRepository
-                    .findByRental_Item_IdOrderByCreatedAtDesc(item.getId(), firstPage);
+                    .findByItemIdOrderByCreatedAtDesc(item.getId(), firstPage);
 
             assertThat(page.getTotalElements()).isEqualTo(1);
             assertThat(page.getContent())
@@ -158,7 +157,7 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
             flushAndClear();
 
             List<Review> reviews = reviewRepository
-                    .findByRental_Item_IdOrderByCreatedAtDesc(item.getId(), firstPage)
+                    .findByItemIdOrderByCreatedAtDesc(item.getId(), firstPage)
                     .getContent();
 
             assertThat(reviews).hasSize(3);
@@ -171,7 +170,7 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
         @DisplayName("returns an empty page for an item with no reviews")
         void emptyWhenNoReviews() {
             assertThat(reviewRepository
-                    .findByRental_Item_IdOrderByCreatedAtDesc(item.getId(), firstPage))
+                    .findByItemIdOrderByCreatedAtDesc(item.getId(), firstPage))
                     .isEmpty();
         }
 
@@ -184,7 +183,7 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
             flushAndClear();
 
             Page<Review> page = reviewRepository
-                    .findByRental_Item_IdOrderByCreatedAtDesc(item.getId(), PageRequest.of(0, 2));
+                    .findByItemIdOrderByCreatedAtDesc(item.getId(), PageRequest.of(0, 2));
 
             assertThat(page.getContent()).hasSize(2);
             assertThat(page.getTotalElements()).isEqualTo(3);
@@ -193,7 +192,7 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
     }
 
     @Nested
-    @DisplayName("findByReviewer_Id")
+    @DisplayName("findByReviewerId")
     class FindByReviewer {
 
         @Test
@@ -203,7 +202,7 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
             persistReviewFor(item, otherBorrower, 2);
             flushAndClear();
 
-            Page<Review> page = reviewRepository.findByReviewer_Id(borrower.getId(), firstPage);
+            Page<Review> page = reviewRepository.findByReviewerId(borrower.getId(), firstPage);
 
             assertThat(page.getTotalElements()).isEqualTo(1);
             assertThat(page.getContent())
@@ -219,19 +218,19 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
             persistReviewFor(otherItem, borrower, 4);
             flushAndClear();
 
-            assertThat(reviewRepository.findByReviewer_Id(borrower.getId(), firstPage))
+            assertThat(reviewRepository.findByReviewerId(borrower.getId(), firstPage))
                     .hasSize(2);
         }
 
         @Test
         @DisplayName("returns an empty page for a reviewer with no reviews")
         void emptyWhenNoReviews() {
-            assertThat(reviewRepository.findByReviewer_Id(borrower.getId(), firstPage)).isEmpty();
+            assertThat(reviewRepository.findByReviewerId(borrower.getId(), firstPage)).isEmpty();
         }
     }
 
     @Nested
-    @DisplayName("countByRental_Item_Id")
+    @DisplayName("countByItemId")
     class CountByItem {
 
         @Test
@@ -242,14 +241,14 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
             persistReviewFor(otherItem, borrower, 1);
             flushAndClear();
 
-            assertThat(reviewRepository.countByRental_Item_Id(item.getId())).isEqualTo(2);
-            assertThat(reviewRepository.countByRental_Item_Id(otherItem.getId())).isEqualTo(1);
+            assertThat(reviewRepository.countByItemId(item.getId())).isEqualTo(2);
+            assertThat(reviewRepository.countByItemId(otherItem.getId())).isEqualTo(1);
         }
 
         @Test
         @DisplayName("returns zero for an item with no reviews")
         void zeroWhenNoReviews() {
-            assertThat(reviewRepository.countByRental_Item_Id(item.getId())).isZero();
+            assertThat(reviewRepository.countByItemId(item.getId())).isZero();
         }
     }
 
@@ -306,7 +305,7 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
     }
 
     @Nested
-    @DisplayName("existsByRental_Id")
+    @DisplayName("existsByRentalId")
     class ExistsByRental {
 
         @Test
