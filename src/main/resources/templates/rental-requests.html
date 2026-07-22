@@ -4,16 +4,18 @@
     <meta charset="UTF-8">
     <title>Rental requests</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/rentalRequests/main.css}">
     <link rel="stylesheet" th:href="@{/css/rentalRequests/rentalRequests.css}">
 </head>
 <body>
   <nav th:replace="~{fragments/general/nav :: nav}">
   </nav>
-  <main>
+
+  <main class="rental-requests-container">
     <div th:replace="~{fragments/rentalRequests/rentalRequestsWidget :: rentalRequestsWidget(requestsList = ${pendingIncoming}, incomingOrOutgoing = 'Incoming')}"></div>
     <div th:replace="~{fragments/rentalRequests/rentalRequestsWidget :: rentalRequestsWidget(requestsList = ${pendingOutgoing}, incomingOrOutgoing = 'Outgoing')}"></div>
-
   </main>
+
   <footer th:replace="~{fragments/general/footer :: footer}">
   </footer>
 </body>
