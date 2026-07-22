@@ -102,6 +102,7 @@
 </footer>
 
 
+<script src="/js/csrf.js"></script>
 
 <script>
 
@@ -110,7 +111,7 @@
         .addEventListener("submit", function(event){
             event.preventDefault();
 
-            fetch("/api/users/me",
+            csrfFetch("/api/users/me",
                 {
                     method: "PATCH",
                     headers:
