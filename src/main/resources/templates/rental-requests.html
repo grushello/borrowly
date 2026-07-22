@@ -19,6 +19,7 @@
   <footer th:replace="~{fragments/general/footer :: footer}">
   </footer>
 </body>
+<script src="/js/csrf.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     const approveButtons = document.querySelectorAll('.approve-btn');
@@ -33,7 +34,7 @@
       button.textContent = "...";
 
 
-      fetch(url, {
+      csrfFetch(url, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -89,12 +90,10 @@
         cancelBtn.textContent = "Cancelling...";
 
         try {
-          const response = await fetch(`/api/rental-requests/${rentalRequestId}/cancel`, {
+          const response = await csrfFetch(`/api/rental-requests/${rentalRequestId}/cancel`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
-              // Nota: Pass the token here if it's needed
-              // 'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
             }
           });
 
