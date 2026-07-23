@@ -19,6 +19,19 @@ docker compose up -d db
 ./mvnw test
 ```
 
+### Test admin account
+
+Signup always assigns the `USER` role, so the first `ADMIN` cannot be created
+through the app. Changeset `014-seed-test-admin` seeds one on a fresh database:
+
+| Email | Password |
+| --- | --- |
+| `admin@borrowly.local` | `Admin123!` |
+
+That account unlocks the admin panel, category management, and user
+enable/disable. The changeset is guarded by a precondition, so it is skipped if
+the email already exists.
+
 ## Documentation
 
 - [infrastructure.md](docs/infrastructure.md) — Docker, PostgreSQL,
