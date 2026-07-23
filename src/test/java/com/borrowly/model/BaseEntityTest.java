@@ -44,6 +44,8 @@ class BaseEntityTest extends AbstractPostgresTest {
     @Test
     @DisplayName("a loaded entity is not new, so saving it updates instead of inserting")
     void loadedEntityIsNotNew() {
+        long usersBefore = userRepository.count();
+
         User user = userRepository.saveAndFlush(
                 User.register("Grace", "Hopper", "grace@example.com", "hash"));
         entityManager.clear();
@@ -57,6 +59,8 @@ class BaseEntityTest extends AbstractPostgresTest {
         userRepository.save(loaded);
         entityManager.flush();
 
-        assertThat(userRepository.count()).isEqualTo(1);
+        assertThat(userRepository.count())
+                .as("the second save must update the existing row, not insert a duplicate")
+                .isEqualTo(usersBefore + 1);
     }
 }
