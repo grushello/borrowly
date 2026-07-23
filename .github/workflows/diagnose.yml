@@ -7,6 +7,10 @@ name: Diagnose deployment
 # container is failing its healthcheck, which is otherwise invisible unless
 # you have a shell on the server.
 #
+# Split into small steps on purpose: this runner only renders logs once a job
+# finishes, so a single long step shows nothing at all while it runs. Every
+# step is capped and cannot hang the job.
+#
 # Actions -> Diagnose deployment -> Run workflow.
 
 on:
@@ -22,70 +26,78 @@ concurrency:
 jobs:
   diagnose:
     runs-on: self-hosted
+    timeout-minutes: 6
     env:
       COMPOSE_PROJECT: borrowly
     steps:
-      - name: Report database container health
+      - name: Find the database container
+        timeout-minutes: 1
         run: |
-          PROJECT="${COMPOSE_PROJECT}"
-
-          echo "::group::Containers in project ${PROJECT}"
-          docker ps -a \
-            --filter "label=com.docker.compose.project=${PROJECT}" \
-            --format 'table {{.Names}}\t{{.State}}\t{{.Status}}' || true
-          echo "::endgroup::"
-
-          CID="$(docker ps -a \
-            --filter "label=com.docker.compose.project=${PROJECT}" \
+          CID="$(timeout 20 docker ps -a \
+            --filter "label=com.docker.compose.project=${COMPOSE_PROJECT}" \
             --filter "label=com.docker.compose.service=db" \
             --format '{{.ID}}' | head -n1)" || true
 
           if [ -z "$CID" ]; then
-            echo "No db container found for project '${PROJECT}'."
-            echo "Either the project name differs or the container was removed."
+            echo "No db container found for project '${COMPOSE_PROJECT}'."
           else
             echo "db container: ${CID}"
+          fi
+          echo "DB_CID=${CID}" >> "$GITHUB_ENV"
 
-            echo "::group::Container state"
-            docker inspect --format 'status:      {{.State.Status}}
-          started at:  {{.State.StartedAt}}
-          restarts:    {{.RestartCount}}
-          exit code:   {{.State.ExitCode}}
-          oom killed:  {{.State.OOMKilled}}' "$CID" || true
-            echo "::endgroup::"
+          echo
+          echo "All containers in the project:"
+          timeout 20 docker ps -a \
+            --filter "label=com.docker.compose.project=${COMPOSE_PROJECT}" \
+            --format 'table {{.Names}}\t{{.State}}\t{{.Status}}' || true
 
-            # Worth comparing against docker-compose.yml: if the values here
-            # differ, the container predates the current compose file.
-            echo "::group::Healthcheck baked into the container"
-            docker inspect --format '{{if .Config.Healthcheck}}test:         {{.Config.Healthcheck.Test}}
-          interval:     {{.Config.Healthcheck.Interval}}
-          timeout:      {{.Config.Healthcheck.Timeout}}
-          retries:      {{.Config.Healthcheck.Retries}}
-          start period: {{.Config.Healthcheck.StartPeriod}}{{else}}no healthcheck defined{{end}}' "$CID" || true
-            echo "::endgroup::"
-
-            # Usually the section that answers the question: it carries the
-            # stderr of the last few pg_isready attempts.
-            echo "::group::Health probe results"
-            docker inspect --format '{{if .State.Health}}status:         {{.State.Health.Status}}
+      # The section that usually answers the question: it carries the stderr
+      # of the last few healthcheck attempts.
+      - name: Health probe results
+        if: always()
+        timeout-minutes: 1
+        run: |
+          [ -z "$DB_CID" ] && { echo "no db container, skipping"; exit 0; }
+          timeout 20 docker inspect --format '{{if .State.Health}}status:         {{.State.Health.Status}}
           failing streak: {{.State.Health.FailingStreak}}
           {{range .State.Health.Log}}
           --- probe at {{.Start}} (exit {{.ExitCode}})
-          {{.Output}}{{end}}{{else}}container reports no health state{{end}}' "$CID" || true
-            echo "::endgroup::"
+          {{.Output}}{{end}}{{else}}container reports no health state{{end}}' "$DB_CID" || true
 
-            echo "::group::Postgres logs (last 120 lines)"
-            docker logs --tail 120 "$CID" 2>&1 || true
-            echo "::endgroup::"
-          fi
+      - name: Container state and healthcheck definition
+        if: always()
+        timeout-minutes: 1
+        run: |
+          [ -z "$DB_CID" ] && { echo "no db container, skipping"; exit 0; }
+          timeout 20 docker inspect --format 'status:      {{.State.Status}}
+          started at:  {{.State.StartedAt}}
+          restarts:    {{.RestartCount}}
+          exit code:   {{.State.ExitCode}}
+          oom killed:  {{.State.OOMKilled}}' "$DB_CID" || true
 
-          echo "::group::Disk space"
-          df -h || true
+          echo
+          # Compare against docker-compose.yml: if these differ, the running
+          # container predates the current compose file.
+          timeout 20 docker inspect --format '{{if .Config.Healthcheck}}test:         {{.Config.Healthcheck.Test}}
+          interval:     {{.Config.Healthcheck.Interval}}
+          timeout:      {{.Config.Healthcheck.Timeout}}
+          retries:      {{.Config.Healthcheck.Retries}}
+          start period: {{.Config.Healthcheck.StartPeriod}}{{else}}no healthcheck defined{{end}}' "$DB_CID" || true
+
+      - name: Postgres logs
+        if: always()
+        timeout-minutes: 1
+        run: |
+          [ -z "$DB_CID" ] && { echo "no db container, skipping"; exit 0; }
+          timeout 30 docker logs --tail 120 "$DB_CID" 2>&1 || true
+
+      # df can block indefinitely on an unresponsive network mount, hence the
+      # timeout rather than a bare call.
+      - name: Disk space
+        if: always()
+        timeout-minutes: 1
+        run: |
+          timeout 20 df -h || echo "df -h timed out or failed"
           echo
           echo "inodes:"
-          df -i || true
-          echo "::endgroup::"
-
-          echo "::group::Docker disk usage"
-          docker system df || true
-          echo "::endgroup::"
+          timeout 20 df -i || echo "df -i timed out or failed"
