@@ -45,6 +45,19 @@ jobs:
             || echo "FAILED: docker version did not answer within 15s"
           echo "docker version took $(( $(date +%s) - start ))s"
 
+          # Counts come from the daemon's own bookkeeping, so this stays fast
+          # even when "docker ps -a" crawls. A large stopped/image count is
+          # the usual reason container operations get slow.
+          echo
+          start=$(date +%s)
+          timeout 30 docker info --format 'containers: {{.Containers}} (running {{.ContainersRunning}}, paused {{.ContainersPaused}}, stopped {{.ContainersStopped}})
+          images:     {{.Images}}
+          storage:    {{.Driver}}
+          cpus:       {{.NCPU}}
+          memory:     {{.MemTotal}}' \
+            || echo "FAILED: docker info did not answer within 30s"
+          echo "docker info took $(( $(date +%s) - start ))s"
+
       # Unfiltered and given two full minutes: this separates "the daemon is
       # wedged" from "the containers just do not carry that project label".
       - name: All containers on the host
@@ -115,10 +128,19 @@ jobs:
 
       # df can block indefinitely on an unresponsive network mount, hence the
       # timeout rather than a bare call.
-      - name: Disk space
+      - name: Host resources
         if: always()
         timeout-minutes: 1
         run: |
+          # Load average and memory pressure: the other likely reason the
+          # daemon is slow to spawn healthcheck probes.
+          echo "load and uptime:"
+          timeout 10 uptime || echo "uptime timed out or failed"
+          echo
+          echo "memory:"
+          timeout 10 free -h || echo "free timed out or failed"
+
+          echo
           timeout 20 df -h || echo "df -h timed out or failed"
           echo
           echo "inodes:"
