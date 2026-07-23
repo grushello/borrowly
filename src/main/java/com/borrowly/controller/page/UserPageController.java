@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -38,10 +39,16 @@ public class UserPageController {
                         .map(id::equals)
                         .orElse(false);
 
+        String itemIds = "";
+        if (profile.items() != null && !profile.items().isEmpty()) {
+            itemIds = profile.items().stream()
+                    .map(item -> item.id().toString())
+                    .collect(Collectors.joining(","));
+        }
 
         model.addAttribute("profile", profile);
         model.addAttribute("isOwner", isOwner);
-
+        model.addAttribute("itemIds", itemIds);
 
         return "user/profile";
     }
