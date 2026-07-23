@@ -54,8 +54,7 @@
     opacity: 0.8;
 }
 .balance-top-up {
-    margin-top: 20px;
-    padding-top: 16px;
+    margin-top: 10px;
     border-top: 1px solid #ecf0f1;
     display: flex;
     flex-direction: column;
@@ -85,6 +84,7 @@
 
 .balance-top-up button {
     padding: 10px 14px;
+    margin-top: 6px;
     border: none;
     border-radius: 8px;
     background-color: #27ae60;

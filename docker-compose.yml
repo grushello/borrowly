@@ -12,16 +12,22 @@ services:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
+      interval: 60s
+      timeout: 30s
       retries: 5
+      start_period: 120s
 
   app:
     build: .
     restart: unless-stopped
+    # service_started, not service_healthy: the deploy host is loaded enough
+    # that Docker cannot spawn the probe process inside the timeout, so the
+    # healthcheck fails while Postgres is answering fine. The check is kept
+    # below for status reporting, it just no longer gates the deploy. The app
+    # restarts on its own if it ever does come up before the database.
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_started
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}

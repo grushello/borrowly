@@ -44,7 +44,7 @@
     document.getElementById('signinForm').addEventListener('submit', async function(event) {
         event.preventDefault();
 
-        const email = document.getElementById('email-input').value;
+        const email = document.getElementById('email-input').value.trim().toLowerCase();
         const password = document.getElementById('password-input').value;
 
         try {
