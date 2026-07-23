@@ -23,13 +23,4 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     Page<Transaction> findByUserIdAndTypeIn(UUID userId,
                                             Collection<TransactionType> types,
                                             Pageable pageable);
-
-    @EntityGraph(attributePaths = "rental")
-    Page<Transaction> findByUserIdAndCreatedAtBetween(UUID userId,
-                                                      LocalDateTime from,
-                                                      LocalDateTime to,
-                                                      Pageable pageable);
-
-    @EntityGraph(attributePaths = "user")
-    List<Transaction> findByRentalId(UUID rentalId);
 }

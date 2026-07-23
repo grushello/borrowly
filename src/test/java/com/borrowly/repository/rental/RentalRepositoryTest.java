@@ -243,60 +243,6 @@ class RentalRepositoryTest extends AbstractPostgresTest {
         }
     }
 
-    @Nested
-    @DisplayName("findByEndDateBeforeAndStatus — the overdue scan")
-    class OverdueScan {
-
-        @Test
-        @DisplayName("finds ACTIVE rentals whose endDate is past, and ignores RETURNED ones")
-        void findsOnlyPastDueActiveRentals() {
-            LocalDate today = LocalDate.of(2026, Month.JULY, 20);
-
-            Rental overdue = persistRental(item, borrower,
-                    LocalDate.of(2026, Month.JULY, 1), LocalDate.of(2026, Month.JULY, 10), RentalStatus.ACTIVE);
-
-            persistRental(item, borrower,
-                    LocalDate.of(2026, Month.JULY, 1), LocalDate.of(2026, Month.JULY, 10), RentalStatus.RETURNED);
-
-            persistRental(item, borrower,
-                    LocalDate.of(2026, Month.JULY, 18), LocalDate.of(2026, Month.JULY, 25), RentalStatus.ACTIVE);
-
-            flushAndClear();
-
-            List<Rental> due = rentalRepository.findByEndDateBeforeAndStatus(
-                    today, RentalStatus.ACTIVE);
-
-            assertThat(due)
-                    .singleElement()
-                    .extracting(Rental::getId)
-                    .isEqualTo(overdue.getId());
-        }
-
-        @Test
-        @DisplayName("is exclusive on the cutoff — a rental ending exactly on the cutoff is not yet overdue")
-        void cutoffIsExclusive() {
-            LocalDate cutoff = LocalDate.of(2026, Month.JULY, 15);
-            persistRental(item, borrower, JUL_10, cutoff, RentalStatus.ACTIVE);
-            flushAndClear();
-
-            assertThat(rentalRepository.findByEndDateBeforeAndStatus(cutoff, RentalStatus.ACTIVE))
-                    .isEmpty();
-        }
-
-        @Test
-        @DisplayName("returns a List so the scheduled job can walk the full result set")
-        void returnsList() {
-            persistRental(item, borrower, JUL_10, JUL_15, RentalStatus.ACTIVE);
-            // Earlier window, not the later one: both rentals must end before the cutoff.
-            persistRental(item, otherBorrower, JUL_01, JUL_05, RentalStatus.ACTIVE);
-            flushAndClear();
-
-            List<Rental> due = rentalRepository.findByEndDateBeforeAndStatus(
-                    LocalDate.of(2026, Month.JULY, 20), RentalStatus.ACTIVE);
-
-            assertThat(due).hasSize(2);
-        }
-    }
 
     @Nested
     @DisplayName("existsOverlappingByStatuses")

@@ -222,80 +222,6 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
     }
 
     @Nested
-    @DisplayName("findByRentalId")
-    class FindByRentalId {
-
-        @Test
-        @DisplayName("returns every transaction tied to the rental, regardless of owning user")
-        void findsAllTransactionsForRental() {
-            Transaction payment = persistTransaction(user, TransactionType.RENT_PAYMENT, rental);
-            Transaction payout = persistTransaction(owner, TransactionType.RENT_PAYOUT, rental);
-            persistTransaction(otherUser, TransactionType.TOP_UP, null);
-            flushAndClear();
-
-            List<Transaction> results = transactionRepository.findByRentalId(rental.getId());
-
-            assertThat(results)
-                    .extracting(Transaction::getId)
-                    .containsExactlyInAnyOrder(payment.getId(), payout.getId());
-        }
-
-        @Test
-        @DisplayName("returns an empty list for a rental with no transactions")
-        void emptyWhenNoTransactionsForRental() {
-            assertThat(transactionRepository.findByRentalId(UUID.randomUUID())).isEmpty();
-        }
-    }
-
-    @Nested
-    @DisplayName("findByUserIdAndCreatedAtBetween")
-    class FindByUserAndCreatedAtBetween {
-
-        @Test
-        @DisplayName("keeps only this user's transactions inside the window, inclusive of the bounds")
-        void filtersByWindowInclusive() {
-            Transaction before = persistTransaction(user, TransactionType.TOP_UP);
-            Transaction onLowerBound = persistTransaction(user, TransactionType.TOP_UP);
-            Transaction inside = persistTransaction(user, TransactionType.RENT_PAYMENT);
-            Transaction onUpperBound = persistTransaction(user, TransactionType.REFUND);
-            Transaction after = persistTransaction(user, TransactionType.FINE);
-            persistTransaction(otherUser, TransactionType.TOP_UP);
-            flushAndClear();
-
-            LocalDateTime from = LocalDateTime.of(2026, Month.JULY, 5, 0, 0);
-            LocalDateTime to = LocalDateTime.of(2026, Month.JULY, 10, 0, 0);
-
-            forceCreatedAt(before, LocalDateTime.of(2026, Month.JULY, 4, 23, 59));
-            forceCreatedAt(onLowerBound, from);
-            forceCreatedAt(inside, LocalDateTime.of(2026, Month.JULY, 7, 12, 0));
-            forceCreatedAt(onUpperBound, to);
-            forceCreatedAt(after, LocalDateTime.of(2026, Month.JULY, 10, 0, 1));
-
-            Page<Transaction> page = transactionRepository.findByUserIdAndCreatedAtBetween(
-                    user.getId(), from, to, firstPage);
-
-            assertThat(page.getContent())
-                    .extracting(Transaction::getId)
-                    .containsExactlyInAnyOrder(onLowerBound.getId(), inside.getId(), onUpperBound.getId());
-        }
-
-        @Test
-        @DisplayName("does not leak another user's transactions inside the same window")
-        void doesNotLeakAcrossUsers() {
-            Transaction otherUserTransaction = persistTransaction(otherUser, TransactionType.TOP_UP);
-            flushAndClear();
-
-            LocalDateTime from = LocalDateTime.of(2026, Month.JANUARY, 1, 0, 0);
-            LocalDateTime to = LocalDateTime.of(2026, Month.DECEMBER, 31, 23, 59);
-            forceCreatedAt(otherUserTransaction, LocalDateTime.of(2026, Month.JULY, 7, 12, 0));
-
-            assertThat(transactionRepository.findByUserIdAndCreatedAtBetween(
-                    user.getId(), from, to, firstPage))
-                    .isEmpty();
-        }
-    }
-
-    @Nested
     @DisplayName("@EntityGraph prevents N+1")
     class NPlusOne {
 
@@ -334,37 +260,6 @@ class TransactionRepositoryTest extends AbstractPostgresTest {
                     assertThat(tx.getRental().getItemTitle()).isNotNull();
                 }
             });
-
-            return stats.getPrepareStatementCount();
-        }
-
-        @Test
-        @DisplayName("rental transactions: user.email loads without a query per row")
-        void rentalTransactionsQueryCountIsIndependentOfRowCount() {
-            persistTransaction(user, TransactionType.RENT_PAYMENT, rental);
-            persistTransaction(owner, TransactionType.RENT_PAYOUT, rental);
-            flushAndClear();
-
-            long baseline = countQueriesForRentalTransactions();
-
-            persistTransaction(otherUser, TransactionType.FINE, rental);
-            persistTransaction(otherUser, TransactionType.REFUND, rental);
-            flushAndClear();
-
-            long grown = countQueriesForRentalTransactions();
-
-            assertThat(grown)
-                    .as("doubling the rows must not add queries — that would be N+1")
-                    .isEqualTo(baseline);
-        }
-
-        private long countQueriesForRentalTransactions() {
-            entityManager.clear();
-            Statistics stats = statistics();
-            stats.clear();
-
-            List<Transaction> results = transactionRepository.findByRentalId(rental.getId());
-            results.forEach(tx -> assertThat(tx.getUser().getEmail()).isNotNull());
 
             return stats.getPrepareStatementCount();
         }
