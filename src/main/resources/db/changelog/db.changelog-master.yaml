@@ -33,3 +33,5 @@ databaseChangeLog:
       file: db/changelog/changes/012-extend-notification-types.yaml
   - include:
       file: db/changelog/changes/013-extend-transaction-types.yaml
+  - include:
+      file: db/changelog/changes/014-seed-test-admin.yaml

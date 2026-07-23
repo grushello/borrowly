@@ -150,6 +150,9 @@ class UserRepositoryTest extends AbstractPostgresTest {
     @Test
     @DisplayName("countByRole counts only users with the given role")
     void countByRoleCountsAdmins() {
+        long adminsBefore = userRepository.countByRole(UserRole.ADMIN);
+        long usersBefore = userRepository.countByRole(UserRole.USER);
+
         User admin = User.register("Ada", "Admin", "count-admin@test.com", "hash");
         ReflectionTestUtils.setField(admin, "role", UserRole.ADMIN);
         User regular = User.register("Rita", "Regular", "count-user@test.com", "hash");
@@ -157,8 +160,8 @@ class UserRepositoryTest extends AbstractPostgresTest {
         userRepository.save(admin);
         userRepository.saveAndFlush(regular);
 
-        assertEquals(1, userRepository.countByRole(UserRole.ADMIN));
-        assertEquals(1, userRepository.countByRole(UserRole.USER));
+        assertEquals(adminsBefore + 1, userRepository.countByRole(UserRole.ADMIN));
+        assertEquals(usersBefore + 1, userRepository.countByRole(UserRole.USER));
     }
 
     @Test

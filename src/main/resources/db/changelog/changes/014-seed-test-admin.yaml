@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: 014-seed-test-admin
+      author: mykhailo
+      # The first ADMIN cannot be created through the app: signup always assigns USER.
+      # Without a seeded account, category management and the admin panel are
+      # unreachable on a fresh database, so this runs in every environment.
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: 0
+            sql: SELECT count(*) FROM users WHERE email = 'admin@borrowly.local'
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  value: "00000000-0000-0000-0000-000000000001"
+              - column:
+                  name: first_name
+                  value: "Test"
+              - column:
+                  name: last_name
+                  value: "Admin"
+              - column:
+                  name: email
+                  value: "admin@borrowly.local"
+              # BCrypt hash of "Admin123!"
+              - column:
+                  name: password_hash
+                  value: "$2b$10$dXev2rBwmShdfCnedMHYC.fP01kvNg.MdISWqqx4y6aLGva5WWWq."
+              - column:
+                  name: role
+                  value: "ADMIN"
+              - column:
+                  name: current_balance
+                  valueNumeric: 0
+              - column:
+                  name: enabled
+                  valueBoolean: true
+              - column:
+                  name: created_at
+                  valueDate: "now()"
+              - column:
+                  name: updated_at
+                  valueDate: "now()"
+      rollback:
+        - delete:
+            tableName: users
+            where: email = 'admin@borrowly.local'
