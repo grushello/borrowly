@@ -2,20 +2,12 @@ package com.borrowly.controller.page;
 
 import com.borrowly.dto.response.ItemImageResponse;
 import com.borrowly.dto.response.ItemResponse;
-import com.borrowly.dto.response.RentalRequestResponse;
-import com.borrowly.model.rental.RentalRequestStatus;
-import com.borrowly.model.rental.RentalStatus;
 import com.borrowly.security.CurrentUserProvider;
 import com.borrowly.service.favorite.FavoriteService;
 import com.borrowly.service.item.ItemImageService;
 import com.borrowly.service.item.ItemService;
-import com.borrowly.service.rental.RentalService;
 import com.borrowly.service.rentalrequest.RentalRequestService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,17 +33,20 @@ public class ItemPageController {
 
         boolean isFavorite = false;
         boolean isOwner = false;
+        Optional<UUID> pendingRequestIdOpt = Optional.empty();
+
         if (principal != null) {
             isFavorite = favoriteService.isFavoritedByCurrentUser(id);
             UUID currentUserId = currentUserProvider.getCurrentUser().getId();
-            if (currentUserId != null){
+            if (currentUserId != null) {
                 isOwner = currentUserId.equals(item.owner().id());
+                pendingRequestIdOpt = rentalRequestService.getPendingRentalRequestId(
+                        item.id(), currentUserId);
             }
         }
 
-        List<ItemImageResponse> imagesMetadata = itemImageService.listMetadata(id);
 
-        Optional<UUID> pendingRequestIdOpt = rentalRequestService.getPendingRentalRequestId(item.id(), currentUserProvider.getCurrentUser().getId());
+        List<ItemImageResponse> imagesMetadata = itemImageService.listMetadata(id);
 
         model.addAttribute("isFavorite", isFavorite);
         model.addAttribute("item", item);
