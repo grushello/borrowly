@@ -1,0 +1,91 @@
+name: Diagnose deployment
+
+# Manual, read-only. Run this when a deploy fails with
+# "dependency failed to start: container borrowly-db-1 is unhealthy".
+#
+# It starts, stops and recreates nothing. It only reports why the database
+# container is failing its healthcheck, which is otherwise invisible unless
+# you have a shell on the server.
+#
+# Actions -> Diagnose deployment -> Run workflow.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: diagnose-borrowly
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: self-hosted
+    env:
+      COMPOSE_PROJECT: borrowly
+    steps:
+      - name: Report database container health
+        run: |
+          PROJECT="${COMPOSE_PROJECT}"
+
+          echo "::group::Containers in project ${PROJECT}"
+          docker ps -a \
+            --filter "label=com.docker.compose.project=${PROJECT}" \
+            --format 'table {{.Names}}\t{{.State}}\t{{.Status}}' || true
+          echo "::endgroup::"
+
+          CID="$(docker ps -a \
+            --filter "label=com.docker.compose.project=${PROJECT}" \
+            --filter "label=com.docker.compose.service=db" \
+            --format '{{.ID}}' | head -n1)" || true
+
+          if [ -z "$CID" ]; then
+            echo "No db container found for project '${PROJECT}'."
+            echo "Either the project name differs or the container was removed."
+          else
+            echo "db container: ${CID}"
+
+            echo "::group::Container state"
+            docker inspect --format 'status:      {{.State.Status}}
+          started at:  {{.State.StartedAt}}
+          restarts:    {{.RestartCount}}
+          exit code:   {{.State.ExitCode}}
+          oom killed:  {{.State.OOMKilled}}' "$CID" || true
+            echo "::endgroup::"
+
+            # Worth comparing against docker-compose.yml: if the values here
+            # differ, the container predates the current compose file.
+            echo "::group::Healthcheck baked into the container"
+            docker inspect --format '{{if .Config.Healthcheck}}test:         {{.Config.Healthcheck.Test}}
+          interval:     {{.Config.Healthcheck.Interval}}
+          timeout:      {{.Config.Healthcheck.Timeout}}
+          retries:      {{.Config.Healthcheck.Retries}}
+          start period: {{.Config.Healthcheck.StartPeriod}}{{else}}no healthcheck defined{{end}}' "$CID" || true
+            echo "::endgroup::"
+
+            # Usually the section that answers the question: it carries the
+            # stderr of the last few pg_isready attempts.
+            echo "::group::Health probe results"
+            docker inspect --format '{{if .State.Health}}status:         {{.State.Health.Status}}
+          failing streak: {{.State.Health.FailingStreak}}
+          {{range .State.Health.Log}}
+          --- probe at {{.Start}} (exit {{.ExitCode}})
+          {{.Output}}{{end}}{{else}}container reports no health state{{end}}' "$CID" || true
+            echo "::endgroup::"
+
+            echo "::group::Postgres logs (last 120 lines)"
+            docker logs --tail 120 "$CID" 2>&1 || true
+            echo "::endgroup::"
+          fi
+
+          echo "::group::Disk space"
+          df -h || true
+          echo
+          echo "inodes:"
+          df -i || true
+          echo "::endgroup::"
+
+          echo "::group::Docker disk usage"
+          docker system df || true
+          echo "::endgroup::"
