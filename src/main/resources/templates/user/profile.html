@@ -90,7 +90,7 @@
 
         <div sec:authorize="isAuthenticated()" th:unless="${isOwner}"
              th:if="${profile.items != null and !profile.items.isEmpty()}">
-            <div th:replace="~{fragments/review/reviewForm :: reviewForm(${T(String).join(',', profile.items.![id.toString()])})}"></div>
+            <div th:replace="~{fragments/review/reviewForm :: reviewForm(${itemIds})}"></div>
         </div>
 
         <div th:if="${profile.reviews != null and !profile.reviews.isEmpty()}">

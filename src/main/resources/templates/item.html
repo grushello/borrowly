@@ -131,13 +131,7 @@
           </div>
 
         </div>
-        <button th:unless="${isOwner}"
-                class="btn-book">
-          Rent now
-        </button>
       </div>
-    </div>
-
     <a th:href="@{/user/{id}(id=${item.owner.id})}" class="owner-profile">
       <div class="owner-avatar">
         <span th:text="${item.owner.firstName.charAt(0)}">A</span>
@@ -152,7 +146,7 @@
 
   </div>
 
-  <div class="upload-section">
+  <div class="upload-section" sec:authorize="isAuthenticated()" th:if="${isOwner}">
     <label for="image-upload">Add an image:</label>
     <input type="file" id="image-upload" name="file" accept="image/*">
     <button id="upload-btn" type="button">Upload an image</button>
