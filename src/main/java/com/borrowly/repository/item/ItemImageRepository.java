@@ -15,8 +15,6 @@ public interface ItemImageRepository extends JpaRepository<ItemImage, UUID> {
 
     Optional<ItemImage> findByIdAndItemId(UUID id, UUID itemId);
 
-    Optional<ItemImageMetadata> findByItemIdAndPrimaryTrue(UUID itemId);
-
     long countByItemId(UUID itemId);
 
     Optional<ItemImage> findFirstByItemIdOrderByCreatedAtAsc(UUID itemId);

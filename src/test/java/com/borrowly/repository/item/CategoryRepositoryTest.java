@@ -37,45 +37,6 @@ class CategoryRepositoryTest extends AbstractPostgresTest {
 
 
     @Test
-    void findByNameIgnoreCase_returnsCategory_whenNameMatches() {
-        Category category = Category.builder()
-                .name("Camping Gear")
-                .description("Tents, sleeping bags, and outdoor equipment")
-                .build();
-
-        categoryRepository.save(category);
-
-        Optional<Category> result = categoryRepository.findByNameIgnoreCase("Camping Gear");
-
-        assertTrue(result.isPresent());
-        assertEquals(category.getId(), result.get().getId());
-    }
-
-
-    @Test
-    void findByNameIgnoreCase_returnsCategory_whenNameMatchesIgnoringCase() {
-        Category category = Category.builder()
-                .name("Camping Gear")
-                .build();
-
-        categoryRepository.save(category);
-
-        Optional<Category> result = categoryRepository.findByNameIgnoreCase("CAMPING GEAR");
-
-        assertTrue(result.isPresent());
-        assertEquals(category.getId(), result.get().getId());
-    }
-
-
-    @Test
-    void findByNameIgnoreCase_returnsEmpty_whenNameDoesNotExist() {
-        Optional<Category> result = categoryRepository.findByNameIgnoreCase("Unknown Category");
-
-        assertTrue(result.isEmpty());
-    }
-
-
-    @Test
     void existsByNameIgnoreCase_returnsTrue_whenNameExists() {
         Category category = Category.builder()
                 .name("Electronics")

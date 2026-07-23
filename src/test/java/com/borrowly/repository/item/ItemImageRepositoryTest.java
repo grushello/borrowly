@@ -13,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -145,47 +144,6 @@ class ItemImageRepositoryTest extends AbstractPostgresTest {
 
         assertThat(result.get(1).getFileName())
                 .isEqualTo("second.png");
-    }
-
-
-    @Test
-    void shouldFindPrimaryImageMetadata() {
-
-
-        itemImageRepository.saveAndFlush(
-                ItemImage.builder()
-                        .imageData(new byte[]{1})
-                        .fileName("normal.png")
-                        .contentType("image/png")
-                        .primary(false)
-                        .item(item)
-                        .build()
-        );
-
-
-        itemImageRepository.saveAndFlush(
-                ItemImage.builder()
-                        .imageData(new byte[]{2})
-                        .fileName("primary.png")
-                        .contentType("image/png")
-                        .primary(true)
-                        .item(item)
-                        .build()
-        );
-
-
-        Optional<ItemImageMetadata> result =
-                itemImageRepository.findByItemIdAndPrimaryTrue(
-                        item.getId()
-                );
-
-
-        assertThat(result)
-                .isPresent();
-
-
-        assertThat(result.get().getFileName())
-                .isEqualTo("primary.png");
     }
 
 
