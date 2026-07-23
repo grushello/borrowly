@@ -30,10 +30,38 @@ jobs:
     env:
       COMPOSE_PROJECT: borrowly
     steps:
-      - name: Find the database container
+      # Every command is timed. A daemon that answers in milliseconds and one
+      # that never answers look identical in the log otherwise.
+      - name: Is the Docker daemon responding?
         timeout-minutes: 1
         run: |
-          CID="$(timeout 20 docker ps -a \
+          echo "socket:"
+          ls -l /var/run/docker.sock || true
+
+          echo
+          start=$(date +%s)
+          timeout 15 docker version \
+            --format 'client {{.Client.Version}} / server {{.Server.Version}}' \
+            || echo "FAILED: docker version did not answer within 15s"
+          echo "docker version took $(( $(date +%s) - start ))s"
+
+      # Unfiltered and given two full minutes: this separates "the daemon is
+      # wedged" from "the containers just do not carry that project label".
+      - name: All containers on the host
+        if: always()
+        timeout-minutes: 3
+        run: |
+          start=$(date +%s)
+          timeout 120 docker ps -a \
+            --format 'table {{.Names}}\t{{.State}}\t{{.Status}}\t{{.Label "com.docker.compose.project"}}' \
+            || echo "FAILED: docker ps -a did not answer within 120s"
+          echo "docker ps -a took $(( $(date +%s) - start ))s"
+
+      - name: Find the database container
+        if: always()
+        timeout-minutes: 3
+        run: |
+          CID="$(timeout 120 docker ps -a \
             --filter "label=com.docker.compose.project=${COMPOSE_PROJECT}" \
             --filter "label=com.docker.compose.service=db" \
             --format '{{.ID}}' | head -n1)" || true
@@ -44,12 +72,6 @@ jobs:
             echo "db container: ${CID}"
           fi
           echo "DB_CID=${CID}" >> "$GITHUB_ENV"
-
-          echo
-          echo "All containers in the project:"
-          timeout 20 docker ps -a \
-            --filter "label=com.docker.compose.project=${COMPOSE_PROJECT}" \
-            --format 'table {{.Names}}\t{{.State}}\t{{.Status}}' || true
 
       # The section that usually answers the question: it carries the stderr
       # of the last few healthcheck attempts.
