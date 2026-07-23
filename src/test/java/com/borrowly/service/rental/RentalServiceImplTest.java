@@ -31,6 +31,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,6 +50,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RentalServiceImplTest {
+
+    private static final ZoneId ZONE = ZoneId.of("Europe/Vilnius");
 
     @Mock
     private RentalRepository rentalRepository;
@@ -91,7 +94,7 @@ class RentalServiceImplTest {
                 .owner(owner)
                 .build();
 
-        rental = rentalEndingOn(LocalDate.now());
+        rental = rentalEndingOn(LocalDate.now(ZONE));
     }
 
     private Rental rentalEndingOn(LocalDate endDate) {
@@ -217,14 +220,14 @@ class RentalServiceImplTest {
         verify(transactionService, never()).payoutFine(any(), any(), any());
 
         assertThat(rental.getStatus()).isEqualTo(RentalStatus.RETURNED);
-        assertThat(rental.getActualReturnDate()).isEqualTo(LocalDate.now());
+        assertThat(rental.getActualReturnDate()).isEqualTo(LocalDate.now(ZONE));
         assertThat(item.getStatus()).isEqualTo(ItemStatus.ACTIVE);
     }
 
     @Test
     @DisplayName("return two days late charges the borrower and credits the owner the fine")
     void returnOverdueChargesAndCreditsFine() {
-        rental = rentalEndingOn(LocalDate.now().minusDays(2));
+        rental = rentalEndingOn(LocalDate.now(ZONE).minusDays(2));
 
         when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
@@ -248,7 +251,7 @@ class RentalServiceImplTest {
     @DisplayName("a fine the balance cannot fully cover is topped up from the deposit")
     void returnLateFineSplitsAcrossBalanceThenDeposit() {
         ReflectionTestUtils.setField(borrower, "currentBalance", new BigDecimal("1.00"));
-        rental = rentalEndingOn(LocalDate.now().minusDays(2)); // fine 2.00 x 2 = 4.00
+        rental = rentalEndingOn(LocalDate.now(ZONE).minusDays(2)); // fine 2.00 x 2 = 4.00
 
         when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
@@ -266,7 +269,7 @@ class RentalServiceImplTest {
     @DisplayName("a fine beyond balance and deposit is capped, and the owner absorbs the rest")
     void returnLateFineBeyondBalanceAndDepositIsWrittenOff() {
         ReflectionTestUtils.setField(borrower, "currentBalance", BigDecimal.ZERO);
-        rental = rentalEndingOn(LocalDate.now().minusDays(26)); // fine 2.00 x 26 = 52.00 > 50.00 deposit
+        rental = rentalEndingOn(LocalDate.now(ZONE).minusDays(26)); // fine 2.00 x 26 = 52.00 > 50.00 deposit
 
         when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
@@ -283,7 +286,7 @@ class RentalServiceImplTest {
     @Test
     @DisplayName("an overdue rental can still be returned")
     void returnOverdueStatusRental() {
-        rental = rentalEndingOn(LocalDate.now().minusDays(1));
+        rental = rentalEndingOn(LocalDate.now(ZONE).minusDays(1));
         rental.markOverdue();
 
         when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
@@ -297,7 +300,7 @@ class RentalServiceImplTest {
     @Test
     @DisplayName("returning an already returned rental is rejected")
     void returnAlreadyReturned() {
-        rental.returnItem(LocalDate.now());
+        rental.returnItem(LocalDate.now(ZONE));
 
         when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
@@ -323,7 +326,7 @@ class RentalServiceImplTest {
     @Test
     @DisplayName("return notifies the borrower and the owner once each")
     void returnNotifiesBothParties() {
-        rental = rentalEndingOn(LocalDate.now().minusDays(2));
+        rental = rentalEndingOn(LocalDate.now(ZONE).minusDays(2));
 
         when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
@@ -351,7 +354,7 @@ class RentalServiceImplTest {
     @DisplayName("when the fine outruns the deposit, the messages say so")
     void returnNotifiesWhenFineExceedsDeposit() {
         ReflectionTestUtils.setField(borrower, "currentBalance", BigDecimal.ZERO);
-        rental = rentalEndingOn(LocalDate.now().minusDays(26)); // fine 52.00 > 50.00 deposit
+        rental = rentalEndingOn(LocalDate.now(ZONE).minusDays(26)); // fine 52.00 > 50.00 deposit
 
         when(rentalRepository.findById(rental.getId())).thenReturn(Optional.of(rental));
         when(currentUserProvider.getCurrentUser()).thenReturn(owner);
@@ -375,8 +378,8 @@ class RentalServiceImplTest {
         rental = Rental.builder()
                 .item(item)
                 .borrower(borrower)
-                .startDate(LocalDate.now().minusDays(1))
-                .endDate(LocalDate.now())
+                .startDate(LocalDate.now(ZONE).minusDays(1))
+                .endDate(LocalDate.now(ZONE))
                 .itemTitle("Bosch Drill")
                 .dailyPrice(BigDecimal.ZERO)
                 .depositAmount(BigDecimal.ZERO)
