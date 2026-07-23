@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Review form</title>
+</head>
+<body>
+<div th:fragment="reviewForm(itemIds)" id="review-form-container" style="display: none;">
+    <input type="hidden" id="review-item-ids" th:value="${itemIds}">
+    <div class="review-form-card">
+        <h3>Write a Review</h3>
+        <div id="review-form-rental-select-wrapper" style="display: none;">
+            <label for="review-rental-select">Select rental:</label>
+            <select id="review-rental-select"></select>
+        </div>
+        <input type="hidden" id="review-rental-id">
+        <div class="star-selector" id="star-selector">
+            <span class="star-select" data-value="1">☆</span>
+            <span class="star-select" data-value="2">☆</span>
+            <span class="star-select" data-value="3">☆</span>
+            <span class="star-select" data-value="4">☆</span>
+            <span class="star-select" data-value="5">☆</span>
+        </div>
+        <textarea id="review-comment" placeholder="Share your experience (optional)" maxlength="2000" rows="4"></textarea>
+        <div class="review-form-actions">
+            <button id="submit-review-btn" type="button" class="btn-submit-review" disabled>Submit Review</button>
+            <span id="review-form-message" class="review-form-message"></span>
+        </div>
+    </div>
+</div>
+
+<script th:fragment="reviewFormScript">
+    (function() {
+        var selectedRating = 0;
+
+        function initReviewForm() {
+            var formContainer = document.getElementById('review-form-container');
+            if (!formContainer) return;
+
+            var raw = document.getElementById('review-item-ids').value;
+            var itemIds = raw.split(',').filter(function(s) { return s.trim().length > 0; });
+            if (itemIds.length === 0) return;
+
+            fetch('/api/rentals/as-borrower?status=RETURNED&size=100')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var itemRentals = data.content.filter(function(rental) {
+                        return itemIds.indexOf(rental.item.id) !== -1;
+                    });
+
+                    if (itemRentals.length === 0) return;
+
+                    var uniqueItemIds = [];
+                    itemRentals.forEach(function(r) {
+                        if (uniqueItemIds.indexOf(r.item.id) === -1) uniqueItemIds.push(r.item.id);
+                    });
+
+                    return Promise.all(uniqueItemIds.map(function(id) {
+                        return fetch('/api/items/' + id + '/reviews?size=100').then(function(r) { return r.json(); });
+                    })).then(function(reviewPages) {
+                        var reviewedRentalIds = {};
+                        reviewPages.forEach(function(page) {
+                            page.content.forEach(function(review) {
+                                reviewedRentalIds[review.rentalId] = true;
+                            });
+                        });
+
+                        var unreviewedRentals = itemRentals.filter(function(r) {
+                            return !reviewedRentalIds[r.id];
+                        });
+
+                        if (unreviewedRentals.length === 0) return;
+
+                        formContainer.style.display = 'block';
+
+                        if (unreviewedRentals.length === 1) {
+                            document.getElementById('review-rental-id').value = unreviewedRentals[0].id;
+                        } else {
+                            var selectWrapper = document.getElementById('review-form-rental-select-wrapper');
+                            var select = document.getElementById('review-rental-select');
+                            selectWrapper.style.display = 'block';
+
+                            unreviewedRentals.forEach(function(rental) {
+                                var option = document.createElement('option');
+                                option.value = rental.id;
+                                var startDate = new Date(rental.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                var endDate = new Date(rental.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                var label = startDate + ' – ' + endDate;
+                                if (itemIds.length > 1) {
+                                    label = rental.item.title + ' · ' + label;
+                                }
+                                option.textContent = label;
+                                select.appendChild(option);
+                            });
+
+                            document.getElementById('review-rental-id').value = unreviewedRentals[0].id;
+
+                            select.addEventListener('change', function() {
+                                document.getElementById('review-rental-id').value = this.value;
+                            });
+                        }
+
+                        initStarSelector();
+                        initSubmitReview();
+                    });
+                })
+                .catch(function(err) {
+                    console.error('Error checking reviewable rentals:', err);
+                });
+        }
+
+        function initStarSelector() {
+            var stars = document.querySelectorAll('.star-select');
+            var submitBtn = document.getElementById('submit-review-btn');
+
+            stars.forEach(function(star) {
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.getAttribute('data-value'));
+                    updateStarDisplay(selectedRating);
+                    submitBtn.disabled = false;
+                });
+
+                star.addEventListener('mouseenter', function() {
+                    updateStarDisplay(parseInt(this.getAttribute('data-value')));
+                });
+            });
+
+            document.getElementById('star-selector').addEventListener('mouseleave', function() {
+                updateStarDisplay(selectedRating);
+            });
+        }
+
+        function updateStarDisplay(rating) {
+            document.querySelectorAll('.star-select').forEach(function(star) {
+                var val = parseInt(star.getAttribute('data-value'));
+                star.textContent = val <= rating ? '★' : '☆';
+                star.classList.toggle('star-filled', val <= rating);
+            });
+        }
+
+        function initSubmitReview() {
+            var submitBtn = document.getElementById('submit-review-btn');
+            var messageEl = document.getElementById('review-form-message');
+
+            submitBtn.addEventListener('click', function() {
+                var rentalId = document.getElementById('review-rental-id').value;
+                var comment = document.getElementById('review-comment').value.trim();
+
+                if (selectedRating < 1) {
+                    messageEl.textContent = 'Please select a rating.';
+                    messageEl.className = 'review-form-message message-error';
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+                messageEl.textContent = '';
+
+                var body = { rentalId: rentalId, rating: selectedRating };
+                if (comment) body.comment = comment;
+
+                csrfFetch('/api/reviews', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                })
+                    .then(function(response) {
+                        if (response.ok) {
+                            return response.json().then(function() {
+                                messageEl.textContent = 'Review submitted!';
+                                messageEl.className = 'review-form-message message-success';
+
+                                setTimeout(function() { location.reload(); }, 800);
+                            });
+                        } else {
+                            return response.json().then(function(err) {
+                                messageEl.textContent = err.message || 'Failed to submit review.';
+                                messageEl.className = 'review-form-message message-error';
+                                submitBtn.disabled = false;
+                                submitBtn.textContent = 'Submit Review';
+                            });
+                        }
+                    })
+                    .catch(function(err) {
+                        console.error('Error submitting review:', err);
+                        messageEl.textContent = 'Network error. Please try again.';
+                        messageEl.className = 'review-form-message message-error';
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Submit Review';
+                    });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initReviewForm);
+    })();
+</script>
+</body>
+</html>

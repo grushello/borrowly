@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Access denied</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <main class="error-container">
+        <nav th:replace="~{fragments/general/nav :: nav}">
+        </nav>
+        <h1>🛑 Access denied! </h1>
+        <p>We are sorry but you don't have the permission to access this page.</p>
+    </main>
+    <footer th:insert="~{fragments/general/footer :: footer}">
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <nav th:replace="~{fragments/general/nav :: nav}">
+    </nav>
+
+    <main class="signin">
+        <h2>Sign in with your credentials</h2>
+        <form id="signinForm" th:action="@{/signin}" method="post">
+            <div class="input-container">
+                <label for="email-input">Email</label>
+                <input id="email-input" type="text" name="email" placeholder="john.doe@gmail.com">
+            </div>
+
+            <div class="input-container">
+                <label for="password-input">Password</label>
+                <input id="password-input" type="password" name="password" placeholder="Valid password">
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <br>
+
+        <div class="signin-create-account-container">
+            <span>Do you need to create an account?</span>
+            <a href="/signup">Sign up</a>
+        </div>
+        <div id="error-message">
+            <span>There was an error with the login</span>
+        </div>
+    </main>
+    <footer th:replace="~{fragments/general/footer :: footer}">
+    </footer>
+</body>
+<script src="/js/csrf.js"></script>
+<script src="/js/notificationButtonLogic.js"></script>
+<script>
+    document.getElementById('signinForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const email = document.getElementById('email-input').value;
+        const password = document.getElementById('password-input').value;
+
+        try {
+            const response = await csrfFetch('/api/auth/signin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password: password })
+            });
+
+            if (response.ok) {
+                window.location.href = '/dashboard';
+            } else {
+                const errorData = await response.json();
+
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.textContent = errorData.message || "Error during authentication";
+                errorDiv.style.display = 'block';
+            }
+        } catch (error) {
+            console.error("Network error:", error);
+        }
+    });
+</script>
+</html>

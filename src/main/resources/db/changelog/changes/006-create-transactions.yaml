@@ -1,0 +1,78 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-create-transactions
+      author: edgaras
+      changes:
+        - createTable:
+            tableName: transactions
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_transactions
+              - column:
+                  name: amount
+                  type: numeric(14, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(500)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rental_id
+                  type: uuid
+        - addForeignKeyConstraint:
+            constraintName: fk_transactions_user_id
+            baseTableName: transactions
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            constraintName: fk_transactions_rental_id
+            baseTableName: transactions
+            baseColumnNames: rental_id
+            referencedTableName: rentals
+            referencedColumnNames: id
+        - createIndex:
+            indexName: idx_transactions_user_id
+            tableName: transactions
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            indexName: idx_transactions_rental_id
+            tableName: transactions
+            columns:
+              - column:
+                  name: rental_id
+        - sql:
+            sql: >-
+              ALTER TABLE transactions
+                ADD CONSTRAINT ck_transactions_type CHECK (type IN ('TOP_UP', 'WITHDRAWAL', 'RENT_PAYMENT', 'RENT_PAYOUT', 'DEPOSIT_HELD', 'DEPOSIT_RETURN', 'REFUND', 'FINE')),
+                ADD CONSTRAINT ck_transactions_status CHECK (status IN ('COMPLETED', 'FAILED')),
+                ADD CONSTRAINT ck_transactions_amount_positive CHECK (amount >= 0.01)
+      rollback:
+        - dropTable:
+            tableName: transactions

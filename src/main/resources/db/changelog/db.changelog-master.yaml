@@ -1,0 +1,37 @@
+# Master changelog. Liquibase runs the changesets listed here, in order, on
+# application startup. As the domain model grows, add one changeset file per
+# change under db/changelog/changes/ and include it below, e.g.:
+#
+#   - include:
+#       file: db/changelog/changes/001-create-users.yaml
+#
+# Never edit a changeset after it has run on a shared database; add a new one.
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/001-create-users.yaml
+  - include:
+      file: db/changelog/changes/002-create-categories.yaml
+  - include:
+      file: db/changelog/changes/003-create-items.yaml
+  - include:
+      file: db/changelog/changes/004-create-rental-requests.yaml
+  - include:
+      file: db/changelog/changes/005-create-rentals.yaml
+  - include:
+      file: db/changelog/changes/006-create-transactions.yaml
+  - include:
+      file: db/changelog/changes/007-create-item-images.yaml
+  - include:
+      file: db/changelog/changes/008-create-favorites.yaml
+  - include:
+      file: db/changelog/changes/009-create-reviews.yaml
+  - include:
+      file: db/changelog/changes/010-create-notifications.yaml
+  - include:
+      file: db/changelog/changes/011-prevent-overlapping-rentals.yaml
+  - include:
+      file: db/changelog/changes/012-extend-notification-types.yaml
+  - include:
+      file: db/changelog/changes/013-extend-transaction-types.yaml
+  - include:
+      file: db/changelog/changes/014-seed-test-admin.yaml

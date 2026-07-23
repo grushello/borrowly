@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Categories</title>
+</head>
+<body>
+<div th:fragment="categoriesWidget" class="widget admin-categories">
+    <div class="widget-header">
+        <h2>Categories</h2>
+        <span class="widget-count" th:text="|${stats.totalCategories} total|">0 total</span>
+    </div>
+
+    <form id="category-create-form" class="category-create-form">
+        <div class="input-container">
+            <label for="new-category-name">Name</label>
+            <input id="new-category-name" type="text" maxlength="100" placeholder="Power tools" required>
+        </div>
+        <div class="input-container">
+            <label for="new-category-description">Description</label>
+            <input id="new-category-description" type="text" maxlength="500" placeholder="Drills, saws, sanders">
+        </div>
+        <button type="submit" class="btn-primary">Add category</button>
+    </form>
+
+    <div id="category-error" class="admin-error"></div>
+
+    <table class="admin-table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th class="col-actions">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="category : ${categories}" th:attr="data-category-id=${category.id}">
+            <td>
+                <span class="cell-view" th:text="${category.name}">Name</span>
+                <input class="cell-edit category-name-input" type="text" maxlength="100"
+                       th:value="${category.name}" hidden>
+            </td>
+            <td>
+                <span class="cell-view" th:text="${category.description}">Description</span>
+                <input class="cell-edit category-description-input" type="text" maxlength="500"
+                       th:value="${category.description}" hidden>
+            </td>
+            <td class="col-actions">
+                <button type="button" class="btn-small btn-edit">Edit</button>
+                <button type="button" class="btn-small btn-save" hidden>Save</button>
+                <button type="button" class="btn-small btn-cancel" hidden>Cancel</button>
+                <button type="button" class="btn-small btn-danger btn-delete">Delete</button>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(categories)}">
+            <td colspan="3" class="empty-state">No categories yet</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

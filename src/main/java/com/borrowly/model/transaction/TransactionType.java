@@ -1,0 +1,13 @@
+package com.borrowly.model.transaction;
+
+public enum TransactionType {
+    TOP_UP,
+    WITHDRAWAL,
+    RENT_PAYMENT,
+    RENT_PAYOUT,
+    DEPOSIT_HELD,
+    DEPOSIT_RETURN,
+    REFUND,
+    FINE,
+    FINE_PAYOUT
+}

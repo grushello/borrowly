@@ -1,0 +1,80 @@
+.notifications-page-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.notifications-page-container h2 {
+    margin-bottom: 24px;
+    color: #1f2937;
+}
+
+.notifications-full-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.notification-full-item {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.notification-full-item .notif-content {
+    font-size: 16px;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.notification-full-item .notif-date {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    color: #6b7280;
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 32px;
+}
+
+.pagination-controls a {
+    padding: 8px 16px;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    color: #374151;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.pagination-controls a:hover:not(.disabled) {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.pagination-controls a.disabled {
+    color: #9ca3af;
+    background-color: #f9fafb;
+    border-color: #e5e7eb;
+    pointer-events: none;
+}
+
+.page-indicator {
+    font-size: 14px;
+    color: #4b5563;
+    font-weight: 500;
+}

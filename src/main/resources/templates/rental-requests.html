@@ -1,0 +1,121 @@
+<!DOCTYPE>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Rental requests</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/rentalRequests/main.css}">
+    <link rel="stylesheet" th:href="@{/css/rentalRequests/rentalRequests.css}">
+</head>
+<body>
+  <nav th:replace="~{fragments/general/nav :: nav}">
+  </nav>
+
+  <main class="rental-requests-container">
+    <div th:replace="~{fragments/rentalRequests/rentalRequestsWidget :: rentalRequestsWidget(requestsList = ${pendingIncoming}, incomingOrOutgoing = 'Incoming')}"></div>
+    <div th:replace="~{fragments/rentalRequests/rentalRequestsWidget :: rentalRequestsWidget(requestsList = ${pendingOutgoing}, incomingOrOutgoing = 'Outgoing')}"></div>
+  </main>
+
+  <footer th:replace="~{fragments/general/footer :: footer}">
+  </footer>
+</body>
+<script src="/js/csrf.js"></script>
+<script src="/js/notificationButtonLogic.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const approveButtons = document.querySelectorAll('.approve-btn');
+    const rejectButtons = document.querySelectorAll('.reject-btn');
+
+    function handleRequestAction(button, action) {
+      const requestId = button.getAttribute('data-id');
+      const url = `/api/rental-requests/${requestId}/${action}`;
+
+      button.disabled = true;
+      const originalText = button.textContent;
+      button.textContent = "...";
+
+
+      csrfFetch(url, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+              .then(response => {
+                if (response.ok) {
+                  window.location.reload();
+                } else {
+                  alert("Cannot complete request. Please try again.");
+                  button.disabled = false;
+                  button.textContent = originalText;
+                }
+              })
+              .catch(error => {
+                console.error("Error:", error);
+                alert("Network error");
+                button.disabled = false;
+                button.textContent = originalText;
+              });
+    }
+
+    approveButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        if(confirm("Are you sure?")) {
+          handleRequestAction(this, 'approve');
+        }
+      });
+    });
+
+    rejectButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        if(confirm("Are you sure you want to reject this request")) {
+          handleRequestAction(this, 'reject');
+        }
+      });
+    });
+
+    const cancelBtn = document.getElementById("cancel-request-button");
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        if (!confirm("Are you sure you want to cancel this request?")) {
+          return;
+        }
+
+        const rentalRequestId = cancelBtn.getAttribute("data-id");
+
+        const originalText = cancelBtn.textContent;
+        cancelBtn.disabled = true;
+        cancelBtn.textContent = "Cancelling...";
+
+        try {
+          const response = await csrfFetch(`/api/rental-requests/${rentalRequestId}/cancel`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert("There was an error. Try again later.");
+            restoreButton();
+          }
+        } catch (error) {
+          console.error("Network error", error);
+          alert("Connection refused. Try again later.");
+          restoreButton();
+        }
+
+        function restoreButton() {
+          cancelBtn.disabled = false;
+          cancelBtn.textContent = originalText;
+        }
+      });
+    }
+  });
+</script>
+</html>

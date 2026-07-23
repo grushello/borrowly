@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div th:fragment="favoritesWidget" class="widget user-favorite-items-">
+    <div class="widget-header">
+        <h2>Your favorites</h2>
+    </div>
+
+    <div class="items-scroll-container">
+
+        <a th:each="fav : ${favorites}" th:href="@{/item/{id}(id=${fav.item.id})}" class="item-card">
+
+            <div class="item-image-wrapper">
+                <img th:if="${fav.item.primaryImageId != null}"
+                     th:src="@{/api/items/{itemId}/images/{imageId}(itemId=${fav.item.id}, imageId=${fav.item.primaryImageId})}"
+                     th:alt="${fav.item.title}" class="item-image">
+                <img th:unless="${fav.item.primaryImageId != null}"
+                     th:src="@{/images/placeholder.jpg}"
+                     th:alt="${fav.item.title}" class="item-image">
+                <span class="item-icon">♥️</span>
+            </div>
+
+            <div class="item-info">
+                <h5 class="item-title" th:text="${fav.item.title}">Grass cutter</h5>
+                <span class="item-price" th:text="|€ ${fav.item.pricePerDay}/day|">€ 15/g</span>
+            </div>
+
+        </a>
+
+        <div th:if="${#lists.isEmpty(favorites)}" class="empty-state" id="items-empty-state">
+            No saved favorite
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

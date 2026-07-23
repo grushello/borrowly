@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <nav th:replace="~{fragments/general/nav :: nav}">
+    </nav>
+
+    <main class="signup">
+        <h2>Signup</h2>
+        <form id="signup-form" th:action="@{/signup}" method="post">
+            <div class="input-container">
+                <label for="first-name-input">First name</label>
+                <input id="first-name-input" type="text" name="first-name" placeholder="John">
+            </div>
+
+            <div class="input-container">
+                <label for="last-name-input">Last name</label>
+                <input id="last-name-input" type="text" name="last-name" placeholder="Doe">
+            </div>
+
+            <div class="input-container">
+                <label for="email-input">Email</label>
+                <input id="email-input" type="text" name="email" placeholder="john.doe@gmail.com">
+            </div>
+
+            <div class="input-container">
+                <label for="phone-input">Phone</label>
+                <input id="phone-input" type="text" name="phone" placeholder="+37112345678">
+            </div>
+
+            <div class="input-container">
+                <label for="password-input">Password</label>
+                <input id="password-input" type="password" name="password" placeholder="Valid password">
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+        <div id="error-message">
+            <span>There was an error with the signup</span>
+        </div>
+    </main>
+
+
+    <footer th:replace="~{fragments/general/footer :: footer}">
+    </footer>
+    </body>
+<script src="/js/csrf.js"></script>
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const payload = {
+                firstName: document.getElementById('first-name-input').value,
+                lastName: document.getElementById('last-name-input').value,
+                email: document.getElementById('email-input').value,
+                phone: document.getElementById('phone-input').value || null,
+                password: document.getElementById('password-input').value,
+            }
+
+            try {
+                const response = await csrfFetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const errorDiv = document.getElementById('error-message');
+                    errorDiv.style.display = 'hide';
+                    window.location.href = '/dashboard';
+                } else {
+                    const errorData = await response.json();
+                    const errorDiv = document.getElementById('error-message');
+
+                    if (response.status === 400 && errorData.fields) {
+                        let validationErrors = "Attention:\n";
+                        for (const [field, errorMessage] of Object.entries(errorData.fields)) {
+                            validationErrors += `- ${field}: ${errorMessage}\n`;
+                        }
+                        errorDiv.innerText = validationErrors;
+
+                    } else {
+                        errorDiv.textContent = errorData.message || "Error during registration";
+                    }
+
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Network error:", error);
+            }
+        });
+    </script>
+</html>

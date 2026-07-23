@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<div class="transactions-widget widget" th:fragment="transactionsWidget">
+    <div class="widget-header">
+        <h2>Transaction history</h2>
+    </div>
+
+    <div th:if="${recentTransactions.isEmpty()}" class="empty-state">
+        You don't have any transactions yet
+    </div>
+
+    <ul th:unless="${recentTransactions.isEmpty()}" class="transaction-list">
+        <li th:each="tx : ${recentTransactions}" class="transaction-item">
+
+            <div class="tx-icon">
+                💳
+            </div>
+
+            <div class="tx-details">
+                <p class="tx-description" th:text="${tx.description}">Transaction description</p>
+                <span class="tx-date" th:text="${#temporals.format(tx.createdAt, 'dd MMM yyyy, HH:mm')}">21 Lug 2026, 14:30</span>
+            </div>
+
+            <div class="tx-amount-status">
+                <span class="tx-amount" th:text="${'€ ' + tx.amount}">€ 0.00</span>
+
+                <span class="tx-status"
+                      th:classappend="${'status-' + #strings.toLowerCase(tx.status)}"
+                      th:text="${tx.type}">DEPOSIT
+                </span>
+            </div>
+        </li>
+    </ul>
+</div>
+</html>
+

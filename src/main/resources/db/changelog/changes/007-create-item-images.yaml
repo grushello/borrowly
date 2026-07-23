@@ -1,0 +1,70 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-create-item-images
+      author: edgaras
+      changes:
+        - createTable:
+            tableName: item_images
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_item_images
+              - column:
+                  name: item_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: image_data
+                  type: bytea
+                  constraints:
+                    nullable: false
+              - column:
+                  name: file_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content_type
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_primary
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_item_images_item_id
+            baseTableName: item_images
+            baseColumnNames: item_id
+            referencedTableName: items
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - createIndex:
+            indexName: idx_item_images_item_id
+            tableName: item_images
+            columns:
+              - column:
+                  name: item_id
+        - sql:
+            sql: >-
+              ALTER TABLE item_images
+                ADD CONSTRAINT ck_item_images_file_name_not_blank CHECK (btrim(file_name) <> ''),
+                ADD CONSTRAINT ck_item_images_content_type_not_blank CHECK (btrim(content_type) <> ''),
+                ADD CONSTRAINT ck_item_images_image_data_not_empty CHECK (octet_length(image_data) >= 1)
+        - sql:
+            sql: >-
+              CREATE UNIQUE INDEX uk_item_images_one_primary
+                ON item_images (item_id) WHERE is_primary
+      rollback:
+        - dropTable:
+            tableName: item_images

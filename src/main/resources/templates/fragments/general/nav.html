@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Navbar</title>
+</head>
+<body>
+    <nav th:fragment="nav" class="navbar">
+        <div class="nav-fragment">
+            <a href="/">Catalog</a>
+            <a sec:authorize="isAuthenticated()" href="/dashboard">My Dashboard</a>
+            <a sec:authorize="isAuthenticated()" href="/createItem">Create a listing</a>
+            <a sec:authorize="isAuthenticated()" href="/rental-requests">Rental requests</a>
+            <a sec:authorize="isAuthenticated()" href="/profile">Profile</a>
+            <a sec:authorize="hasRole('ADMIN')" href="/admin">Admin</a>
+        </div>
+        <div class="nav-fragment">
+            <a sec:authorize="isAnonymous()" href="/signin">Sign in</a>
+            <button sec:authorize="isAuthenticated()" id="notifications-button" class="btn-icon">
+                🔔
+            </button>
+
+            <div class="notifications-wrapper">
+                <div id="notifications-panel" class="notifications-panel">
+                    <div class="notifications-header">
+                        <h4>Notifications</h4>
+                    </div>
+                    <div id="notifications-list" class="notifications-list">
+
+                        <div th:if="${#lists.isEmpty(notifications)}" class="empty-text">
+                            No new notifications
+                        </div>
+
+                        <div th:each="notif : ${notifications}" class="notification-item">
+                            <div th:text="${notif.message}"></div>
+                            <small style="color: #9ca3af; font-size: 12px;"
+                                   th:text="${#temporals.format(notif.createdAt, 'dd/MM/yyyy HH:mm')}">
+                            </small>
+                        </div>
+
+                        <div th:unless="${#lists.isEmpty(notifications)}" class="notification-item" style="text-align: center; color: #3b82f6; font-weight: bold;">
+                            <a th:href="@{/notifications}">See all notifications</a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <button sec:authorize="isAuthenticated()" type="button"
+                    class="btn-logout" onclick="borrowlyLogout()">Logout</button>
+        </div>
+        <script th:inline="none">
+            function borrowlyLogout() {
+                fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'same-origin'
+                }).finally(function () {
+                    window.location.href = '/';
+                });
+            }
+        </script>
+    </nav>
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${profile.firstName + ' ' + profile.lastName}">
+        User Profile
+    </title>
+    <link rel="stylesheet"
+          th:href="@{/css/main.css}">
+    <link rel="stylesheet"
+          th:href="@{/css/user/profile.css}">
+    <link rel="stylesheet"
+          th:href="@{/css/review/review.css}">
+</head>
+
+<body>
+<nav th:replace="~{fragments/general/nav :: nav}">
+</nav>
+
+
+<main class="profile-container">
+
+    <section class="profile-header">
+
+        <div class="avatar">
+
+            <span th:text="${profile.firstName.charAt(0)}">
+                A
+            </span>
+
+        </div>
+
+
+        <div>
+            <h1 th:text="${profile.firstName + ' ' + profile.lastName}">
+                John Smith
+            </h1>
+
+            <div class="profile-rating">
+                ⭐
+                <span th:text="${profile.averageRating ?: 0}">
+                    0
+                </span>
+                (
+                <span th:text="${profile.reviewCount}">
+                    0
+                </span>
+                reviews)
+            </div>
+        </div>
+        <a th:if="${isOwner}"
+           th:href="@{/account}"
+           class="btn">
+            Edit account
+        </a>
+    </section>
+    <section class="profile-section">
+        <h2>
+            Items
+        </h2>
+        <ul class="profile-items"
+            th:if="${profile.items != null and !profile.items.isEmpty()}">
+            <li th:each="item : ${profile.items}">
+
+                <a th:href="@{/item/{id}(id=${item.id})}"
+                   th:text="${item.title}">
+
+                    Item name
+                </a>
+            </li>
+        </ul>
+
+        <p class="empty-message"
+           th:if="${profile.items == null or profile.items.isEmpty()}">
+
+            This user has no items yet.
+        </p>
+
+    </section>
+    <section class="profile-section reviews-section">
+        <div class="reviews-header">
+            <h2>Reviews</h2>
+            <span class="reviews-summary">
+                ⭐ <strong th:text="${profile.averageRating != null ? #numbers.formatDecimal(profile.averageRating, 1, 1) : 'N/A'}">N/A</strong>
+                <span th:text="'· ' + ${profile.reviewCount} + ' reviews'">· 0 reviews</span>
+            </span>
+        </div>
+
+        <div sec:authorize="isAuthenticated()" th:unless="${isOwner}"
+             th:if="${profile.items != null and !profile.items.isEmpty()}">
+            <div th:replace="~{fragments/review/reviewForm :: reviewForm(${itemIds})}"></div>
+        </div>
+
+        <div th:if="${profile.reviews != null and !profile.reviews.isEmpty()}">
+            <div th:each="review : ${profile.reviews}" class="review-card">
+                <div class="review-card-header">
+                    <a th:href="@{/user/{id}(id=${review.reviewer.id})}" class="review-author">
+                        <div class="review-avatar">
+                            <span th:text="${review.reviewer.firstName.charAt(0)}">A</span>
+                        </div>
+                        <div class="review-author-info">
+                            <strong class="review-author-name"
+                                    th:text="${review.reviewer.firstName + ' ' + review.reviewer.lastName}">Name</strong>
+                            <span class="review-date"
+                                  th:text="${#temporals.format(review.createdAt, 'MMM d, yyyy')}">Jan 1, 2025</span>
+                        </div>
+                    </a>
+                    <div class="review-stars">
+                        <span th:each="i : ${#numbers.sequence(1, 5)}"
+                              th:text="${i <= review.rating ? '★' : '☆'}">★</span>
+                    </div>
+                </div>
+                <p th:if="${review.comment != null and !review.comment.isEmpty()}"
+                   class="review-comment"
+                   th:text="${review.comment}">Comment</p>
+            </div>
+        </div>
+
+        <p class="empty-message"
+           th:if="${profile.reviews == null or profile.reviews.isEmpty()}">
+            This user has no reviews yet.
+        </p>
+    </section>
+</main>
+
+
+<footer th:replace="~{fragments/general/footer :: footer}">
+</footer>
+
+</body>
+<script src="/js/csrf.js"></script>
+<script th:replace="~{fragments/review/reviewForm :: reviewFormScript}"></script>
+<script src="/js/notificationButtonLogic.js"></script>
+</html>
