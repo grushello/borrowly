@@ -10,31 +10,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.Optional;
 import java.util.UUID;
 
 public interface ItemRepository extends JpaRepository<Item, UUID>, JpaSpecificationExecutor<Item> {
-
-    @EntityGraph(attributePaths = {"owner", "category"})
-    Page<Item> findByOwnerIdAndStatusNot(
-            UUID ownerId,
-            ItemStatus excluded,
-            Pageable pageable
-    );
-
-
-    @EntityGraph(attributePaths = {"owner", "category"})
-    Page<Item> findByStatus(
-            ItemStatus status,
-            Pageable pageable
-    );
-
-
-    @EntityGraph(attributePaths = {"owner", "category"})
-    Optional<Item> findByIdAndStatusNot(
-            UUID id,
-            ItemStatus excluded
-    );
 
     @EntityGraph(attributePaths = {"owner", "category"})
     Page<Item> findByOwnerId(UUID ownerId, Pageable pageable);

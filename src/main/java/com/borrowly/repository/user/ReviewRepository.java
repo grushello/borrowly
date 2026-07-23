@@ -25,9 +25,6 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
             """)
     Page<Review> findByItemIdOrderByCreatedAtDesc(@Param("itemId") UUID itemId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"reviewer", "rental"})
-    Page<Review> findByReviewerId(UUID reviewerId, Pageable pageable);
-
     @Query("""
             select count(r)
             from Review r

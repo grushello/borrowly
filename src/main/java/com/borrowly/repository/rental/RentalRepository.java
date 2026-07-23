@@ -46,9 +46,6 @@ public interface RentalRepository extends JpaRepository<Rental, UUID> {
             """)
     Page<Rental> findByOwnerId(@Param("ownerId") UUID ownerId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"item", "item.owner", "borrower"})
-    List<Rental> findByEndDateBeforeAndStatus(LocalDate cutoff, RentalStatus status);
-
     @Query("""
             select case when count(r) > 0 then true else false end
             from Rental r

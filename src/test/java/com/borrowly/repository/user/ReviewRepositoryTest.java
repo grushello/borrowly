@@ -192,44 +192,6 @@ class ReviewRepositoryTest extends AbstractPostgresTest {
     }
 
     @Nested
-    @DisplayName("findByReviewerId")
-    class FindByReviewer {
-
-        @Test
-        @DisplayName("returns only this reviewer's reviews")
-        void filtersByReviewer() {
-            persistReviewFor(item, borrower, 5);
-            persistReviewFor(item, otherBorrower, 2);
-            flushAndClear();
-
-            Page<Review> page = reviewRepository.findByReviewerId(borrower.getId(), firstPage);
-
-            assertThat(page.getTotalElements()).isEqualTo(1);
-            assertThat(page.getContent())
-                    .singleElement()
-                    .extracting(r -> r.getReviewer().getId())
-                    .isEqualTo(borrower.getId());
-        }
-
-        @Test
-        @DisplayName("spans every item the reviewer has rented")
-        void spansItems() {
-            persistReviewFor(item, borrower, 5);
-            persistReviewFor(otherItem, borrower, 4);
-            flushAndClear();
-
-            assertThat(reviewRepository.findByReviewerId(borrower.getId(), firstPage))
-                    .hasSize(2);
-        }
-
-        @Test
-        @DisplayName("returns an empty page for a reviewer with no reviews")
-        void emptyWhenNoReviews() {
-            assertThat(reviewRepository.findByReviewerId(borrower.getId(), firstPage)).isEmpty();
-        }
-    }
-
-    @Nested
     @DisplayName("countByItemId")
     class CountByItem {
 
