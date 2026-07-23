@@ -33,17 +33,20 @@ public class ItemPageController {
 
         boolean isFavorite = false;
         boolean isOwner = false;
+        Optional<UUID> pendingRequestIdOpt = Optional.empty();
+
         if (principal != null) {
             isFavorite = favoriteService.isFavoritedByCurrentUser(id);
             UUID currentUserId = currentUserProvider.getCurrentUser().getId();
-            if (currentUserId != null){
+            if (currentUserId != null) {
                 isOwner = currentUserId.equals(item.owner().id());
+                pendingRequestIdOpt = rentalRequestService.getPendingRentalRequestId(
+                        item.id(), currentUserId);
             }
         }
 
-        List<ItemImageResponse> imagesMetadata = itemImageService.listMetadata(id);
 
-        Optional<UUID> pendingRequestIdOpt = rentalRequestService.getPendingRentalRequestId(item.id(), currentUserProvider.getCurrentUser().getId());
+        List<ItemImageResponse> imagesMetadata = itemImageService.listMetadata(id);
 
         model.addAttribute("isFavorite", isFavorite);
         model.addAttribute("item", item);
